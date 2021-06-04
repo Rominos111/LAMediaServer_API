@@ -7,12 +7,13 @@ const validator = require("express-joi-validation").createValidator({
 
 let router = express.Router();
 
-router.get("/", validator.query(Validation.formLoginSchema), (req, res) => {
-    APIResponse.fromString("index").send(res);
+router.get("/", (req, res) => {
+    APIResponse.fromString("OK").send(res);
 });
 
-router.post("/login", validator.body(Validation.formLoginSchema), (req, res) => {
-    APIResponse.fromObject(req.body).send(res);
+// FIXME: Transformer en POST
+router.get("/login", validator.query(Validation.formLoginSchema), (req, res) => {
+    APIResponse.fromObject("OK").send(res);
 });
 
 module.exports = router;
