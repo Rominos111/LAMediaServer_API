@@ -85,6 +85,7 @@ app.use((err, req, res, next) => {
     res.locals.message = err.message;
     res.locals.error = process.env.RELEASE_ENVIRONMENT === "dev" ? err : {};
 
+    let statusCode;
     let errors: Object[] = [{
         "type": "",
         "message": "(unknown)",
@@ -96,6 +97,8 @@ app.use((err, req, res, next) => {
             "type": "access",
             "message": err.message
         }];
+
+        statusCode = err.status || 500;
     } else if (err.error) {
         // Erreur de validation JOI
         errors = [];
@@ -106,9 +109,11 @@ app.use((err, req, res, next) => {
                 "key": error.context.key
             });
         }
+
+        statusCode = 400;
     }
 
-    APIResponse.fromObject({"errors": errors}).send(res, err.status || 500);
+    APIResponse.fromObject({"errors": errors}).send(res, statusCode);
 });
 
 // @ts-ignore
