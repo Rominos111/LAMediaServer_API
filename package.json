@@ -24,6 +24,7 @@
         "mocha": "^8.4.0",
         "morgan": "^1.10.0",
         "socket.io": "^4.1.2",
+        "ts-fs": "^0.1.0",
         "ts-http-errors": "^1.0.0",
         "ts-joi": "0.0.0",
         "tsconfig-paths": "^3.9.0"

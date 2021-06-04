@@ -8,7 +8,7 @@ export default class APIResponse {
      * Data
      * @private
      */
-    private readonly data: Object = {};
+    private readonly _data: Object = {};
 
     /**
      * Constructeur privé
@@ -16,7 +16,7 @@ export default class APIResponse {
      * @private
      */
     private constructor(data: Object) {
-        this.data = data;
+        this._data = data;
     }
 
     /**
@@ -46,11 +46,11 @@ export default class APIResponse {
     }
 
     /**
-     * Send the response
-     * @param res Express response variable
-     * @param statusCode HTTP status code
+     * Envoie la réponse
+     * @param res Variable de réponse de Express
+     * @param statusCode Code HTTP
      */
     send(res: Response, statusCode: number = 200): Response {
-        return res.status(statusCode).json(this.data);
+        return res.status(statusCode).json(this._data);
     }
 }

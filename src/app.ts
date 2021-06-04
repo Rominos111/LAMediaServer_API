@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import logger from "morgan";
 import cors from "cors";
 import APIResponse from "helper/APIResponse";
+import Language from "helper/language";
 
 const csrf = require("csurf");
 const RateLimit = require("express-rate-limit");
@@ -17,6 +18,8 @@ const server = http.createServer(app);
 //======================================================================================================================
 // Configuration des middlewares
 //======================================================================================================================
+
+Language.config("fr-FR");
 
 dotenv.config();
 

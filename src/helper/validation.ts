@@ -1,21 +1,25 @@
 import Joi from "joi";
+import Language from "helper/language";
 
+/**
+ * Validation des entrées
+ */
 export default abstract class Validation {
     /**
      * Login
      */
     public static formLoginSchema = Joi.object({
         username: Joi.string().alphanum().min(3).max(32).required().messages({
-            "string.empty": "Votre nom d'utilisateur ne peut pas être vide",
-            "string.min": "Votre nom d'utilisateur est trop court",
-            "string.max": "Votre nom d'utilisateur est trop long",
-            "any.required": "Vous devez fournir votre nom d'utilisateur"
+            "string.empty": Language.get("validation.login.username.empty"),
+            "string.min": Language.get("validation.login.username.short"),
+            "string.max": Language.get("validation.login.username.long"),
+            "any.required": Language.get("validation.login.username.required")
         }),
         password: Joi.string().min(8).required().messages({
-            "string.empty": "Votre mot de passe ne peut pas être vide",
-            "string.min": "Votre mot de passe est trop court",
-            "string.max": "Votre mot de passe est trop long",
-            "any.required": "Vous devez fournir votre mot de passe"
+            "string.empty": Language.get("validation.login.password.empty"),
+            "string.min": Language.get("validation.login.password.short"),
+            "string.max": Language.get("validation.login.password.long"),
+            "any.required": Language.get("validation.login.password.required")
         }),
         _csrf: Joi.string() // FIXME: .required() ?
     });
