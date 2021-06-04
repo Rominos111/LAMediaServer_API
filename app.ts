@@ -1,21 +1,14 @@
 import express from "express";
 import http from "http";
-import path from "path";
-import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import socketio from "socket.io";
 import logger from "morgan";
+import cors from "cors";
+import APIResponse from "helper/APIResponse";
 
-let createError = require("http-errors");
+const createError = require("http-errors");
 let cookieParser = require("cookie-parser");
 
-let indexRouter = require("./routes");
-let usersRouter = require("./routes/users");
-
 let app = express();
-
-let router = express.Router();
-
 let server = http.createServer(app);
 
 dotenv.config();
@@ -24,6 +17,10 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors());
+
+let indexRouter = require("./routes/index");
+let usersRouter = require("./routes/users/index");
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
@@ -40,7 +37,7 @@ app.use((err, req, res, next) => {
     res.locals.error = req.app.get("env") === "development" ? err : {};
     // FIXME: Utiliser .env ?
 
-    res.status(err.status || 500).json({"a": "b"});
+    APIResponse.fromObject({"error": err.message}).send(res, err.status || 500);
 });
 
 server.listen(process.env.SERVER_PORT, () => {
