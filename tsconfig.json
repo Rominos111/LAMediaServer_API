@@ -1,13 +1,21 @@
 {
     "compilerOptions": {
-        "baseUrl": "./",
+        "allowJs": false,
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": "src",
         "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "lib": [
+            "es6",
+            "dom"
+        ],
         "module": "commonjs",
         "moduleResolution": "node",
         "noImplicitAny": false,
         "noImplicitReturns": true,
         "noImplicitThis": true,
-        "noUnusedLocals": true,
+        "noUnusedLocals": false,
         "outDir": "./build/",
         "preserveConstEnums": true,
         "removeComments": true,
@@ -15,7 +23,7 @@
         "sourceMap": true,
         "strict": true,
         "strictNullChecks": true,
-        "target": "es6"
+        "target": "es6",
     },
     "exclude": [
         "node_modules"
