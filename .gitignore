@@ -63,5 +63,5 @@ typings/
 
 .idea/
 *.js.map
-build/
+build/*
 !build/.gitkeep
