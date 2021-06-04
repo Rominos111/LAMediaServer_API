@@ -3,6 +3,9 @@
  */
 import {Response} from "express";
 
+/**
+ * Réponse API
+ */
 export default class APIResponse {
     /**
      * Data

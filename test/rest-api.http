@@ -3,8 +3,7 @@ Content-Type: application/json
 
 {
     "username": "utilisateur",
-    "password": "abcdefeg",
-    "_csrf": "disabled"
+    "password": "mot-de-passe"
 }
 
 ###

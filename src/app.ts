@@ -6,11 +6,10 @@ import cors from "cors";
 import APIResponse from "helper/APIResponse";
 import Language from "helper/language";
 
-const csrf = require("csurf");
-const RateLimit = require("express-rate-limit");
-const createError = require("http-errors");
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
+import RateLimit from "express-rate-limit";
+import createError from "http-errors";
+import cookieParser from "cookie-parser";
+import session from "express-session";
 
 const app = express();
 const server = http.createServer(app);
@@ -63,11 +62,6 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// Protection CSRF
-if (process.env.RELEASE_ENVIRONMENT !== "dev") {
-    app.use(csrf({}));
-}
-
 //======================================================================================================================
 // Configuration des routes
 //======================================================================================================================
@@ -79,12 +73,12 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
 // Redirige les 404 vers la gestion des erreurs
-app.use((req, res, next) => {
+app.use((_req, _res, next) => {
     next(createError(404));
 });
 
 // Gestion des erreurs
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
     res.locals.message = err.message;
     res.locals.error = process.env.RELEASE_ENVIRONMENT === "dev" ? err : {};
 

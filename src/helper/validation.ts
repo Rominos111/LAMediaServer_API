@@ -21,6 +21,5 @@ export default abstract class Validation {
             "string.max": Language.get("validation.login.password.long"),
             "any.required": Language.get("validation.login.password.required")
         }),
-        _csrf: Joi.string() // FIXME: .required() ?
     });
 }
