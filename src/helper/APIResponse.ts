@@ -67,6 +67,10 @@ export default class APIResponse {
         });
     }
 
+    /**
+     * Set le code HTTP
+     * @param statusCode Code HTTP
+     */
     setStatusCode(statusCode: number): APIResponse {
         this._statusCode = statusCode;
         return this;

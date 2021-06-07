@@ -33,6 +33,10 @@ enum RequestMethod {
     DELETE,
 }
 
+/**
+ * Récupère la méthode Axios associée au type de requête associé
+ * @param method Méthode, comme GET ou POST
+ */
 function getMethodFunction(method: RequestMethod|string) {
     if (typeof method === "string") {
         switch (String(method)) {
@@ -82,7 +86,21 @@ function getMethodFunction(method: RequestMethod|string) {
     }
 }
 
+/**
+ * Requête à l'API de Rocket.chat
+ */
 class RocketChatRequest {
+    /**
+     * Requête
+     * @param method Méthode HTTP, comme GET ou POST
+     * @param route Route / endpoint
+     * @param auth Authentification requise ou non
+     * @param res Réponse express
+     * @param payload Payload fourni
+     * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
+     * @param onFailure Fonction appelée en cas d'échec HTTP
+     * @param onError Fonction appelée en cas d'erreur Axios
+     */
     static request(method: RequestMethod|string,
                    route: string,
                    auth: RocketChatAuthentication|string|null = null,

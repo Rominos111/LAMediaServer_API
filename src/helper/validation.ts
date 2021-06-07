@@ -1,5 +1,4 @@
 import Joi from "joi";
-import Language from "helper/language";
 import {ExpressJoiInstance} from "express-joi-validation";
 
 const validator: ExpressJoiInstance = require("express-joi-validation").createValidator({
