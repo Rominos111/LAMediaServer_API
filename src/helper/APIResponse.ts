@@ -39,6 +39,19 @@ export default class APIResponse {
     }
 
     /**
+     * Depuis une erreur
+     * @param errorMessage Erreur
+     * @param errorType Type d'erreur
+     */
+    static fromError(errorMessage: String = "", errorType: String = "request"): APIResponse {
+        return new APIResponse({
+            "error": true,
+            "type": errorType,
+            "message": errorMessage
+        });
+    }
+
+    /**
      * Depuis une chaine
      * @param message Message
      */

@@ -72,13 +72,13 @@ const routesPath = path.join(__dirname, routesPathRelative);
 
 let importedRoutes: {route: string, path: string}[] = [];
 
-walk.filesSync(routesPath, (basedir, filename, stat, next) => {
+walk.filesSync(routesPath, (basedir, filename, _stat, _next) => {
     if (/^index\.[tj]s$/.test(filename)) {
         filename = "";
     }
 
     filename = filename.replace(/\.[jt]s$/, "");
-    let route = '/' + path.relative(routesPath, path.join(basedir, filename)).replace("\\", '/');
+    let route = '/' + path.relative(routesPath, path.join(basedir, filename)).replace(/\\/g, '/');
     importedRoutes.push({
         route: route,
         path: path.join(basedir, filename)
@@ -87,7 +87,7 @@ walk.filesSync(routesPath, (basedir, filename, stat, next) => {
     if (err) {
         console.error(err);
     }
-})
+});
 
 for (let importedRoute of importedRoutes) {
     app.use(importedRoute.route, require(importedRoute.path));
@@ -103,35 +103,28 @@ app.use((err, _req, res, _next) => {
     res.locals.message = err.message;
     res.locals.error = process.env.RELEASE_ENVIRONMENT === "dev" ? err : {};
 
-    let statusCode;
-    let errors: Object[] = [{
-        "type": "",
-        "message": "(unknown)",
-    }];
-
     if (err.message) {
         // Erreur express, comme un 404
-        errors = [{
-            "type": "access",
-            "message": err.message
-        }];
-
-        statusCode = err.status || 500;
+        APIResponse.fromError(err.message, "access").send(res, err.status || 500);
     } else if (err.error) {
         // Erreur de validation JOI
-        errors = [];
-        for (const error of err.error.details) {
-            errors.push({
-                "type": "validation",
-                "message": error.message,
-                "key": error.context.key
-            });
+        let error: {message: string, key: string} = {
+            message: "?",
+            key: "?"
+        };
+
+        for (const JOIError of err.error.details) {
+            error = {
+                "message": JOIError.message,
+                "key": JOIError.context.key  // TODO: Gérer le champ erroné ?
+            };
         }
 
-        statusCode = 400;
+        APIResponse.fromError(error.message, "validation").send(res, 400);
+    } else {
+        console.debug(err);
+        APIResponse.fromError("?", "unknown").send(res, 500);
     }
-
-    APIResponse.fromObject({"errors": errors}).send(res, statusCode);
 });
 
 // @ts-ignore
