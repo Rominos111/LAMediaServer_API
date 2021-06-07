@@ -17,6 +17,7 @@
         "express-joi-validation": "^5.0.0",
         "express-rate-limit": "^5.2.6",
         "express-session": "^1.17.2",
+        "fs-walk": "0.0.2",
         "http": "0.0.1-security",
         "http-errors": "~1.6.2",
         "joi": "^17.4.0",

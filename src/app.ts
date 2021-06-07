@@ -5,11 +5,12 @@ import logger from "morgan";
 import cors from "cors";
 import APIResponse from "helper/APIResponse";
 import Language from "helper/language";
-
 import RateLimit from "express-rate-limit";
 import createError from "http-errors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import path from "path";
+import walk from "fs-walk";
 
 const app = express();
 const server = http.createServer(app);
@@ -66,11 +67,31 @@ app.use(session({
 // Configuration des routes
 //======================================================================================================================
 
-const indexRouter = require("./routes");
-const usersRouter = require("./routes/users");
+const routesPathRelative = "routes";
+const routesPath = path.join(__dirname, routesPathRelative);
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
+let importedRoutes: {route: string, path: string}[] = [];
+
+walk.filesSync(routesPath, (basedir, filename, stat, next) => {
+    if (/^index\.[tj]s$/.test(filename)) {
+        filename = "";
+    }
+
+    filename = filename.replace(/\.[jt]s$/, "");
+    let route = '/' + path.relative(routesPath, path.join(basedir, filename)).replace("\\", '/');
+    importedRoutes.push({
+        route: route,
+        path: path.join(basedir, filename)
+    });
+}, (err) => {
+    if (err) {
+        console.error(err);
+    }
+})
+
+for (let importedRoute of importedRoutes) {
+    app.use(importedRoute.route, require(importedRoute.path));
+}
 
 // Redirige les 404 vers la gestion des erreurs
 app.use((_req, _res, next) => {
