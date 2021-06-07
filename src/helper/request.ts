@@ -34,29 +34,31 @@ enum RequestMethod {
 }
 
 function getMethodFunction(method: RequestMethod|string) {
-    switch (String(method)) {
-        case "GET":
-            method = RequestMethod.GET;
-            break;
+    if (typeof method === "string") {
+        switch (String(method)) {
+            case "GET":
+                method = RequestMethod.GET;
+                break;
 
-        case "PUT":
-            method = RequestMethod.PUT;
-            break;
+            case "PUT":
+                method = RequestMethod.PUT;
+                break;
 
-        case "PATCH":
-            method = RequestMethod.PATCH;
-            break;
+            case "PATCH":
+                method = RequestMethod.PATCH;
+                break;
 
-        case "POST":
-            method = RequestMethod.POST;
-            break;
+            case "POST":
+                method = RequestMethod.POST;
+                break;
 
-        case "DELETE":
-            method = RequestMethod.DELETE;
-            break;
+            case "DELETE":
+                method = RequestMethod.DELETE;
+                break;
 
-        default:
-            throw new Error("No such HTTP method");
+            default:
+                throw new Error("No such HTTP method");
+        }
     }
 
     switch (method) {
