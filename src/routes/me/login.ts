@@ -1,10 +1,9 @@
 import express from "express";
-import axios from "axios";
 import APIResponse from "helper/APIResponse"
 import Validation from "helper/validation";
-import RocketChat from "helper/rocketChat";
 import Language from "helper/language";
-import JWT from "../../helper/JWT";
+import JWT from "helper/JWT";
+import {RequestMethod, RocketChatRequest} from "helper/request";
 
 let router = express.Router();
 
@@ -22,31 +21,16 @@ const schema = Validation.object({
 });
 
 router.post("/", Validation.post(schema), (req, res) => {
-    axios.post(RocketChat.getAPIUrl("/login"), {
+    RocketChatRequest.request(RequestMethod.POST, "/login", null, res, {
         username: req.body.username,
         password: req.body.password
-    }).then((r) => {
-        if (r.status === 200) {
-            const data = r.data.data;
-            console.log(data);
-            const token = JWT.create(data.userId, data.authToken, data.me.username);
-            console.log(token);
-            APIResponse.fromObject({
-                token: token
-            }).send(res);
-        } else {
-            APIResponse.fromError(r.statusText).send(res, r.status);
-        }
-    }).catch((err) => {
-        console.log(err);
-        if (err.code && err.code === "ECONNREFUSED") {
-            APIResponse.fromError("Connection refused").send(res, 500);
-        } else if (err.response) {
-            APIResponse.fromError(err.response.statusText).send(res, err.response.status);
-        } else {
-            APIResponse.fromError("Unknown error").send(res, 500);
-        }
-    })
+    }, (r) => {
+        const data = r.data.data;
+        const token = JWT.createToken(data.userId, data.authToken, data.me.username);
+        return APIResponse.fromObject({
+            token: token
+        });
+    });
 });
 
 module.exports = router;

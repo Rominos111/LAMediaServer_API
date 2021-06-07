@@ -1,9 +1,8 @@
 import JWTLib from "jsonwebtoken";
 import {createCipheriv, createDecipheriv} from "crypto";
 
-export default class JWT {
+export default abstract class JWT {
     private static _AES_encrypt(value: string) {
-        console.log(process.env.AES_KEY);
         let cipher = createCipheriv("aes-256-gcm", <string>process.env.AES_KEY, <string>process.env.AES_IV);
         let encrypted = cipher.update(value, "ascii", "base64");
         return encrypted + cipher.final("base64");
@@ -15,10 +14,12 @@ export default class JWT {
         return decrypted + decipher.final("ascii");
     }
 
-    static create(userId: string, authToken: string, username: string): string {
+    static createToken(userId: string, authToken: string, username: string): string {
         let payload = {
-            userId: userId,
-            authToken: this._AES_encrypt(authToken)
+            data: {
+                userId: userId,
+                authToken: this._AES_encrypt(authToken),
+            },
         };
 
         return JWTLib.sign(payload, <string>process.env.JWT_SECRET, {
@@ -27,5 +28,17 @@ export default class JWT {
             subject: username
         });
         // TODO: aud ?
+    }
+
+    static decodeToken(token: string): {userId: string, authToken: string}|null {
+        let obj: any|null;
+        try {
+            obj = JWTLib.verify(token, <string>process.env.JWT_SECRET);
+            obj = obj.data;
+        } catch (err) {
+            obj = null;
+        }
+
+        return obj;
     }
 }

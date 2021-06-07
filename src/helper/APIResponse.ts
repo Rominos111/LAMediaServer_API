@@ -14,6 +14,12 @@ export default class APIResponse {
     private readonly _data: Object = {};
 
     /**
+     * Statut HTTP
+     * @private
+     */
+    private _statusCode: number = 200;
+
+    /**
      * Constructeur privé
      * @param data Data contenue
      * @private
@@ -61,12 +67,16 @@ export default class APIResponse {
         });
     }
 
+    setStatusCode(statusCode: number): APIResponse {
+        this._statusCode = statusCode;
+        return this;
+    }
+
     /**
      * Envoie la réponse
      * @param res Variable de réponse de Express
-     * @param statusCode Code HTTP
      */
-    send(res: Response, statusCode: number = 200): Response {
-        return res.status(statusCode).json(this._data);
+    send(res: Response): Response {
+        return res.status(this._statusCode).json(this._data);
     }
 }

@@ -120,9 +120,11 @@ app.use((err, _req, res, _next) => {
     res.locals.message = err.message;
     res.locals.error = process.env.RELEASE_ENVIRONMENT === "dev" ? err : {};
 
+    let response: APIResponse;
+
     if (err.message) {
         // Erreur express, comme un 404
-        APIResponse.fromError(err.message, "access").send(res, err.status || 500);
+        response = APIResponse.fromError(err.message, "access").setStatusCode(err.statusCode || 500);
     } else if (err.error) {
         // Erreur de validation JOI
         let error: {message: string, key: string} = {
@@ -137,11 +139,13 @@ app.use((err, _req, res, _next) => {
             };
         }
 
-        APIResponse.fromError(error.message, "validation").send(res, 400);
+        response = APIResponse.fromError(error.message, "validation").setStatusCode(400);
     } else {
         console.debug(err);
-        APIResponse.fromError("?", "unknown").send(res, 500);
+        response = APIResponse.fromError("?", "unknown").setStatusCode(500);
     }
+
+    response.send(res);
 });
 
 // @ts-ignore
