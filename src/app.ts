@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import path from "path";
 import walk from "fs-walk";
+import {randomBytes} from "crypto";
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +19,22 @@ const server = http.createServer(app);
 //======================================================================================================================
 // Configuration des middlewares
 //======================================================================================================================
+
+if (process.env.SESSION_SECRET === undefined || process.env.SESSION_SECRET === "") {
+    process.env.SESSION_SECRET = randomBytes(256).toString("hex");
+}
+
+if (process.env.JWT_SECRET === undefined || process.env.JWT_SECRET === "") {
+    process.env.JWT_SECRET = randomBytes(256).toString("hex");
+}
+
+if (process.env.AES_KEY === undefined || process.env.AES_KEY === "") {
+    process.env.AES_KEY = randomBytes(16).toString("hex");
+}
+
+if (process.env.AES_IV === undefined || process.env.AES_IV === "") {
+    process.env.AES_IV = randomBytes(32).toString("hex");
+}
 
 Language.config("fr-FR");
 

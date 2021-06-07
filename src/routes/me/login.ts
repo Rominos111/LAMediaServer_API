@@ -29,7 +29,7 @@ router.post("/", Validation.post(schema), (req, res) => {
         if (r.status === 200) {
             const data = r.data.data;
             console.log(data);
-            const token = JWT.create(data.userId, data.authToken, data.username);
+            const token = JWT.create(data.userId, data.authToken, data.me.username);
             console.log(token);
             APIResponse.fromObject({
                 token: token
