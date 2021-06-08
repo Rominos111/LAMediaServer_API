@@ -5,7 +5,7 @@ import logger from "morgan";
 import cors from "cors";
 import APIResponse from "helper/APIResponse";
 import Language from "helper/language";
-import RateLimit from "express-rate-limit";
+import rateLimit from "express-slow-down";
 import createError from "http-errors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
@@ -66,6 +66,9 @@ const corsOptions: cors.CorsOptions = {
     preflightContinue: false,
 };
 
+// À utiliser si reverse proxy
+// app.enable("trust proxy");
+
 // CORS
 app.use(cors(corsOptions));
 
@@ -79,10 +82,13 @@ app.use(express.urlencoded({ extended: false }));
 // Cookies
 app.use(cookieParser());
 
-// Rate limit, 1000 requêtes sur une fenêtre de 5 minutes
-app.use(new RateLimit({
-    windowMs: 5 * 60 * 1000,
-    max: 1000
+// Limite de requêtes, va ralentir chaque requête au delà de 100 sur 2 minutes,
+//  en ajoutant 100 ms de latence par requête supplémentaire, avec comme maximum 5 secondes de latence
+app.use(rateLimit({
+    windowMs: 2 * 60 * 1000,
+    delayAfter: 100,
+    delayMs: 100,
+    maxDelayMs: 5 * 1000
 }));
 
 // Session
