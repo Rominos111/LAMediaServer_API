@@ -25,7 +25,7 @@ router.post("/", Validation.post(schema), (req, res) => {
         username: req.body.username,
         password: req.body.password
     }, (r, data) => {
-        const token = JWT.createToken(data.userId, data.authToken, data.me.username);
+        const token = JWT.createToken(data.data.userId, data.data.authToken, data.data.me.username);
         return APIResponse.fromSuccess({
             token: token
         });
