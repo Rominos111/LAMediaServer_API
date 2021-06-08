@@ -10,61 +10,34 @@ enum RequestMethod {
     /**
      * Récupération, listing. Cacheable
      */
-    GET,
+    GET = "GET",
 
     /**
      * Update, remplace complètement
      */
-    PUT,
+    PUT = "PUT",
 
     /**
      * Update, remplace partiellement
      */
-    PATCH,
+    PATCH = "PATCH",
 
     /**
      * Crée
      */
-    POST,
+    POST = "POST",
 
     /**
      * Supprime
      */
-    DELETE,
+    DELETE = "DELETE",
 }
 
 /**
  * Récupère la méthode Axios associée au type de requête associé
  * @param method Méthode, comme GET ou POST
  */
-function getMethodFunction(method: RequestMethod | string) {
-    if (typeof method === "string") {
-        switch (String(method)) {
-            case "GET":
-                method = RequestMethod.GET;
-                break;
-
-            case "PUT":
-                method = RequestMethod.PUT;
-                break;
-
-            case "PATCH":
-                method = RequestMethod.PATCH;
-                break;
-
-            case "POST":
-                method = RequestMethod.POST;
-                break;
-
-            case "DELETE":
-                method = RequestMethod.DELETE;
-                break;
-
-            default:
-                throw new Error("No such HTTP method");
-        }
-    }
-
+function getMethodFunction(method: RequestMethod) {
     switch (method) {
         case RequestMethod.GET:
             return [axios.get, false];
@@ -108,13 +81,13 @@ class RocketChatRequest {
                           onSuccess: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
                           onFailure: ((r: AxiosResponse) => APIResponse) | null = null
     ): void {
-        const [methodFunction, usePayload] = getMethodFunction(method);
+        const [methodFunction, usePayload] = getMethodFunction(<RequestMethod>method);
 
         if (payload === null) {
             payload = {};
         }
 
-        if (method === "GET" || method === RequestMethod.GET) {
+        if (<RequestMethod>method === RequestMethod.GET) {
             route = this._setGetPayload(route, payload);
         }
 
@@ -164,6 +137,10 @@ class RocketChatRequest {
                     if (onSuccess === null) {
                         console.error("`onSuccess` shouldn't be null");
                     } else {
+                        if (r.data.success !== true) {
+                            console.log("`r.data.success` is not true. Value:", r.data.success);
+                        }
+
                         onSuccess(r, r.data).send(res);
                     }
                 } else {
@@ -207,5 +184,5 @@ class RocketChatRequest {
     }
 }
 
-export default RocketChatRequest;
 export {RocketChatRequest, RequestMethod}
+export default RocketChatRequest;

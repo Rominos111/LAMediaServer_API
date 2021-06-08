@@ -2,7 +2,7 @@ import express from "express";
 import APIResponse from "helper/APIResponse"
 import JWT from "helper/JWT";
 import Language from "helper/language";
-import {RequestMethod, RocketChatRequest} from "helper/request";
+import RocketChatRequest from "helper/request";
 import Validation from "helper/validation";
 
 let router = express.Router();
@@ -21,7 +21,7 @@ const schema = Validation.object({
 });
 
 router.post("/", Validation.post(schema), (req, res) => {
-    RocketChatRequest.request(RequestMethod.POST, "/login", null, res, {
+    RocketChatRequest.request("POST", "/login", null, res, {
         username: req.body.username,
         password: req.body.password
     }, (r, data) => {

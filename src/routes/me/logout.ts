@@ -1,6 +1,6 @@
 import express from "express";
 import Language from "helper/language";
-import {RequestMethod, RocketChatRequest} from "helper/request";
+import RocketChatRequest from "helper/request";
 import Validation from "helper/validation";
 
 let router = express.Router();
@@ -12,7 +12,7 @@ const schema = Validation.object({
 });
 
 router.post("/", Validation.post(schema), (req, res) => {
-    RocketChatRequest.request(RequestMethod.POST, "/logout", req.body.token, res);
+    RocketChatRequest.request("POST", "/logout", req.body.token, res);
 });
 
 module.exports = router;
