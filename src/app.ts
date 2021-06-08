@@ -4,12 +4,14 @@ import dotenv from "dotenv";
 import logger from "morgan";
 import cors from "cors";
 import APIResponse from "helper/APIResponse";
-
-const csrf = require("csurf");
-const RateLimit = require("express-rate-limit");
-const createError = require("http-errors");
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
+import Language from "helper/language";
+import RateLimit from "express-rate-limit";
+import createError from "http-errors";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import path from "path";
+import walk from "fs-walk";
+import {randomBytes} from "crypto";
 
 const app = express();
 const server = http.createServer(app);
@@ -17,6 +19,24 @@ const server = http.createServer(app);
 //======================================================================================================================
 // Configuration des middlewares
 //======================================================================================================================
+
+if (process.env.SESSION_SECRET === undefined || process.env.SESSION_SECRET === "") {
+    process.env.SESSION_SECRET = randomBytes(256).toString("hex");
+}
+
+if (process.env.JWT_SECRET === undefined || process.env.JWT_SECRET === "") {
+    process.env.JWT_SECRET = randomBytes(256).toString("hex");
+}
+
+if (process.env.AES_KEY === undefined || process.env.AES_KEY === "") {
+    process.env.AES_KEY = randomBytes(16).toString("hex");
+}
+
+if (process.env.AES_IV === undefined || process.env.AES_IV === "") {
+    process.env.AES_IV = randomBytes(32).toString("hex");
+}
+
+Language.config("fr-FR");
 
 dotenv.config();
 
@@ -60,55 +80,72 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// Protection CSRF
-if (process.env.RELEASE_ENVIRONMENT !== "dev") {
-    app.use(csrf({}));
-}
-
 //======================================================================================================================
 // Configuration des routes
 //======================================================================================================================
 
-const indexRouter = require("./routes");
-const usersRouter = require("./routes/users");
+const routesPathRelative = "routes";
+const routesPath = path.join(__dirname, routesPathRelative);
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
+let importedRoutes: {route: string, path: string}[] = [];
+
+walk.filesSync(routesPath, (basedir, filename, _stat, _next) => {
+    if (/^index\.[tj]s$/.test(filename)) {
+        filename = "";
+    }
+
+    filename = filename.replace(/\.[jt]s$/, "");
+    let route = '/' + path.relative(routesPath, path.join(basedir, filename)).replace(/\\/g, '/');
+    importedRoutes.push({
+        route: route,
+        path: path.join(basedir, filename)
+    });
+}, (err) => {
+    if (err) {
+        console.error(err);
+    }
+});
+
+for (let importedRoute of importedRoutes) {
+    app.use(importedRoute.route, require(importedRoute.path));
+}
 
 // Redirige les 404 vers la gestion des erreurs
-app.use((req, res, next) => {
+app.use((_req, _res, next) => {
     next(createError(404));
 });
 
 // Gestion des erreurs
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
     res.locals.message = err.message;
     res.locals.error = process.env.RELEASE_ENVIRONMENT === "dev" ? err : {};
 
-    let errors: Object[] = [{
-        "type": "",
-        "message": "(unknown)",
-    }];
+    let response: APIResponse;
 
     if (err.message) {
         // Erreur express, comme un 404
-        errors = [{
-            "type": "access",
-            "message": err.message
-        }];
+        response = APIResponse.fromError(err.message, "access").setStatusCode(err.statusCode || 500);
     } else if (err.error) {
         // Erreur de validation JOI
-        errors = [];
-        for (const error of err.error.details) {
-            errors.push({
-                "type": "validation",
-                "message": error.message,
-                "key": error.context.key
-            });
+        let error: {message: string, key: string} = {
+            message: "?",
+            key: "?"
+        };
+
+        for (const JOIError of err.error.details) {
+            error = {
+                "message": JOIError.message,
+                "key": JOIError.context.key  // TODO: Gérer le champ erroné ?
+            };
         }
+
+        response = APIResponse.fromError(error.message, "validation").setStatusCode(400);
+    } else {
+        console.debug(err);
+        response = APIResponse.fromError("?", "unknown").setStatusCode(500);
     }
 
-    APIResponse.fromObject({"errors": errors}).send(res, err.status || 500);
+    response.send(res);
 });
 
 // @ts-ignore

@@ -3,12 +3,21 @@
  */
 import {Response} from "express";
 
+/**
+ * Réponse API
+ */
 export default class APIResponse {
     /**
      * Data
      * @private
      */
-    private readonly data: Object = {};
+    private readonly _data: Object = {};
+
+    /**
+     * Statut HTTP
+     * @private
+     */
+    private _statusCode: number = 200;
 
     /**
      * Constructeur privé
@@ -16,7 +25,7 @@ export default class APIResponse {
      * @private
      */
     private constructor(data: Object) {
-        this.data = data;
+        this._data = data;
     }
 
     /**
@@ -36,6 +45,19 @@ export default class APIResponse {
     }
 
     /**
+     * Depuis une erreur
+     * @param errorMessage Erreur
+     * @param errorType Type d'erreur
+     */
+    static fromError(errorMessage: String = "", errorType: String = "request"): APIResponse {
+        return new APIResponse({
+            "error": true,
+            "type": errorType,
+            "message": errorMessage
+        });
+    }
+
+    /**
      * Depuis une chaine
      * @param message Message
      */
@@ -46,11 +68,19 @@ export default class APIResponse {
     }
 
     /**
-     * Send the response
-     * @param res Express response variable
-     * @param statusCode HTTP status code
+     * Set le code HTTP
+     * @param statusCode Code HTTP
      */
-    send(res: Response, statusCode: number = 200): Response {
-        return res.status(statusCode).json(this.data);
+    setStatusCode(statusCode: number): APIResponse {
+        this._statusCode = statusCode;
+        return this;
+    }
+
+    /**
+     * Envoie la réponse
+     * @param res Variable de réponse de Express
+     */
+    send(res: Response): Response {
+        return res.status(this._statusCode).json(this._data);
     }
 }

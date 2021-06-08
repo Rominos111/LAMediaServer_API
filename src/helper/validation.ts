@@ -1,22 +1,39 @@
 import Joi from "joi";
+import {ExpressJoiInstance} from "express-joi-validation";
 
+const validator: ExpressJoiInstance = require("express-joi-validation").createValidator({
+    passError: true
+});
+
+/**
+ * Validation des entrées
+ */
 export default abstract class Validation {
-    /**
-     * Login
-     */
-    public static formLoginSchema = Joi.object({
-        username: Joi.string().alphanum().min(3).max(32).required().messages({
-            "string.empty": "Votre nom d'utilisateur ne peut pas être vide",
-            "string.min": "Votre nom d'utilisateur est trop court",
-            "string.max": "Votre nom d'utilisateur est trop long",
-            "any.required": "Vous devez fournir votre nom d'utilisateur"
-        }),
-        password: Joi.string().min(8).required().messages({
-            "string.empty": "Votre mot de passe ne peut pas être vide",
-            "string.min": "Votre mot de passe est trop court",
-            "string.max": "Votre mot de passe est trop long",
-            "any.required": "Vous devez fournir votre mot de passe"
-        }),
-        _csrf: Joi.string() // FIXME: .required() ?
-    });
+    //==================================================================================================================
+    // Schémas JOI
+    //==================================================================================================================
+
+    static object(obj: Object = {}) {
+        return Joi.object(obj);
+    }
+
+    static string() {
+        return Joi.string();
+    }
+
+    //==================================================================================================================
+    // Méthodes HTTP
+    //==================================================================================================================
+
+    static get(schema: Joi.AnySchema) {
+        return validator.params(schema);
+    }
+
+    static query(schema: Joi.AnySchema) {
+        return validator.query(schema);
+    }
+
+    static post(schema: Joi.AnySchema) {
+        return validator.body(schema);
+    }
 }
