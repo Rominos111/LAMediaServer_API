@@ -9,14 +9,14 @@ let router = express.Router();
 
 const schema = Validation.object({
     username: Validation.string().alphanum().min(3).max(32).required().messages({
-        "string.empty": Language.get("validation.login.username.empty"),
-        "string.min": Language.get("validation.login.username.short"),
-        "string.max": Language.get("validation.login.username.long"),
-        "any.required": Language.get("validation.login.username.required")
+        "string.empty": Language.get("validation.username.empty"),
+        "string.min": Language.get("validation.username.short"),
+        "string.max": Language.get("validation.username.long"),
+        "any.required": Language.get("validation.username.required")
     }),
     password: Validation.string().required().messages({
-        "string.empty": Language.get("validation.login.password.empty"),
-        "any.required": Language.get("validation.login.password.required")
+        "string.empty": Language.get("validation.password.empty"),
+        "any.required": Language.get("validation.password.required")
     }),
 });
 
@@ -24,8 +24,7 @@ router.post("/", Validation.post(schema), (req, res) => {
     RocketChatRequest.request(RequestMethod.POST, "/login", null, res, {
         username: req.body.username,
         password: req.body.password
-    }, (r) => {
-        const data = r.data.data;
+    }, (r, data) => {
         const token = JWT.createToken(data.userId, data.authToken, data.me.username);
         return APIResponse.fromSuccess({
             token: token

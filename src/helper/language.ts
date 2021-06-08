@@ -21,15 +21,15 @@ export default abstract class Language {
 
     /**
      * Récupère une chaine depuis un nom
-     * @param rawKey Clé, comme "validation.login.password.required"
+     * @param key Clé, comme "validation.login.password.required"
      * @param replacementArray Remplacements, remplace tous les "%%" par les valeurs de ce tableau
      */
-    static get(rawKey: string, ...replacementArray: Object[]): string {
-        const keys = rawKey.split(".");
+    static get(key: string, ...replacementArray: Object[]): string {
+        const keyParts = key.split(".");
         let value: Object|string|undefined = this._lang;
-        for (const key of keys) {
+        for (const keyPart of keyParts) {
             if (typeof value === "object") {
-                value = value[key];
+                value = value[keyPart];
             }
         }
 

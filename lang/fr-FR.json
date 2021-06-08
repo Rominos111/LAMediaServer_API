@@ -1,18 +1,19 @@
 {
     "validation": {
-        "login": {
-            "username": {
-                "empty": "Votre nom d'utilisateur ne peut pas être vide",
-                "short": "Votre nom d'utilisateur est trop court",
-                "long": "Votre nom d'utilisateur est trop long",
-                "required": "Vous devez fournir votre nom d'utilisateur"
-            },
-            "password": {
-                "empty": "Votre mot de passe ne peut pas être vide",
-                "short": "Votre mot de passe est trop court",
-                "long": "Votre mot de passe est trop long",
-                "required": "Vous devez fournir votre mot de passe"
-            }
+        "username": {
+            "empty": "Votre nom d'utilisateur ne peut pas être vide",
+            "short": "Votre nom d'utilisateur est trop court",
+            "long": "Votre nom d'utilisateur est trop long",
+            "required": "Vous devez fournir votre nom d'utilisateur"
+        },
+        "password": {
+            "empty": "Votre mot de passe ne peut pas être vide",
+            "short": "Votre mot de passe est trop court",
+            "long": "Votre mot de passe est trop long",
+            "required": "Vous devez fournir votre mot de passe"
+        },
+        "token": {
+            "required": "Un token est nécessaire"
         }
     }
 }
