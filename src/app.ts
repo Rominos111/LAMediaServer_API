@@ -1,17 +1,17 @@
-import express from "express";
-import http from "http";
-import dotenv from "dotenv";
-import logger from "morgan";
+import cookieParser from "cookie-parser";
 import cors from "cors";
+import {randomBytes} from "crypto";
+import dotenv from "dotenv";
+import express from "express";
+import session from "express-session";
+import rateLimit from "express-slow-down";
+import walk from "fs-walk";
 import APIResponse from "helper/APIResponse";
 import Language from "helper/language";
-import rateLimit from "express-slow-down";
+import http from "http";
 import createError from "http-errors";
-import cookieParser from "cookie-parser";
-import session from "express-session";
+import logger from "morgan";
 import path from "path";
-import walk from "fs-walk";
-import {randomBytes} from "crypto";
 
 const app = express();
 const server = http.createServer(app);
@@ -77,7 +77,7 @@ app.use(logger("dev"));
 
 // JSON
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 
 // Cookies
 app.use(cookieParser());
@@ -105,7 +105,7 @@ app.use(session({
 const routesPathRelative = "routes";
 const routesPath = path.join(__dirname, routesPathRelative);
 
-let importedRoutes: {route: string, path: string}[] = [];
+let importedRoutes: { route: string, path: string }[] = [];
 
 walk.filesSync(routesPath, (basedir, filename, _stat, _next) => {
     if (/^index\.[tj]s$/.test(filename)) {
@@ -145,7 +145,7 @@ app.use((err, _req, res, _next) => {
         response = APIResponse.fromFailure(err.message, err.statusCode || 500, null, "access");
     } else if (err.error) {
         // Erreur de validation JOI
-        let error: {message: string, key: string} = {
+        let error: { message: string, key: string } = {
             message: "?",
             key: "?"
         };

@@ -1,5 +1,5 @@
-import Joi from "joi";
 import {ExpressJoiInstance} from "express-joi-validation";
+import Joi from "joi";
 
 const validator: ExpressJoiInstance = require("express-joi-validation").createValidator({
     passError: true
@@ -13,19 +13,19 @@ export default abstract class Validation {
     // Schémas JOI
     //==================================================================================================================
 
-    public static object(obj: Object = {}) {
+    public static object(obj: Object = {}): Joi.ObjectSchema {
         return Joi.object(obj);
     }
 
-    public static string() {
+    public static string(): Joi.StringSchema {
         return Joi.string();
     }
 
-    public static number() {
+    public static number(): Joi.NumberSchema {
         return Joi.number();
     }
 
-    public static jwt() {
+    public static jwt(): Joi.StringSchema {
         return Joi.string().regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/);
     }
 

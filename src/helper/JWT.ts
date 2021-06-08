@@ -1,10 +1,56 @@
-import JWTLib from "jsonwebtoken";
 import {createCipheriv, createDecipheriv} from "crypto";
+import JWTLib from "jsonwebtoken";
 
 /**
  * Gestion des JWT
  */
 export default abstract class JWT {
+    /**
+     * Crée un token
+     * @param userId ID de l'utilisateur, fourni par Rocket.chat
+     * @param authToken Token d'authentification de l'utilisateur, fourni par Rocket.chat
+     * @param username Nom d'utilisateur Rocket.chat
+     */
+    public static createToken(userId: string, authToken: string, username: string): string {
+        let payload = {
+            data: {
+                userId: userId,
+                authToken: this._AES_encrypt(authToken),
+            },
+        };
+
+        return JWTLib.sign(payload, <string>process.env.JWT_SECRET, {
+            expiresIn: "24h",
+            issuer: `${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
+            subject: username
+        });
+        // TODO: aud ?
+    }
+
+    /**
+     * Décode un token
+     * @param token Token JWT
+     */
+    public static decodeToken(token: string): { userId: string, authToken: string } | null {
+        let obj: any | null;
+        try {
+            obj = JWTLib.verify(token, <string>process.env.JWT_SECRET);
+            obj = obj.data;
+        } catch (err) {
+            obj = null;
+        }
+
+        if (obj !== null) {
+            try {
+                obj.authToken = this._AES_decrypt(obj.authToken);
+            } catch (err) {
+                obj = null;
+            }
+        }
+
+        return obj;
+    }
+
     /**
      * Chiffrement AES
      * @param value Valeur à chiffrer
@@ -25,51 +71,5 @@ export default abstract class JWT {
         let decipher = createDecipheriv("aes-256-cbc", <string>process.env.AES_KEY, <string>process.env.AES_IV);
         let decrypted = decipher.update(encrypted, "base64", "ascii");
         return decrypted + decipher.final("ascii");
-    }
-
-    /**
-     * Crée un token
-     * @param userId ID de l'utilisateur, fourni par Rocket.chat
-     * @param authToken Token d'authentification de l'utilisateur, fourni par Rocket.chat
-     * @param username Nom d'utilisateur Rocket.chat
-     */
-    static createToken(userId: string, authToken: string, username: string): string {
-        let payload = {
-            data: {
-                userId: userId,
-                authToken: this._AES_encrypt(authToken),
-            },
-        };
-
-        return JWTLib.sign(payload, <string>process.env.JWT_SECRET, {
-            expiresIn: "24h",
-            issuer: `${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
-            subject: username
-        });
-        // TODO: aud ?
-    }
-
-    /**
-     * Décode un token
-     * @param token Token JWT
-     */
-    static decodeToken(token: string): {userId: string, authToken: string}|null {
-        let obj: any|null;
-        try {
-            obj = JWTLib.verify(token, <string>process.env.JWT_SECRET);
-            obj = obj.data;
-        } catch (err) {
-            obj = null;
-        }
-
-        if (obj !== null) {
-            try {
-                obj.authToken = this._AES_decrypt(obj.authToken);
-            } catch (err) {
-                obj = null;
-            }
-        }
-
-        return obj;
     }
 }
