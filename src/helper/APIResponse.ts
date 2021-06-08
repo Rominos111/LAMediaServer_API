@@ -22,39 +22,48 @@ export default class APIResponse {
     /**
      * Constructeur privé
      * @param data Data contenue
+     * @param statusCode Code d'erreur
      * @private
      */
-    private constructor(data: Object) {
+    private constructor(data: Object, statusCode: number = 200) {
         this._data = data;
+        this._statusCode = statusCode;
     }
 
     /**
-     * Depuis un objet
-     * @param data Data
-     */
-    static fromObject(data: Object = {}): APIResponse {
-        return new APIResponse(data);
-    }
-
-    /**
-     * Depuis un objet
-     * @param data Data
-     */
-    static fromArray(data: Object[] = []): APIResponse {
-        return new APIResponse(data);
-    }
-
-    /**
-     * Depuis une erreur
+     * Échec
      * @param errorMessage Erreur
+     * @param statusCode Code d'erreur
+     * @param payload Payload
      * @param errorType Type d'erreur
      */
-    static fromError(errorMessage: String = "", errorType: String = "request"): APIResponse {
+    static fromFailure(errorMessage: String = "",
+                       statusCode: number = 400,
+                       payload: Object|Object[]|null = null,
+                       errorType: String = "request"
+    ): APIResponse {
         return new APIResponse({
-            "error": true,
-            "type": errorType,
-            "message": errorMessage
-        });
+            "error": {
+                "type": errorType,
+            },
+            "message": errorMessage,
+            "payload": payload,
+        }, statusCode);
+    }
+
+    /**
+     * Succès
+     * @param payload Payload
+     * @param statusCode Code d'erreur
+     * @param message Message
+     */
+    static fromSuccess(payload: Object|Object[]|null = null,
+                       statusCode: number = 200,
+                       message: String = "OK"): APIResponse {
+        return new APIResponse({
+            "message": message,
+            "payload": payload,
+        }, statusCode);
     }
 
     /**
@@ -62,18 +71,9 @@ export default class APIResponse {
      * @param message Message
      */
     static fromString(message: string = ""): APIResponse {
-        return new APIResponse({
+        return this.fromSuccess({
             "message": message
         });
-    }
-
-    /**
-     * Set le code HTTP
-     * @param statusCode Code HTTP
-     */
-    setStatusCode(statusCode: number): APIResponse {
-        this._statusCode = statusCode;
-        return this;
     }
 
     /**

@@ -124,7 +124,7 @@ app.use((err, _req, res, _next) => {
 
     if (err.message) {
         // Erreur express, comme un 404
-        response = APIResponse.fromError(err.message, "access").setStatusCode(err.statusCode || 500);
+        response = APIResponse.fromFailure(err.message, err.statusCode || 500, null, "access");
     } else if (err.error) {
         // Erreur de validation JOI
         let error: {message: string, key: string} = {
@@ -139,10 +139,10 @@ app.use((err, _req, res, _next) => {
             };
         }
 
-        response = APIResponse.fromError(error.message, "validation").setStatusCode(400);
+        response = APIResponse.fromFailure(error.message, 400, null, "validation");
     } else {
         console.debug(err);
-        response = APIResponse.fromError("?", "unknown").setStatusCode(500);
+        response = APIResponse.fromFailure("?", 500, null, "unknown");
     }
 
     response.send(res);

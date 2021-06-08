@@ -99,7 +99,6 @@ class RocketChatRequest {
      * @param payload Payload fourni
      * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
      * @param onFailure Fonction appelée en cas d'échec HTTP
-     * @param onError Fonction appelée en cas d'erreur Axios
      */
     static request(method: RequestMethod|string,
                    route: string,
@@ -107,9 +106,8 @@ class RocketChatRequest {
                    res: Response,
                    payload: Object|null,
                    onSuccess: ((r: AxiosResponse) => APIResponse)|null = null,
-                   onFailure: ((r: AxiosResponse) => APIResponse)|null = null,
-                   onError: ((r: any) => APIResponse)|null = null,
-                   ) {
+                   onFailure: ((r: AxiosResponse) => APIResponse)|null = null
+    ): void {
         let methodFunction = getMethodFunction(method);
         let headers: object|undefined = undefined;
 
@@ -124,32 +122,46 @@ class RocketChatRequest {
             }
         }
 
+        if (onSuccess === null) {
+            onSuccess = (r) => {
+                return APIResponse.fromSuccess(null, r.status);
+            }
+        }
+
+        if (onFailure === null) {
+            onFailure = (r) => {
+                return APIResponse.fromFailure(r.statusText, r.status);
+            }
+        }
+
         methodFunction(RocketChat.getAPIUrl(route), payload, headers).then((r) => {
+            console.log(r.statusText, r.status);
             if (Math.floor(r.status / 100) === 2) {
                 if (onSuccess === null) {
-                    APIResponse.fromError(r.statusText).setStatusCode(r.status).send(res);
+                    console.error("`onSuccess` shouldn't be null");
                 } else {
                     onSuccess(r).send(res);
                 }
             } else {
                 if (onFailure === null) {
-                    APIResponse.fromError(r.statusText).setStatusCode(r.status).send(res);
+                    console.error("`onFailure` shouldn't be null");
                 } else {
                     onFailure(r).send(res);
                 }
             }
         }).catch((err) => {
-            console.debug(err);
-            if (onError === null) {
-                if (err.code && err.code === "ECONNREFUSED") {
-                    APIResponse.fromError("Connection refused").setStatusCode(500).send(res);
-                } else if (err.response) {
-                    APIResponse.fromError(err.response.statusText).setStatusCode(err.response.status).send(res);
+            if (err.code && err.code === "ECONNREFUSED") {
+                console.error("Connection refused with Rocket.chat");
+                APIResponse.fromFailure("Connection refused", 500).send(res);
+            } else if (err.response) {
+                if (onFailure === null) {
+                    console.error("`onFailure` shouldn't be null");
                 } else {
-                    APIResponse.fromError("Unknown error").setStatusCode(500).send(res);
+                    onFailure(err.response).send(res);
                 }
             } else {
-                onError(err).send(res);
+                console.debug(err);
+                APIResponse.fromFailure("Unknown error", 500).send(res);
             }
         })
     }
