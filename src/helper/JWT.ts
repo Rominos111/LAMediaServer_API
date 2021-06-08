@@ -21,7 +21,7 @@ export default abstract class JWT {
 
         return JWTLib.sign(payload, <string>process.env.JWT_SECRET, {
             expiresIn: "24h",
-            issuer: `${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
+            issuer: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
             subject: username
         });
         // TODO: aud ?

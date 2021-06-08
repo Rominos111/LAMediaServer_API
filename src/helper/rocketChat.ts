@@ -74,7 +74,7 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        return `http://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/api/v1/${endpoint}`;
+        return `${process.env.ROCKETCHAT_PROTOCOL}://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/api/v1/${endpoint}`;
     }
 }
 

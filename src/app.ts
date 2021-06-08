@@ -1,9 +1,7 @@
-import cookieParser from "cookie-parser";
 import cors from "cors";
 import {randomBytes} from "crypto";
 import dotenv from "dotenv";
 import express from "express";
-import session from "express-session";
 import rateLimit from "express-slow-down";
 import walk from "fs-walk";
 import APIResponse from "helper/APIResponse";
@@ -62,25 +60,27 @@ const corsOptions: cors.CorsOptions = {
     ],
     credentials: true,
     methods: 'GET,PUT,PATCH,POST,DELETE',
-    origin: `http://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`, // FIXME: Utiliser HTTPS en production
+    origin: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`, // FIXME: Utiliser HTTPS en production
     preflightContinue: false,
 };
 
-// À utiliser si reverse proxy
-// app.enable("trust proxy");
+if (process.env.REVERSE_PROXY !== undefined && ["1", "true"].includes(process.env.REVERSE_PROXY.toLowerCase())) {
+    app.enable("trust proxy");
+}
 
 // CORS
 app.use(cors(corsOptions));
 
 // Logs
-app.use(logger("dev"));
+if (process.env.RELEASE_ENVIRONMENT === "dev") {
+    app.use(logger("dev"));
+} else {
+    app.use(logger("short"));
+}
 
 // JSON
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
-
-// Cookies
-app.use(cookieParser());
 
 // Limite de requêtes, va ralentir chaque requête au delà de 100 sur 2 minutes,
 //  en ajoutant 100 ms de latence par requête supplémentaire, avec comme maximum 5 secondes de latence
@@ -89,13 +89,6 @@ app.use(rateLimit({
     delayAfter: 100,
     delayMs: 100,
     maxDelayMs: 5 * 1000
-}));
-
-// Session
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
 }));
 
 //======================================================================================================================
