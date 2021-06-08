@@ -20,25 +20,37 @@ const server = http.createServer(app);
 // Configuration des middlewares
 //======================================================================================================================
 
+dotenv.config();
+
 if (process.env.SESSION_SECRET === undefined || process.env.SESSION_SECRET === "") {
-    process.env.SESSION_SECRET = randomBytes(256).toString("hex");
+    process.env.SESSION_SECRET = randomBytes(64).toString("hex");
+    if (process.env.RELEASE_ENVIRONMENT === "prod") {
+        console.info("Session secret:", process.env.SESSION_SECRET);
+    }
 }
 
 if (process.env.JWT_SECRET === undefined || process.env.JWT_SECRET === "") {
-    process.env.JWT_SECRET = randomBytes(256).toString("hex");
+    process.env.JWT_SECRET = randomBytes(64).toString("hex");
+    if (process.env.RELEASE_ENVIRONMENT === "prod") {
+        console.info("JWT secret:", process.env.JWT_SECRET);
+    }
 }
 
 if (process.env.AES_KEY === undefined || process.env.AES_KEY === "") {
     process.env.AES_KEY = randomBytes(16).toString("hex");
+    if (process.env.RELEASE_ENVIRONMENT === "prod") {
+        console.info("AES key:", process.env.AES_KEY);
+    }
 }
 
 if (process.env.AES_IV === undefined || process.env.AES_IV === "") {
-    process.env.AES_IV = randomBytes(32).toString("hex");
+    process.env.AES_IV = randomBytes(8).toString("hex");
+    if (process.env.RELEASE_ENVIRONMENT === "prod") {
+        console.info("AES IV:", process.env.AES_IV);
+    }
 }
 
 Language.config("fr-FR");
-
-dotenv.config();
 
 const corsOptions: cors.CorsOptions = {
     allowedHeaders: [
@@ -123,7 +135,7 @@ app.use((err, _req, res, _next) => {
     let response: APIResponse;
 
     if (err.message) {
-        // Erreur express, comme un 404
+        // Erreur express, comme un 404, ou erreur plus générale
         response = APIResponse.fromFailure(err.message, err.statusCode || 500, null, "access");
     } else if (err.error) {
         // Erreur de validation JOI

@@ -1,4 +1,4 @@
-import axios, {AxiosResponse} from "axios";
+import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
 import {Response} from "express";
 import RocketChat, {RocketChatAuthentication} from "helper/rocketChat";
 import APIResponse from "helper/APIResponse";
@@ -104,66 +104,74 @@ class RocketChatRequest {
                    route: string,
                    auth: RocketChatAuthentication|string|null = null,
                    res: Response,
-                   payload: Object|null,
+                   payload: Object = {},
                    onSuccess: ((r: AxiosResponse) => APIResponse)|null = null,
                    onFailure: ((r: AxiosResponse) => APIResponse)|null = null
     ): void {
         let methodFunction = getMethodFunction(method);
-        let headers: object|undefined = undefined;
+
+        const requireAuth = auth !== null;
 
         if (typeof auth === "string") {
             auth = RocketChatAuthentication.fromToken(auth);
         }
 
-        if (auth !== null) {
-            headers = {
-                "X-User-Id": auth.userId,
-                "X-Auth-Token": auth.authToken,
-            }
-        }
+        if (requireAuth && auth === null) {
+            APIResponse.fromFailure("Invalid token", 401).send(res);
+        } else {
+            let headers: AxiosRequestConfig|undefined = undefined;
 
-        if (onSuccess === null) {
-            onSuccess = (r) => {
-                return APIResponse.fromSuccess(null, r.status);
-            }
-        }
-
-        if (onFailure === null) {
-            onFailure = (r) => {
-                return APIResponse.fromFailure(r.statusText, r.status);
-            }
-        }
-
-        methodFunction(RocketChat.getAPIUrl(route), payload, headers).then((r) => {
-            console.log(r.statusText, r.status);
-            if (Math.floor(r.status / 100) === 2) {
-                if (onSuccess === null) {
-                    console.error("`onSuccess` shouldn't be null");
-                } else {
-                    onSuccess(r).send(res);
-                }
-            } else {
-                if (onFailure === null) {
-                    console.error("`onFailure` shouldn't be null");
-                } else {
-                    onFailure(r).send(res);
+            if (auth !== null) {
+                headers = {
+                    "headers": {
+                        "X-User-Id": auth.userId,
+                        "X-Auth-Token": auth.authToken,
+                    }
                 }
             }
-        }).catch((err) => {
-            if (err.code && err.code === "ECONNREFUSED") {
-                console.error("Connection refused with Rocket.chat");
-                APIResponse.fromFailure("Connection refused", 500).send(res);
-            } else if (err.response) {
-                if (onFailure === null) {
-                    console.error("`onFailure` shouldn't be null");
-                } else {
-                    onFailure(err.response).send(res);
+
+            if (onSuccess === null) {
+                onSuccess = (r) => {
+                    return APIResponse.fromSuccess(null, r.status);
                 }
-            } else {
-                console.debug(err);
-                APIResponse.fromFailure("Unknown error", 500).send(res);
             }
-        })
+
+            if (onFailure === null) {
+                onFailure = (r) => {
+                    return APIResponse.fromFailure(r.statusText, r.status);
+                }
+            }
+
+            methodFunction(RocketChat.getAPIUrl(route), payload, headers).then((r) => {
+                if (Math.floor(r.status / 100) === 2) {
+                    if (onSuccess === null) {
+                        console.error("`onSuccess` shouldn't be null");
+                    } else {
+                        onSuccess(r).send(res);
+                    }
+                } else {
+                    if (onFailure === null) {
+                        console.error("`onFailure` shouldn't be null");
+                    } else {
+                        onFailure(r).send(res);
+                    }
+                }
+            }).catch((err) => {
+                if (err.code && err.code === "ECONNREFUSED") {
+                    console.error("Connection refused with Rocket.chat");
+                    APIResponse.fromFailure("Connection refused", 500).send(res);
+                } else if (err.response) {
+                    if (onFailure === null) {
+                        console.error("`onFailure` shouldn't be null");
+                    } else {
+                        onFailure(err.response).send(res);
+                    }
+                } else {
+                    console.debug(err);
+                    APIResponse.fromFailure("Unknown error", 500).send(res);
+                }
+            })
+        }
     }
 }
 

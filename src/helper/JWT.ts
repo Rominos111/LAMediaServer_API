@@ -11,7 +11,7 @@ export default abstract class JWT {
      * @private
      */
     private static _AES_encrypt(value: string): string {
-        let cipher = createCipheriv("aes-256-gcm", <string>process.env.AES_KEY, <string>process.env.AES_IV);
+        let cipher = createCipheriv("aes-256-cbc", <string>process.env.AES_KEY, <string>process.env.AES_IV);
         let encrypted = cipher.update(value, "ascii", "base64");
         return encrypted + cipher.final("base64");
     }
@@ -22,7 +22,7 @@ export default abstract class JWT {
      * @private
      */
     private static _AES_decrypt(encrypted: string): string {
-        let decipher = createDecipheriv("aes-256-gcm", <string>process.env.AES_KEY, <string>process.env.AES_IV);
+        let decipher = createDecipheriv("aes-256-cbc", <string>process.env.AES_KEY, <string>process.env.AES_IV);
         let decrypted = decipher.update(encrypted, "base64", "ascii");
         return decrypted + decipher.final("ascii");
     }
@@ -60,6 +60,14 @@ export default abstract class JWT {
             obj = obj.data;
         } catch (err) {
             obj = null;
+        }
+
+        if (obj !== null) {
+            try {
+                obj.authToken = this._AES_decrypt(obj.authToken);
+            } catch (err) {
+                obj = null;
+            }
         }
 
         return obj;
