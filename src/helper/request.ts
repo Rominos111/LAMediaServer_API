@@ -79,7 +79,7 @@ class RocketChatRequest {
                           res: Response,
                           payload: Object | null = {},
                           onSuccess: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
-                          onFailure: ((r: AxiosResponse) => APIResponse) | null = null
+                          onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null = null
     ): void {
         const [methodFunction, usePayload] = getMethodFunction(<RequestMethod>method);
 
@@ -112,13 +112,13 @@ class RocketChatRequest {
             }
 
             if (onSuccess === null) {
-                onSuccess = (r) => {
+                onSuccess = (r, data) => {
                     return APIResponse.fromSuccess(null, r.status);
                 }
             }
 
             if (onFailure === null) {
-                onFailure = (r) => {
+                onFailure = (r, data) => {
                     return APIResponse.fromFailure(r.statusText, r.status);
                 }
             }
@@ -147,7 +147,7 @@ class RocketChatRequest {
                     if (onFailure === null) {
                         console.error("`onFailure` shouldn't be null");
                     } else {
-                        onFailure(r).send(res);
+                        onFailure(r, r.data).send(res);
                     }
                 }
             }).catch((err) => {
@@ -158,7 +158,7 @@ class RocketChatRequest {
                     if (onFailure === null) {
                         console.error("`onFailure` shouldn't be null");
                     } else {
-                        onFailure(err.response).send(res);
+                        onFailure(err.response, err.response.data).send(res);
                     }
                 } else {
                     console.debug(err);

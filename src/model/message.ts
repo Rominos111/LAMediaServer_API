@@ -2,6 +2,21 @@ import Attachment from "model/attachement";
 import Reaction from "model/reaction";
 import User from "model/user";
 
+type RawMessage = {
+    _id: string,
+    msg: string,
+    u: {
+        _id: string,
+        username: string,
+        name: string | undefined,
+    },
+    md: any, // TODO: gérer ce `md` ?
+    rid: string,
+    ts: Date | string,
+    attachments: any | undefined,
+    reactions: any | undefined
+}
+
 /**
  * Message
  */
@@ -71,15 +86,16 @@ export default class Message {
         return this._parentUser;
     }
 
-    public static fromFullMessage(id: string,
-                                  content: string,
-                                  parentUser: User,
-                                  roomId: string,
-                                  timestamp: Date,
-                                  attachments: Attachment[] | undefined,
-                                  reactions: Reaction[] | undefined
-    ): Message {
-        return new this(id, content, parentUser, roomId, timestamp, attachments, reactions);
+    public static fromFullMessage(elt: RawMessage): Message {
+        return new this(
+            elt._id,
+            elt.msg,
+            User.fromPartialUser(elt.u._id, elt.u.username, elt.u.name),
+            elt.rid,
+            new Date(elt.ts),
+            Attachment.fromArray(elt.attachments),
+            Reaction.fromObject(elt.reactions)
+        );
     }
 
     public static fromObject(obj: any | undefined): Message | undefined {
