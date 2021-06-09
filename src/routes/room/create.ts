@@ -1,11 +1,9 @@
-import express from "express";
+import APIRequest from "helper/APIRequest";
 import APIResponse from "helper/APIResponse";
 import Language from "helper/language";
 import RocketChatRequest from "helper/request";
 import Validation from "helper/validation";
 import Channel from "model/channel";
-
-let router = express.Router();
 
 const schema = Validation.object({
     token: Validation.jwt().required().messages({
@@ -17,7 +15,7 @@ const schema = Validation.object({
     members: Validation.array().items(Validation.string().required()),
 });
 
-router.post("/", Validation.get(schema), (req, res) => {
+module.exports = APIRequest.post(schema, (req, res) => {
     RocketChatRequest.request("POST", "/channels.create", req.body.token, res, {
         name: req.body.name,
         members: [req.body.members] // FIXME: Nécessaire ?
@@ -25,5 +23,3 @@ router.post("/", Validation.get(schema), (req, res) => {
         return APIResponse.fromSuccess(new Channel(data.channel._id, data.channel.name));
     });
 });
-
-module.exports = router;

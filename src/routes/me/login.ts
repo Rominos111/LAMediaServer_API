@@ -1,11 +1,9 @@
-import express from "express";
+import APIRequest from "helper/APIRequest";
 import APIResponse from "helper/APIResponse"
 import JWT from "helper/JWT";
 import Language from "helper/language";
 import RocketChatRequest from "helper/request";
 import Validation from "helper/validation";
-
-let router = express.Router();
 
 const schema = Validation.object({
     username: Validation.string().alphanum().min(3).max(32).required().messages({
@@ -20,7 +18,7 @@ const schema = Validation.object({
     }),
 });
 
-router.post("/", Validation.post(schema), (req, res) => {
+module.exports = APIRequest.post(schema, (req, res) => {
     RocketChatRequest.request("POST", "/login", null, res, {
         username: req.body.username,
         password: req.body.password
@@ -31,5 +29,3 @@ router.post("/", Validation.post(schema), (req, res) => {
         });
     });
 });
-
-module.exports = router;
