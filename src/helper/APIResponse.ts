@@ -3,10 +3,28 @@
  */
 import {Response} from "express";
 
+/**
+ * Type d'erreur
+ */
 enum APIRErrorType {
+    /**
+     * Erreur lors de la requête
+     */
     REQUEST = "request",
+
+    /**
+     * Erreur lors de l'accès à la route, comme un 404 ou un 405
+     */
     ACCESS = "access",
+
+    /**
+     * Erreur de validation
+     */
     VALIDATION = "validation",
+
+    /**
+     * Erreur inconnue
+     */
     UNKNOWN = "unknown",
 }
 
@@ -91,6 +109,9 @@ class APIResponse {
         return res.status(this._statusCode).json(this._data);
     }
 
+    /**
+     * Data raw
+     */
     public getRaw(): Object {
         return this._data;
     }

@@ -19,11 +19,14 @@ export default class APIRequest {
     ): express.Router {
         let router = express.Router();
         if (validationSchema === null) {
+            // Pas de validation nécessaire
             router.get(route, callback);
         } else {
+            // Validation, GET
             router.get(route, Validation.get(validationSchema), callback);
         }
 
+        // Erreur 405 pour les autres méthodes que GET
         router.all(route, this._methodNotAllowed);
         return router;
     }
@@ -33,6 +36,7 @@ export default class APIRequest {
      * @param validationSchema Schéma de validation
      * @param callback Callback
      * @param route Route locale, '/' par défaut
+     * @see APIRequest.get
      */
     public static post(validationSchema: Joi.AnySchema | null = null,
                        callback: (req: express.Request, res: express.Response) => void,
@@ -54,6 +58,7 @@ export default class APIRequest {
      * @param validationSchema Schéma de validation
      * @param callback Callback
      * @param route Route locale, '/' par défaut
+     * @see APIRequest.get
      */
     public static delete(validationSchema: Joi.AnySchema | null = null,
                          callback: (req: express.Request, res: express.Response) => void,

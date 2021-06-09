@@ -19,6 +19,11 @@ envConfig.config();
 // Configuration des middlewares
 //======================================================================================================================
 
+// Proxy renversé
+if (process.env.REVERSE_PROXY !== undefined && ["1", "true"].includes(process.env.REVERSE_PROXY.toLowerCase())) {
+    app.enable("trust proxy");
+}
+
 const corsOptions: cors.CorsOptions = {
     allowedHeaders: [
         "Origin",
@@ -29,13 +34,9 @@ const corsOptions: cors.CorsOptions = {
     ],
     credentials: true,
     methods: 'GET,PUT,PATCH,POST,DELETE',
-    origin: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`, // FIXME: Utiliser HTTPS en production
+    origin: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
     preflightContinue: false,
 };
-
-if (process.env.REVERSE_PROXY !== undefined && ["1", "true"].includes(process.env.REVERSE_PROXY.toLowerCase())) {
-    app.enable("trust proxy");
-}
 
 // CORS
 app.use(cors(corsOptions));
@@ -44,7 +45,7 @@ app.use(cors(corsOptions));
 if (process.env.RELEASE_ENVIRONMENT === "dev") {
     app.use(logger("dev"));
 } else {
-    console.debug = (..._) => undefined;
+    console.debug = (..._: any[]) => undefined;
     app.use(logger("short"));
 }
 

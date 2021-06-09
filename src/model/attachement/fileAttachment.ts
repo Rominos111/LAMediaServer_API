@@ -1,7 +1,19 @@
 import {Attachment, AttachmentType} from ".";
 
+/**
+ * Pièce-jointe fichier
+ */
 export class FileAttachment extends Attachment {
+    /**
+     * Lien du fichier
+     * @private
+     */
     private readonly _fileLink: string;
+
+    /**
+     * Fichier téléchargeable ou non
+     * @private
+     */
     private readonly _isDownloadable: boolean;
 
     constructor(fileLink: string, isDownloadable: boolean) {

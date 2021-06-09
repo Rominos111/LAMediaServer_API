@@ -2,7 +2,24 @@ import {createCipheriv, createDecipheriv} from "crypto";
 import JWTLib from "jsonwebtoken";
 
 /**
- * Gestion des JWT
+ * Token
+ */
+type Token = {
+    data: {
+        userId: string,
+        authToken: string,
+    },
+}
+
+/**
+ * Gestion des JWT.
+ * Contenu d'un token :
+ * <code>
+ *     {
+ *          userId: "ID utilisateur Rocket.chat",
+ *          auToken: AES("Token d'authentification Rocket.chat")
+ *     }
+ * </code>
  */
 export default abstract class JWT {
     /**
@@ -12,6 +29,7 @@ export default abstract class JWT {
      * @param username Nom d'utilisateur Rocket.chat
      */
     public static createToken(userId: string, authToken: string, username: string): string {
+        // Payload du token
         let payload = {
             data: {
                 userId: userId,
@@ -19,6 +37,7 @@ export default abstract class JWT {
             },
         };
 
+        // Création du token
         return JWTLib.sign(payload, <string>process.env.JWT_SECRET, {
             expiresIn: "24h",
             issuer: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
@@ -31,18 +50,21 @@ export default abstract class JWT {
      * Décode un token
      * @param token Token JWT
      */
-    public static decodeToken(token: string): { userId: string, authToken: string } | null {
-        let obj: any | null;
+    public static decodeToken(token: string): Token | null {
+        // Objet décodé
+        let obj: Token | null;
+
         try {
-            obj = JWTLib.verify(token, <string>process.env.JWT_SECRET);
-            obj = obj.data;
+            // Vérification du token JWT
+            obj = <Token|null>JWTLib.verify(token, <string>process.env.JWT_SECRET);
         } catch (err) {
             obj = null;
         }
 
         if (obj !== null) {
             try {
-                obj.authToken = this._AES_decrypt(obj.authToken);
+                // Vérification du token d'authentification chiffré
+                obj.data.authToken = this._AES_decrypt(obj.data.authToken);
             } catch (err) {
                 obj = null;
             }

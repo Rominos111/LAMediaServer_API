@@ -1,5 +1,17 @@
+/**
+ * Réaction
+ */
 export default class Reaction {
+    /**
+     * Réaction
+     * @private
+     */
     private readonly _reaction: string;
+
+    /**
+     * Utilisateurs
+     * @private
+     */
     private readonly _usernames: string[];
 
     constructor(reaction: string, usernames: string[]) {

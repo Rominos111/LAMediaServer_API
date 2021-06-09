@@ -17,7 +17,7 @@ module.exports = APIRequest.get(schema, (req, res) => {
         let rooms: Channel[] = [];
 
         for (const elt of data.update) {
-            rooms.push(new Channel(elt._id, elt.name, elt.description, elt.default, Message.fromObject(elt.lastMessage)));
+            rooms.push(new Channel(elt._id, elt.name, elt.description, elt.default, Message.fromPartialMessage(elt.lastMessage)));
         }
 
         return APIResponse.fromSuccess(rooms);

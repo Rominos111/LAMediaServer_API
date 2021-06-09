@@ -3,6 +3,9 @@
  */
 import Message from "model/message";
 
+/**
+ * Canal
+ */
 export default class Channel {
     /**
      * ID

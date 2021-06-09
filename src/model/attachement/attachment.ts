@@ -1,11 +1,21 @@
 import {FileAttachment, ImageAttachment} from ".";
 
+/**
+ * Type de pièce-jointe
+ */
 enum AttachmentType {
     FILE = "file",
     IMAGE = "image",
 }
 
+/**
+ * Pièce-jointe
+ */
 abstract class Attachment {
+    /**
+     * Type de pièce-jointe
+     * @private
+     */
     private readonly _type: AttachmentType;
 
     protected constructor(type: AttachmentType) {

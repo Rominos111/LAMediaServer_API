@@ -88,9 +88,11 @@ class RocketChatRequest {
         }
 
         if (<RequestMethod>HTTPMethod === RequestMethod.GET) {
+            // Cas spécial pour les requêtes GET, il faut les transformer en "/route?a=x&b=y"
             route = this._setGetPayload(route, payload);
         }
 
+        // Authentification requise ou non
         const requireAuth = auth !== null;
 
         if (typeof auth === "string") {
@@ -98,8 +100,10 @@ class RocketChatRequest {
         }
 
         if (requireAuth && auth === null) {
+            // Token invalide ou absent
             APIResponse.fromFailure("Invalid token", 401).send(res);
         } else {
+            // Headers envoyés à Rocket.chat
             let headers: AxiosRequestConfig = {
                 "headers": {
                     "Content-Type": "application/json"
@@ -107,11 +111,13 @@ class RocketChatRequest {
             };
 
             if (auth !== null) {
+                // Headers d'authentification
                 headers.headers["X-User-Id"] = auth.userId;
                 headers.headers["X-Auth-Token"] = auth.authToken;
             }
 
             if (onSuccess === null) {
+                // Fonction de succès par défaut
                 onSuccess = (r, data) => {
                     console.debug(data);
                     return APIResponse.fromSuccess(null, r.status);
@@ -119,48 +125,44 @@ class RocketChatRequest {
             }
 
             if (onFailure === null) {
+                // Fonction d'échec par défaut
                 onFailure = (r, data) => {
                     console.debug(data);
                     return APIResponse.fromFailure(r.statusText, r.status);
                 }
             }
 
-            let promise;
+            let promise: Promise<AxiosResponse>;
             if (usePayload) {
+                // Méthodes utilisant un payload, comme POST
                 promise = requestFunction(RocketChat.getAPIUrl(route), payload, headers);
             } else {
+                // Méthodes n'utilisant pas de payload, comme GET
                 promise = requestFunction(RocketChat.getAPIUrl(route), headers);
             }
 
             promise.then((r) => {
                 if (Math.floor(r.status / 100) === 2) {
-                    if (onSuccess === null) {
-                        console.error("`onSuccess` shouldn't be null");
-                    } else {
-                        if (r.data.success !== true && r.data.success !== undefined) {
-                            console.log("`r.data.success` is not true. Value:", r.data.success);
-                        }
+                    // Réponse valide
 
-                        onSuccess(r, r.data).send(res);
+                    if (r.data.success !== true && r.data.success !== undefined) {
+                        console.log("`r.data.success` is not true. Value:", r.data.success);
                     }
+
+                    (<Function>onSuccess)(r, r.data).send(res);
                 } else {
-                    if (onFailure === null) {
-                        console.error("`onFailure` shouldn't be null");
-                    } else {
-                        onFailure(r, r.data).send(res);
-                    }
+                    // Réponse invalide, erreur
+                    (<Function>onFailure)(r, r.data).send(res);
                 }
             }).catch((err) => {
                 if (err.code && err.code === "ECONNREFUSED") {
+                    // Rocket.chat n'est pas lancé
                     console.error("Connection refused with Rocket.chat");
                     APIResponse.fromFailure("Connection refused", 500).send(res);
                 } else if (err.response) {
-                    if (onFailure === null) {
-                        console.error("`onFailure` shouldn't be null");
-                    } else {
-                        onFailure(err.response, err.response.data).send(res);
-                    }
+                    (<Function>onFailure)(err.response, err.response.data).send(res);
                 } else {
+                    // Erreur inconnue
                     console.debug(err);
                     APIResponse.fromFailure("Unknown error", 500).send(res);
                 }
@@ -168,6 +170,12 @@ class RocketChatRequest {
         }
     }
 
+    /**
+     * Configure le payload des requêtes GET
+     * @param route Route de base
+     * @param payload Payload
+     * @private
+     */
     private static _setGetPayload(route: string, payload: Object): string {
         const keys = Object.keys(payload);
         if (keys.length === 0) {

@@ -54,11 +54,11 @@ class User {
         this._lastSeen = lastSeen;
     }
 
-    public get id() {
+    public get id(): string {
         return this._id;
     }
 
-    public get username() {
+    public get username(): string {
         return this._username;
     }
 

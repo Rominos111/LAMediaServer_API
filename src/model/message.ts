@@ -2,6 +2,9 @@ import Attachment from "model/attachement";
 import Reaction from "model/reaction";
 import User from "model/user";
 
+/**
+ * Message raw
+ */
 type RawMessage = {
     _id: string,
     msg: string,
@@ -26,19 +29,41 @@ export default class Message {
      * @private
      */
     private readonly _id: string;
+
     /**
      * Contenu
      * @private
      */
     private readonly _content: string;
+
     /**
      * Utilisateur parent
      * @private
      */
     private readonly _parentUser: User;
+
+    /**
+     * ID de la salle
+     * @private
+     */
     private readonly _roomId: string | undefined;
+
+    /**
+     * Timestamp
+     * @private
+     */
     private readonly _timestamp: Date | undefined;
+
+    /**
+     * Liste des pièces jointes
+     * @private
+     */
     private readonly _attachments: Attachment[] | undefined;
+
+    /**
+     * Liste des réactions
+     * @private
+     */
     private readonly _reactions: Reaction[] | undefined;
 
     private constructor(id: string,
@@ -86,26 +111,34 @@ export default class Message {
         return this._parentUser;
     }
 
-    public static fromFullMessage(elt: RawMessage): Message {
+    /**
+     * Depuis un message complet
+     * @param rawMessage Message
+     */
+    public static fromFullMessage(rawMessage: RawMessage): Message {
         return new this(
-            elt._id,
-            elt.msg,
-            User.fromPartialUser(elt.u._id, elt.u.username, elt.u.name),
-            elt.rid,
-            new Date(elt.ts),
-            Attachment.fromArray(elt.attachments),
-            Reaction.fromObject(elt.reactions)
+            rawMessage._id,
+            rawMessage.msg,
+            User.fromPartialUser(rawMessage.u._id, rawMessage.u.username, rawMessage.u.name),
+            rawMessage.rid,
+            new Date(rawMessage.ts),
+            Attachment.fromArray(rawMessage.attachments),
+            Reaction.fromObject(rawMessage.reactions)
         );
     }
 
-    public static fromObject(obj: any | undefined): Message | undefined {
-        if (obj === undefined) {
+    /**
+     * Depuis un message partiel
+     * @param rawMessage Message
+     */
+    public static fromPartialMessage(rawMessage: any | undefined): Message | undefined {
+        if (rawMessage === undefined) {
             return undefined;
         } else {
             return new this(
-                obj._id,
-                obj.msg,
-                User.fromPartialUser(obj.u._id, obj.u.username, obj.u.name),
+                rawMessage._id,
+                rawMessage.msg,
+                User.fromPartialUser(rawMessage.u._id, rawMessage.u.username, rawMessage.u.name),
                 undefined,
                 undefined,
                 undefined,

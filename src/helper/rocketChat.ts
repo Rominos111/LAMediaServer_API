@@ -50,7 +50,7 @@ class RocketChatAuthentication {
         if (auth === null) {
             return null;
         } else {
-            return new this(auth.userId, auth.authToken);
+            return new this(auth.data.userId, auth.data.authToken);
         }
     }
 
