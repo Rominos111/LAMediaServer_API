@@ -44,6 +44,7 @@ app.use(cors(corsOptions));
 if (process.env.RELEASE_ENVIRONMENT === "dev") {
     app.use(logger("dev"));
 } else {
+    console.debug = (..._) => undefined;
     app.use(logger("short"));
 }
 
@@ -129,10 +130,11 @@ app.use((err, _req, res, _next) => {
             key: "?"
         };
 
-        for (const JOIError of err.error.details) {
+        for (const validationError of err.error.details) {
+            console.debug("Validation error. type:", validationError.type, "key:", validationError.context.key);
             error = {
-                "message": JOIError.message,
-                "key": JOIError.context.key  // TODO: Gérer le champ erroné ?
+                "message": validationError.message,
+                "key": validationError.context.key,  // TODO: Gérer le champ erroné ?
             };
         }
 

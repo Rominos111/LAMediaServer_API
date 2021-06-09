@@ -37,22 +37,22 @@ enum RequestMethod {
  * Récupère la méthode Axios associée au type de requête associé
  * @param method Méthode, comme GET ou POST
  */
-function getMethodFunction(method: RequestMethod) {
+function getMethodFunction(method: RequestMethod): { requestFunction: any, usePayload: boolean } {
     switch (method) {
         case RequestMethod.GET:
-            return [axios.get, false];
+            return {requestFunction: axios.get, usePayload: false};
 
         case RequestMethod.PUT:
-            return [axios.put, true];
+            return {requestFunction: axios.put, usePayload: true};
 
         case RequestMethod.PATCH:
-            return [axios.patch, true];
+            return {requestFunction: axios.patch, usePayload: true};
 
         case RequestMethod.POST:
-            return [axios.post, true];
+            return {requestFunction: axios.post, usePayload: true};
 
         case RequestMethod.DELETE:
-            return [axios.delete, false];
+            return {requestFunction: axios.delete, usePayload: false};
 
         default:
             throw new Error("No such HTTP method");
@@ -65,7 +65,7 @@ function getMethodFunction(method: RequestMethod) {
 class RocketChatRequest {
     /**
      * Requête
-     * @param method Méthode HTTP, comme GET ou POST
+     * @param HTTPMethod Méthode HTTP, comme GET ou POST
      * @param route Route / endpoint
      * @param auth Authentification requise ou non
      * @param res Réponse express
@@ -73,7 +73,7 @@ class RocketChatRequest {
      * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
      * @param onFailure Fonction appelée en cas d'échec HTTP
      */
-    public static request(method: RequestMethod | string,
+    public static request(HTTPMethod: RequestMethod | string,
                           route: string,
                           auth: RocketChatAuthentication | string | null = null,
                           res: Response,
@@ -81,13 +81,13 @@ class RocketChatRequest {
                           onSuccess: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
                           onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null = null
     ): void {
-        const [methodFunction, usePayload] = getMethodFunction(<RequestMethod>method);
+        const {requestFunction, usePayload} = getMethodFunction(<RequestMethod>HTTPMethod);
 
         if (payload === null) {
             payload = {};
         }
 
-        if (<RequestMethod>method === RequestMethod.GET) {
+        if (<RequestMethod>HTTPMethod === RequestMethod.GET) {
             route = this._setGetPayload(route, payload);
         }
 
@@ -113,23 +113,23 @@ class RocketChatRequest {
 
             if (onSuccess === null) {
                 onSuccess = (r, data) => {
+                    console.debug(data);
                     return APIResponse.fromSuccess(null, r.status);
                 }
             }
 
             if (onFailure === null) {
                 onFailure = (r, data) => {
+                    console.debug(data);
                     return APIResponse.fromFailure(r.statusText, r.status);
                 }
             }
 
             let promise;
-            if (typeof methodFunction !== "boolean") {
-                if (usePayload) {
-                    promise = methodFunction(RocketChat.getAPIUrl(route), payload, headers);
-                } else {
-                    promise = methodFunction(RocketChat.getAPIUrl(route), headers);
-                }
+            if (usePayload) {
+                promise = requestFunction(RocketChat.getAPIUrl(route), payload, headers);
+            } else {
+                promise = requestFunction(RocketChat.getAPIUrl(route), headers);
             }
 
             promise.then((r) => {
