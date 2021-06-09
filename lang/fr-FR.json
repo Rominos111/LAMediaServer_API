@@ -25,6 +25,13 @@
             "short": "Le message à envoyer ne peut être vide",
             "long": "Le message à envoyer est trop long",
             "required": "Le contenu du message est requis"
+        },
+        "reaction-operation": {
+            "invalid": "Seules les valeurs `set` et `clear` sont acceptées",
+            "required": "Le type d'opération à effectuer est requis"
+        },
+        "emoji": {
+            "required": "Vous devez préciser le nom de la réaction"
         }
     }
 }
