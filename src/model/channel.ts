@@ -1,7 +1,7 @@
 /**
  * Canal
  */
-export default class Room {
+export default class Channel {
     /**
      * ID
      * @private
@@ -21,7 +21,7 @@ export default class Room {
     private readonly _description: string;
 
     /**
-     * Room par défaut ou non
+     * Canal par défaut ou non
      * @private
      */
     private readonly _defaultRoom: boolean;
@@ -31,7 +31,7 @@ export default class Room {
      * @param id ID
      * @param name Nom
      * @param description Description
-     * @param defaultRoom Room par défaut ou non
+     * @param defaultRoom Canal par défaut ou non
      */
     public constructor(id: string, name: string, description: string = "", defaultRoom: boolean = false) {
         this._id = id;

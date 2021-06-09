@@ -3,7 +3,7 @@ import APIResponse from "helper/APIResponse";
 import Language from "helper/language";
 import {RequestMethod, RocketChatRequest} from "helper/request";
 import Validation from "helper/validation";
-import Room from "model/room";
+import Channel from "model/channel";
 
 let router = express.Router();
 
@@ -15,10 +15,10 @@ const schema = Validation.object({
 
 router.get("/", Validation.get(schema), (req, res) => {
     RocketChatRequest.request(RequestMethod.GET, "/rooms.get", req.body.token, res, null, (r, data) => {
-        let rooms: Room[] = [];
+        let rooms: Channel[] = [];
 
         for (const elt of data.update) {
-            rooms.push(new Room(elt._id, elt.name, elt.description, elt.default));
+            rooms.push(new Channel(elt._id, elt.name, elt.description, elt.default));
         }
 
         return APIResponse.fromSuccess(rooms);
