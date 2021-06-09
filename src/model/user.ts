@@ -33,19 +33,19 @@ class User {
      * Statut
      * @private
      */
-    private readonly _status: UserStatus | null;
+    private readonly _status: UserStatus | undefined;
 
     /**
      * Dernière activité
      * @private
      */
-    private readonly _lastSeen: Date | null;
+    private readonly _lastSeen: Date | undefined;
 
     private constructor(id: string,
                         username: string,
                         name: string,
-                        status: UserStatus | null = null,
-                        lastSeen: Date | null = null) {
+                        status: UserStatus | undefined = undefined,
+                        lastSeen: Date | undefined = undefined) {
         this._id = id;
         this._username = username;
         this._name = name;
@@ -65,11 +65,11 @@ class User {
         return this._name;
     }
 
-    public get status(): UserStatus | null {
+    public get status(): UserStatus | undefined {
         return this._status;
     }
 
-    public get lastSeen(): Date | null {
+    public get lastSeen(): Date | undefined {
         return this._lastSeen;
     }
 
@@ -82,8 +82,12 @@ class User {
         return new this(id, username, name, <UserStatus>status, new Date(lastSeen));
     }
 
-    public static fromPartialUser(id: string, username: string, name: string): User {
-        return new this(id, username, name);
+    public static fromPartialUser(id: string, username: string, name: string | undefined): User {
+        if (name === undefined) {
+            return new this(id, username, username);
+        } else {
+            return new this(id, username, name);
+        }
     }
 
     /**

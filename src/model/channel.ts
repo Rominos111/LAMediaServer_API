@@ -32,7 +32,7 @@ export default class Channel {
      * Dernier message
      * @private
      */
-    private readonly _lastMessage: Message | null;
+    private readonly _lastMessage: Message | undefined;
 
     /**
      * Constructeur
@@ -46,7 +46,7 @@ export default class Channel {
                        name: string,
                        description: string = "",
                        defaultRoom: boolean = false,
-                       lastMessage: Message | null = null) {
+                       lastMessage: Message | undefined = undefined) {
         this._id = id;
         this._name = name;
         this._description = description;
@@ -54,23 +54,23 @@ export default class Channel {
         this._lastMessage = lastMessage;
     }
 
-    public get id() {
+    public get id(): string {
         return this._id;
     }
 
-    public get name() {
+    public get name(): string {
         return this._name;
     }
 
-    public get description() {
+    public get description(): string {
         return this._description;
     }
 
-    public get defaultRoom() {
+    public get defaultRoom(): boolean {
         return this._defaultRoom;
     }
 
-    public get lastMessage() {
+    public get lastMessage(): Message | undefined {
         return this._lastMessage;
     }
 
