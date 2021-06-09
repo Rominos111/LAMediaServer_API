@@ -77,7 +77,7 @@ class RocketChatRequest {
                           route: string,
                           auth: RocketChatAuthentication | string | null = null,
                           res: Response,
-                          payload: Object | null = {},
+                          payload: Object | null = null,
                           onSuccess: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
                           onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null = null
     ): void {

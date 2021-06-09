@@ -5,6 +5,7 @@ enum UserStatus {
     UNKNOWN = "unknown",
     OFFLINE = "offline",
     ONLINE = "online",
+    AWAY = "away",
 }
 
 /**
@@ -77,9 +78,13 @@ class User {
                                username: string,
                                name: string,
                                status: string | UserStatus,
-                               lastSeen: string | Date,
+                               lastSeen: string | Date | undefined,
     ): User {
-        return new this(id, username, name, <UserStatus>status, new Date(lastSeen));
+        if (lastSeen !== undefined) {
+            lastSeen = new Date(lastSeen);
+        }
+
+        return new this(id, username, name, <UserStatus>status, lastSeen);
     }
 
     public static fromPartialUser(id: string, username: string, name: string | undefined): User {
