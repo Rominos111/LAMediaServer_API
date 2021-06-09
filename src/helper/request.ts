@@ -100,15 +100,15 @@ class RocketChatRequest {
         if (requireAuth && auth === null) {
             APIResponse.fromFailure("Invalid token", 401).send(res);
         } else {
-            let headers: AxiosRequestConfig | undefined = undefined;
+            let headers: AxiosRequestConfig = {
+                "headers": {
+                    "Content-Type": "application/json"
+                }
+            };
 
             if (auth !== null) {
-                headers = {
-                    "headers": {
-                        "X-User-Id": auth.userId,
-                        "X-Auth-Token": auth.authToken,
-                    }
-                }
+                headers.headers["X-User-Id"] = auth.userId;
+                headers.headers["X-Auth-Token"] = auth.authToken;
             }
 
             if (onSuccess === null) {
@@ -137,7 +137,7 @@ class RocketChatRequest {
                     if (onSuccess === null) {
                         console.error("`onSuccess` shouldn't be null");
                     } else {
-                        if (r.data.success !== true) {
+                        if (r.data.success !== true && r.data.success !== undefined) {
                             console.log("`r.data.success` is not true. Value:", r.data.success);
                         }
 
