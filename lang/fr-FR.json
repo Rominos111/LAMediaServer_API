@@ -17,6 +17,9 @@
         },
         "id": {
             "required": "Un identifiant est nécessaire"
+        },
+        "name": {
+            "required": "Un nom est nécessaire"
         }
     }
 }

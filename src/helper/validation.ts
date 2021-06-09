@@ -29,6 +29,14 @@ export default abstract class Validation {
         return Joi.string().regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/);
     }
 
+    public static array(): Joi.ArraySchema {
+        return Joi.array();
+    }
+
+    public static any(): Joi.AnySchema {
+        return Joi.any();
+    }
+
     //==================================================================================================================
     // Méthodes HTTP
     //==================================================================================================================
