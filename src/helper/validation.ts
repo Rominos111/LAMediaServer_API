@@ -52,4 +52,8 @@ export default abstract class Validation {
     public static post(schema: Joi.AnySchema) {
         return validator.body(schema);
     }
+
+    public static delete(schema: Joi.AnySchema) {
+        return validator.body(schema);
+    }
 }
