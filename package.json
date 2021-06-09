@@ -4,7 +4,10 @@
     "private": true,
     "scripts": {
         "start": "ts-node -r tsconfig-paths/register src/app.ts",
-        "test": "mocha"
+        "test": "mocha",
+        "ts-build": "tsc --build",
+        "watch:ts-build": "tsc --watch",
+        "watch:start": "nodemon"
     },
     "dependencies": {
         "axios": "^0.21.1",
