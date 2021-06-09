@@ -1,11 +1,10 @@
 import cors from "cors";
-import {randomBytes} from "crypto";
-import dotenv from "dotenv";
 import express from "express";
-import rateLimit from "express-slow-down";
+import RateLimiter from "express-rate-limit";
+import RateSlower from "express-slow-down";
 import walk from "fs-walk";
 import APIResponse from "helper/APIResponse";
-import Language from "helper/language";
+import envConfig from "helper/envConfig";
 import http from "http";
 import createError from "http-errors";
 import logger from "morgan";
@@ -14,41 +13,11 @@ import path from "path";
 const app = express();
 const server = http.createServer(app);
 
+envConfig.config();
+
 //======================================================================================================================
 // Configuration des middlewares
 //======================================================================================================================
-
-dotenv.config();
-
-if (process.env.SESSION_SECRET === undefined || process.env.SESSION_SECRET === "") {
-    process.env.SESSION_SECRET = randomBytes(64).toString("hex");
-    if (process.env.RELEASE_ENVIRONMENT === "prod") {
-        console.info("Session secret:", process.env.SESSION_SECRET);
-    }
-}
-
-if (process.env.JWT_SECRET === undefined || process.env.JWT_SECRET === "") {
-    process.env.JWT_SECRET = randomBytes(64).toString("hex");
-    if (process.env.RELEASE_ENVIRONMENT === "prod") {
-        console.info("JWT secret:", process.env.JWT_SECRET);
-    }
-}
-
-if (process.env.AES_KEY === undefined || process.env.AES_KEY === "") {
-    process.env.AES_KEY = randomBytes(16).toString("hex");
-    if (process.env.RELEASE_ENVIRONMENT === "prod") {
-        console.info("AES key:", process.env.AES_KEY);
-    }
-}
-
-if (process.env.AES_IV === undefined || process.env.AES_IV === "") {
-    process.env.AES_IV = randomBytes(8).toString("hex");
-    if (process.env.RELEASE_ENVIRONMENT === "prod") {
-        console.info("AES IV:", process.env.AES_IV);
-    }
-}
-
-Language.config("fr-FR");
 
 const corsOptions: cors.CorsOptions = {
     allowedHeaders: [
@@ -82,14 +51,31 @@ if (process.env.RELEASE_ENVIRONMENT === "dev") {
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
-// Limite de requêtes, va ralentir chaque requête au delà de 100 sur 2 minutes,
-//  en ajoutant 100 ms de latence par requête supplémentaire, avec comme maximum 5 secondes de latence
-app.use(rateLimit({
-    windowMs: 2 * 60 * 1000,
-    delayAfter: 100,
-    delayMs: 100,
-    maxDelayMs: 5 * 1000
-}));
+if (process.env.RELEASE_ENVIRONMENT !== "dev") {
+    // Limite de requêtes, va renvoyer des erreurs 429 après une limit de requêtes.
+    app.use(RateLimiter({
+        max: parseInt(<string>process.env.RATE_LIMIT_MAX_REQUESTS) + (parseInt(<string>process.env.RATE_LIMIT_MAX_DELAY) / parseInt(<string>process.env.RATE_LIMIT_DELAY_INCREMENT)),
+        windowMs: parseInt(<string>process.env.RATE_LIMIT_WINDOW) * 1000,
+        message: JSON.stringify(
+            APIResponse
+                .fromFailure("Too many requests, please try again later.", 429, null, "access")
+                .getRaw()
+        ),
+        headers: true,
+        draft_polli_ratelimit_headers: true,
+    }));
+
+    // Limite de requêtes, va ralentir chaque requête au delà de 100 sur 2 minutes,
+    //  en ajoutant 100 ms de latence par requête supplémentaire, avec comme maximum 1 seconde de latence
+    app.use(RateSlower({
+        windowMs: parseInt(<string>process.env.RATE_LIMIT_WINDOW) * 1000,
+        delayAfter: parseInt(<string>process.env.RATE_LIMIT_MAX_REQUESTS),
+        delayMs: parseInt(<string>process.env.RATE_LIMIT_DELAY_INCREMENT),
+        maxDelayMs: parseInt(<string>process.env.RATE_LIMIT_MAX_DELAY),
+        // @ts-ignore
+        headers: true,
+    }));
+}
 
 //======================================================================================================================
 // Configuration des routes
