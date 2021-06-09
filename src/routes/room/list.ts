@@ -1,11 +1,10 @@
-import express from "express";
+import APIRequest from "helper/APIRequest";
 import APIResponse from "helper/APIResponse";
 import Language from "helper/language";
 import {RequestMethod, RocketChatRequest} from "helper/request";
 import Validation from "helper/validation";
 import Channel from "model/channel";
-
-let router = express.Router();
+import Message from "model/message";
 
 const schema = Validation.object({
     token: Validation.jwt().required().messages({
@@ -13,18 +12,14 @@ const schema = Validation.object({
     }),
 });
 
-router.get("/", Validation.get(schema), (req, res) => {
+module.exports = APIRequest.get(schema, (req, res) => {
     RocketChatRequest.request(RequestMethod.GET, "/rooms.get", req.body.token, res, null, (r, data) => {
         let rooms: Channel[] = [];
 
         for (const elt of data.update) {
-            rooms.push(new Channel(elt._id, elt.name, elt.description, elt.default));
+            rooms.push(new Channel(elt._id, elt.name, elt.description, elt.default, Message.fromObject(elt.lastMessage)));
         }
 
         return APIResponse.fromSuccess(rooms);
     });
 });
-
-module.exports = router;
-
-// TODO: lastMessage ?
