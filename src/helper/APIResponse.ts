@@ -3,10 +3,17 @@
  */
 import {Response} from "express";
 
+enum APIRErrorType {
+    REQUEST = "request",
+    ACCESS = "access",
+    VALIDATION = "validation",
+    UNKNOWN = "unknown",
+}
+
 /**
  * Réponse API
  */
-export default class APIResponse {
+class APIResponse {
     /**
      * Data
      * @private
@@ -40,11 +47,11 @@ export default class APIResponse {
     public static fromFailure(errorMessage: String = "",
                               statusCode: number = 400,
                               payload: Object | Object[] | null = null,
-                              errorType: String = "request"
+                              errorType: APIRErrorType | string = "request"
     ): APIResponse {
         return new APIResponse({
             "error": {
-                "type": errorType,
+                "type": <APIRErrorType>((<string>errorType).toLowerCase()),
             },
             "message": errorMessage,
             "payload": payload,
@@ -83,4 +90,11 @@ export default class APIResponse {
     public send(res: Response): Response {
         return res.status(this._statusCode).json(this._data);
     }
+
+    public getRaw(): Object {
+        return this._data;
+    }
 }
+
+export {APIResponse}
+export default APIResponse;

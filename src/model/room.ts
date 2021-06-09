@@ -64,7 +64,7 @@ export default class Room {
             id: this.id,
             name: this.name,
             description: this.description,
-            defaultRoom: this.defaultRoom
+            defaultRoom: this.defaultRoom,
         }
     }
 }
