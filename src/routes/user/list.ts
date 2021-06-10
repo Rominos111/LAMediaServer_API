@@ -1,5 +1,17 @@
-import express from "express";
+import APIRequest from "helper/APIRequest";
+import APIResponse from "helper/APIResponse";
+import RocketChatRequest from "helper/RocketChatRequest";
+import User from "model/user";
 
-let router = express.Router();
+module.exports = APIRequest.get(null, (req, res) => {
+    RocketChatRequest.request("GET", "/users.list", req, res, null, (r, data) => {
+        let users: User[] = [];
 
-module.exports = router;
+        for (const elt of data.users) {
+            users.push(User.fromFullUser(elt._id, elt.username, elt.name, elt.status, undefined));
+            // FIXME: Pas de `last seen` ?
+        }
+
+        return APIResponse.fromSuccess(users);
+    });
+});

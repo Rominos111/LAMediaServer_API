@@ -1,44 +1,28 @@
-import express from "express";
-import http from "http";
-import dotenv from "dotenv";
-import logger from "morgan";
 import cors from "cors";
-import APIResponse from "helper/APIResponse";
-import Language from "helper/language";
-import RateLimit from "express-rate-limit";
-import createError from "http-errors";
-import cookieParser from "cookie-parser";
-import session from "express-session";
-import path from "path";
+import express from "express";
+import RateLimiter from "express-rate-limit";
+import RateSlower from "express-slow-down";
 import walk from "fs-walk";
-import {randomBytes} from "crypto";
+import APIResponse from "helper/APIResponse";
+import envConfig from "helper/envConfig";
+import http from "http";
+import createError from "http-errors";
+import logger from "morgan";
+import path from "path";
 
 const app = express();
 const server = http.createServer(app);
+
+envConfig.config();
 
 //======================================================================================================================
 // Configuration des middlewares
 //======================================================================================================================
 
-if (process.env.SESSION_SECRET === undefined || process.env.SESSION_SECRET === "") {
-    process.env.SESSION_SECRET = randomBytes(256).toString("hex");
+// Proxy renversé
+if (process.env.REVERSE_PROXY !== undefined && ["1", "true"].includes(process.env.REVERSE_PROXY.toLowerCase())) {
+    app.enable("trust proxy");
 }
-
-if (process.env.JWT_SECRET === undefined || process.env.JWT_SECRET === "") {
-    process.env.JWT_SECRET = randomBytes(256).toString("hex");
-}
-
-if (process.env.AES_KEY === undefined || process.env.AES_KEY === "") {
-    process.env.AES_KEY = randomBytes(16).toString("hex");
-}
-
-if (process.env.AES_IV === undefined || process.env.AES_IV === "") {
-    process.env.AES_IV = randomBytes(32).toString("hex");
-}
-
-Language.config("fr-FR");
-
-dotenv.config();
 
 const corsOptions: cors.CorsOptions = {
     allowedHeaders: [
@@ -50,7 +34,7 @@ const corsOptions: cors.CorsOptions = {
     ],
     credentials: true,
     methods: 'GET,PUT,PATCH,POST,DELETE',
-    origin: `http://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`, // FIXME: Utiliser HTTPS en production
+    origin: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
     preflightContinue: false,
 };
 
@@ -58,27 +42,42 @@ const corsOptions: cors.CorsOptions = {
 app.use(cors(corsOptions));
 
 // Logs
-app.use(logger("dev"));
+if (process.env.RELEASE_ENVIRONMENT === "dev") {
+    app.use(logger("dev"));
+} else {
+    console.debug = (..._: any[]) => undefined;
+    app.use(logger("short"));
+}
 
 // JSON
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 
-// Cookies
-app.use(cookieParser());
+if (process.env.RELEASE_ENVIRONMENT !== "dev") {
+    // Limite de requêtes, va renvoyer des erreurs 429 après une limit de requêtes.
+    app.use(RateLimiter({
+        max: parseInt(<string>process.env.RATE_LIMIT_MAX_REQUESTS) + (parseInt(<string>process.env.RATE_LIMIT_MAX_DELAY) / parseInt(<string>process.env.RATE_LIMIT_DELAY_INCREMENT)),
+        windowMs: parseInt(<string>process.env.RATE_LIMIT_WINDOW) * 1000,
+        message: JSON.stringify(
+            APIResponse
+                .fromFailure("Too many requests, please try again later.", 429, null, "access")
+                .getRaw()
+        ),
+        headers: true,
+        draft_polli_ratelimit_headers: true,
+    }));
 
-// Rate limit, 1000 requêtes sur une fenêtre de 5 minutes
-app.use(new RateLimit({
-    windowMs: 5 * 60 * 1000,
-    max: 1000
-}));
-
-// Session
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-}));
+    // Limite de requêtes, va ralentir chaque requête au delà de 100 sur 2 minutes,
+    //  en ajoutant 100 ms de latence par requête supplémentaire, avec comme maximum 1 seconde de latence
+    app.use(RateSlower({
+        windowMs: parseInt(<string>process.env.RATE_LIMIT_WINDOW) * 1000,
+        delayAfter: parseInt(<string>process.env.RATE_LIMIT_MAX_REQUESTS),
+        delayMs: parseInt(<string>process.env.RATE_LIMIT_DELAY_INCREMENT),
+        maxDelayMs: parseInt(<string>process.env.RATE_LIMIT_MAX_DELAY),
+        // @ts-ignore
+        headers: true,
+    }));
+}
 
 //======================================================================================================================
 // Configuration des routes
@@ -87,7 +86,7 @@ app.use(session({
 const routesPathRelative = "routes";
 const routesPath = path.join(__dirname, routesPathRelative);
 
-let importedRoutes: {route: string, path: string}[] = [];
+let importedRoutes: { route: string, path: string }[] = [];
 
 walk.filesSync(routesPath, (basedir, filename, _stat, _next) => {
     if (/^index\.[tj]s$/.test(filename)) {
@@ -123,26 +122,27 @@ app.use((err, _req, res, _next) => {
     let response: APIResponse;
 
     if (err.message) {
-        // Erreur express, comme un 404
-        response = APIResponse.fromError(err.message, "access").setStatusCode(err.statusCode || 500);
+        // Erreur express, comme un 404, ou erreur plus générale
+        response = APIResponse.fromFailure(err.message, err.statusCode || 500, null, "access");
     } else if (err.error) {
         // Erreur de validation JOI
-        let error: {message: string, key: string} = {
+        let error: { message: string, key: string } = {
             message: "?",
             key: "?"
         };
 
-        for (const JOIError of err.error.details) {
+        for (const validationError of err.error.details) {
+            console.debug("Validation error. type:", validationError.type, "key:", validationError.context.key);
             error = {
-                "message": JOIError.message,
-                "key": JOIError.context.key  // TODO: Gérer le champ erroné ?
+                "message": validationError.message,
+                "key": validationError.context.key,  // TODO: Gérer le champ erroné ?
             };
         }
 
-        response = APIResponse.fromError(error.message, "validation").setStatusCode(400);
+        response = APIResponse.fromFailure(error.message, 400, null, "validation");
     } else {
         console.debug(err);
-        response = APIResponse.fromError("?", "unknown").setStatusCode(500);
+        response = APIResponse.fromFailure("?", 500, null, "unknown");
     }
 
     response.send(res);

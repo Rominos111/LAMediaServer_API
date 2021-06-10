@@ -4,9 +4,34 @@
 import {Response} from "express";
 
 /**
+ * Type d'erreur
+ */
+enum APIRErrorType {
+    /**
+     * Erreur lors de la requête
+     */
+    REQUEST = "request",
+
+    /**
+     * Erreur lors de l'accès à la route, comme un 404 ou un 405
+     */
+    ACCESS = "access",
+
+    /**
+     * Erreur de validation
+     */
+    VALIDATION = "validation",
+
+    /**
+     * Erreur inconnue
+     */
+    UNKNOWN = "unknown",
+}
+
+/**
  * Réponse API
  */
-export default class APIResponse {
+class APIResponse {
     /**
      * Data
      * @private
@@ -17,70 +42,100 @@ export default class APIResponse {
      * Statut HTTP
      * @private
      */
-    private _statusCode: number = 200;
+    private readonly _statusCode: number = 200;
+
+    /**
+     * headers supplémentaires
+     * @private
+     */
+    private readonly _headers: Object = {};
 
     /**
      * Constructeur privé
      * @param data Data contenue
+     * @param statusCode Code d'erreur
+     * @param headers Headers supplémentaires
      * @private
      */
-    private constructor(data: Object) {
+    private constructor(data: Object, statusCode: number = 200, headers: Object = {}) {
         this._data = data;
+        this._statusCode = statusCode;
+        this._headers = headers;
     }
 
     /**
-     * Depuis un objet
-     * @param data Data
-     */
-    static fromObject(data: Object = {}): APIResponse {
-        return new APIResponse(data);
-    }
-
-    /**
-     * Depuis un objet
-     * @param data Data
-     */
-    static fromArray(data: Object[] = []): APIResponse {
-        return new APIResponse(data);
-    }
-
-    /**
-     * Depuis une erreur
+     * Échec
      * @param errorMessage Erreur
+     * @param statusCode Code d'erreur
+     * @param payload Payload
      * @param errorType Type d'erreur
      */
-    static fromError(errorMessage: String = "", errorType: String = "request"): APIResponse {
+    public static fromFailure(errorMessage: String = "",
+                              statusCode: number = 400,
+                              payload: Object | Object[] | null = null,
+                              errorType: APIRErrorType | string = "request"
+    ): APIResponse {
+        let headers = {};
+        if (statusCode === 401 || statusCode === 403) {
+            headers["WWW-Authenticate"] = `Bearer realm="Token for the LAMediaServer API", charset="UTF-8"`;
+        }
+
         return new APIResponse({
-            "error": true,
-            "type": errorType,
-            "message": errorMessage
-        });
+            "error": {
+                "type": <APIRErrorType>((<string>errorType).toLowerCase()),
+            },
+            "message": errorMessage,
+            "payload": payload,
+        }, statusCode, headers);
+    }
+
+    /**
+     * Succès
+     * @param payload Payload
+     * @param statusCode Code d'erreur
+     * @param message Message
+     */
+    public static fromSuccess(payload: Object | Object[] | null = null,
+                              statusCode: number = 200,
+                              message: String = "OK"): APIResponse {
+        return new APIResponse({
+            "message": message,
+            "payload": payload,
+        }, statusCode);
     }
 
     /**
      * Depuis une chaine
      * @param message Message
      */
-    static fromString(message: string = ""): APIResponse {
-        return new APIResponse({
+    public static fromString(message: string = ""): APIResponse {
+        return this.fromSuccess({
             "message": message
         });
-    }
-
-    /**
-     * Set le code HTTP
-     * @param statusCode Code HTTP
-     */
-    setStatusCode(statusCode: number): APIResponse {
-        this._statusCode = statusCode;
-        return this;
     }
 
     /**
      * Envoie la réponse
      * @param res Variable de réponse de Express
      */
-    send(res: Response): Response {
-        return res.status(this._statusCode).json(this._data);
+    public send(res: Response): Response {
+        res = res.status(this._statusCode);
+        res = res.type("json");
+
+        for (let key of Object.keys(this._headers)) {
+            res = res.set(key, this._headers[key]);
+        }
+
+        return res.json(this._data);
+    }
+
+    /**
+     * Data raw
+     */
+    public getRaw(): Object {
+        return this._data;
     }
 }
+
+export {APIResponse}
+export default APIResponse;

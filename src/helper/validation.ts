@@ -1,5 +1,5 @@
-import Joi from "joi";
 import {ExpressJoiInstance} from "express-joi-validation";
+import Joi from "joi";
 
 const validator: ExpressJoiInstance = require("express-joi-validation").createValidator({
     passError: true
@@ -13,27 +13,47 @@ export default abstract class Validation {
     // Schémas JOI
     //==================================================================================================================
 
-    static object(obj: Object = {}) {
+    public static object(obj: Object = {}): Joi.ObjectSchema {
         return Joi.object(obj);
     }
 
-    static string() {
+    public static string(): Joi.StringSchema {
         return Joi.string();
+    }
+
+    public static number(): Joi.NumberSchema {
+        return Joi.number();
+    }
+
+    public static jwt(): Joi.StringSchema {
+        return Joi.string().regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/);
+    }
+
+    public static array(): Joi.ArraySchema {
+        return Joi.array();
+    }
+
+    public static any(): Joi.AnySchema {
+        return Joi.any();
     }
 
     //==================================================================================================================
     // Méthodes HTTP
     //==================================================================================================================
 
-    static get(schema: Joi.AnySchema) {
-        return validator.params(schema);
+    public static get(schema: Joi.AnySchema) {
+        return validator.body(schema);
     }
 
-    static query(schema: Joi.AnySchema) {
+    public static query(schema: Joi.AnySchema) {
         return validator.query(schema);
     }
 
-    static post(schema: Joi.AnySchema) {
+    public static post(schema: Joi.AnySchema) {
+        return validator.body(schema);
+    }
+
+    public static delete(schema: Joi.AnySchema) {
         return validator.body(schema);
     }
 }

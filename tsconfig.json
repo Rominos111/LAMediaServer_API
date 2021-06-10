@@ -23,7 +23,7 @@
         "sourceMap": true,
         "strict": true,
         "strictNullChecks": true,
-        "target": "es6",
+        "target": "es6"
     },
     "exclude": [
         "node_modules"
@@ -31,5 +31,5 @@
     "include": [
         "./**/*.ts",
         "./**/*.d.ts"
-    ],
+    ]
 }

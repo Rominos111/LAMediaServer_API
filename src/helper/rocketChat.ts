@@ -16,21 +16,41 @@ class RocketChatAuthentication {
      */
     private readonly _authToken: string;
 
+    /**
+     * Constructeur
+     * @param userId ID de l'utilisateur
+     * @param authToken Token d'authentification Rocket.chat
+     * @private
+     */
     private constructor(userId: string, authToken: string) {
         this._userId = userId;
         this._authToken = authToken;
     }
 
     /**
+     * ID de l'utilisateur
+     */
+    public get userId() {
+        return this._userId;
+    }
+
+    /**
+     * Token d'authentification Rocket.chat
+     */
+    public get authToken() {
+        return this._authToken;
+    }
+
+    /**
      * Depuis un token
      * @param token Token JWT
      */
-    public static fromToken(token: string): RocketChatAuthentication|null {
+    public static fromToken(token: string): RocketChatAuthentication | null {
         let auth = JWT.decodeToken(token);
         if (auth === null) {
             return null;
         } else {
-            return new this(auth.userId, auth.authToken);
+            return new this(auth.data.userId, auth.data.authToken);
         }
     }
 
@@ -41,20 +61,6 @@ class RocketChatAuthentication {
      */
     public static fromValues(userId: string, authToken: string): RocketChatAuthentication {
         return new this(userId, authToken);
-    }
-
-    /**
-     * ID de l'utilisateur
-     */
-    get userId() {
-        return this._userId;
-    }
-
-    /**
-     * Token d'authentification Rocket.chat
-     */
-    get authToken() {
-        return this._authToken;
     }
 }
 
@@ -68,7 +74,7 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        return `http://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/api/v1/${endpoint}`;
+        return `${process.env.ROCKETCHAT_PROTOCOL}://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/api/v1/${endpoint}`;
     }
 }
 

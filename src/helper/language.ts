@@ -14,22 +14,22 @@ export default abstract class Language {
      * Configuration de la langue
      * @param locale Locale, par exemple "fr-FR"
      */
-    static config(locale: string): void {
+    public static config(locale: string): void {
         const raw = fs.readFileSync(`lang/${locale}.json`, "utf-8");
         Language._lang = JSON.parse(raw);
     }
 
     /**
      * Récupère une chaine depuis un nom
-     * @param rawKey Clé, comme "validation.login.password.required"
+     * @param key Clé, comme "validation.login.password.required"
      * @param replacementArray Remplacements, remplace tous les "%%" par les valeurs de ce tableau
      */
-    static get(rawKey: string, ...replacementArray: Object[]): string {
-        const keys = rawKey.split(".");
-        let value: Object|string|undefined = this._lang;
-        for (const key of keys) {
+    public static get(key: string, ...replacementArray: Object[]): string {
+        const keyParts = key.split(".");
+        let value: Object | string | undefined = this._lang;
+        for (const keyPart of keyParts) {
             if (typeof value === "object") {
-                value = value[key];
+                value = value[keyPart];
             }
         }
 
