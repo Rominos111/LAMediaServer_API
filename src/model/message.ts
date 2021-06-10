@@ -132,7 +132,8 @@ export default class Message {
      * @param rawMessage Message
      */
     public static fromPartialMessage(rawMessage: any | undefined): Message | undefined {
-        if (rawMessage === undefined) {
+        if (rawMessage === undefined || rawMessage.msg === undefined) {
+            // FIXME: Gérer les cas où le dernier message est une réaction
             return undefined;
         } else {
             return new this(
