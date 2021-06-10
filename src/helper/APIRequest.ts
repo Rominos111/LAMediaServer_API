@@ -13,18 +13,22 @@ export default class APIRequest {
      * @param callback Callback
      * @param route Route locale, '/' par défaut
      */
-    public static get(validationSchema: Joi.AnySchema | null = null,
+    public static get(validationSchema: Joi.ObjectSchema | null = null,
                       callback: (req: express.Request, res: express.Response) => void,
                       route: string = "/"
     ): express.Router {
-        let router = express.Router();
         if (validationSchema === null) {
-            // Pas de validation nécessaire
-            router.get(route, callback);
-        } else {
-            // Validation, GET
-            router.get(route, Validation.get(validationSchema), callback);
+            validationSchema = Validation.object({});
         }
+
+        validationSchema = validationSchema.append({
+            _token: Validation.jwt(),
+        });
+
+        let router = express.Router();
+
+        // Validation, GET
+        router.get(route, Validation.get(validationSchema), callback);
 
         // Erreur 405 pour les autres méthodes que GET
         router.all(route, this._methodNotAllowed);
@@ -38,17 +42,24 @@ export default class APIRequest {
      * @param route Route locale, '/' par défaut
      * @see APIRequest.get
      */
-    public static post(validationSchema: Joi.AnySchema | null = null,
+    public static post(validationSchema: Joi.ObjectSchema | null = null,
                        callback: (req: express.Request, res: express.Response) => void,
                        route: string = "/"
     ): express.Router {
-        let router = express.Router();
         if (validationSchema === null) {
-            router.post(route, callback);
-        } else {
-            router.post(route, Validation.post(validationSchema), callback);
+            validationSchema = Validation.object({});
         }
 
+        validationSchema = validationSchema.append({
+            _token: Validation.jwt(),
+        });
+
+        let router = express.Router();
+
+        // Validation, GET
+        router.post(route, Validation.post(validationSchema), callback);
+
+        // Erreur 405 pour les autres méthodes que GET
         router.all(route, this._methodNotAllowed);
         return router;
     }
@@ -60,17 +71,24 @@ export default class APIRequest {
      * @param route Route locale, '/' par défaut
      * @see APIRequest.get
      */
-    public static delete(validationSchema: Joi.AnySchema | null = null,
+    public static delete(validationSchema: Joi.ObjectSchema | null = null,
                          callback: (req: express.Request, res: express.Response) => void,
                          route: string = "/"
     ): express.Router {
-        let router = express.Router();
         if (validationSchema === null) {
-            router.delete(route, callback);
-        } else {
-            router.delete(route, Validation.delete(validationSchema), callback);
+            validationSchema = Validation.object({});
         }
 
+        validationSchema = validationSchema.append({
+            _token: Validation.jwt(),
+        });
+
+        let router = express.Router();
+
+        // Validation, GET
+        router.delete(route, Validation.delete(validationSchema), callback);
+
+        // Erreur 405 pour les autres méthodes que GET
         router.all(route, this._methodNotAllowed);
         return router;
     }

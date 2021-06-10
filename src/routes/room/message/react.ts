@@ -1,12 +1,9 @@
 import APIRequest from "helper/APIRequest";
 import Language from "helper/language";
-import RocketChatRequest from "helper/request";
+import RocketChatRequest from "helper/RocketChatRequest";
 import Validation from "helper/validation";
 
 const schema = Validation.object({
-    token: Validation.jwt().required().messages({
-        "any.required": Language.get("validation.token.required"),
-    }),
     messageId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
@@ -22,7 +19,7 @@ const schema = Validation.object({
 
 module.exports = APIRequest.post(schema, (req, res) => {
     console.log(req.body.operation);
-    RocketChatRequest.request("POST", "/chat.react", req.body.token, res, {
+    RocketChatRequest.request("POST", "/chat.react", req, res, {
         emoji: req.body.emojiName.trim(),
         messageId: req.body.messageId,
         shouldReact: req.body.operation.toLowerCase() === "set",

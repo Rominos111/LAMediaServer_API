@@ -1,18 +1,10 @@
 import APIRequest from "helper/APIRequest";
 import APIResponse from "helper/APIResponse";
-import Language from "helper/language";
-import RocketChatRequest from "helper/request";
-import Validation from "helper/validation";
+import RocketChatRequest from "helper/RocketChatRequest";
 import User from "model/user";
 
-const schema = Validation.object({
-    token: Validation.jwt().required().messages({
-        "any.required": Language.get("validation.token.required"),
-    }),
-});
-
-module.exports = APIRequest.get(schema, (req, res) => {
-    RocketChatRequest.request("GET", "/users.list", req.body.token, res, null, (r, data) => {
+module.exports = APIRequest.get(null, (req, res) => {
+    RocketChatRequest.request("GET", "/users.list", req, res, null, (r, data) => {
         let users: User[] = [];
 
         for (const elt of data.users) {

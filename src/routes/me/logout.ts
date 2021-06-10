@@ -1,6 +1,6 @@
 import APIRequest from "helper/APIRequest";
 import Language from "helper/language";
-import RocketChatRequest from "helper/request";
+import RocketChatRequest from "helper/RocketChatRequest";
 import Validation from "helper/validation";
 
 const schema = Validation.object({
@@ -10,5 +10,5 @@ const schema = Validation.object({
 });
 
 module.exports = APIRequest.post(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/logout", req.body.token, res);
+    RocketChatRequest.request("POST", "/logout", req, res);
 });

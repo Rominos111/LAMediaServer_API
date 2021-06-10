@@ -45,14 +45,22 @@ class APIResponse {
     private readonly _statusCode: number = 200;
 
     /**
+     * headers supplémentaires
+     * @private
+     */
+    private readonly _headers: Object = {};
+
+    /**
      * Constructeur privé
      * @param data Data contenue
      * @param statusCode Code d'erreur
+     * @param headers Headers supplémentaires
      * @private
      */
-    private constructor(data: Object, statusCode: number = 200) {
+    private constructor(data: Object, statusCode: number = 200, headers: Object = {}) {
         this._data = data;
         this._statusCode = statusCode;
+        this._headers = headers;
     }
 
     /**
@@ -67,13 +75,18 @@ class APIResponse {
                               payload: Object | Object[] | null = null,
                               errorType: APIRErrorType | string = "request"
     ): APIResponse {
+        let headers = {};
+        if (statusCode === 401 || statusCode === 403) {
+            headers["WWW-Authenticate"] = `Bearer realm="Token for the LAMediaServer API", charset="UTF-8"`;
+        }
+
         return new APIResponse({
             "error": {
                 "type": <APIRErrorType>((<string>errorType).toLowerCase()),
             },
             "message": errorMessage,
             "payload": payload,
-        }, statusCode);
+        }, statusCode, headers);
     }
 
     /**
@@ -106,7 +119,14 @@ class APIResponse {
      * @param res Variable de réponse de Express
      */
     public send(res: Response): Response {
-        return res.status(this._statusCode).json(this._data);
+        res = res.status(this._statusCode);
+        res = res.type("json");
+
+        for (let key of Object.keys(this._headers)) {
+            res = res.set(key, this._headers[key]);
+        }
+
+        return res.json(this._data);
     }
 
     /**

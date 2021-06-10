@@ -2,7 +2,7 @@ import APIRequest from "helper/APIRequest";
 import APIResponse from "helper/APIResponse"
 import JWT from "helper/JWT";
 import Language from "helper/language";
-import RocketChatRequest from "helper/request";
+import RocketChatRequest from "helper/RocketChatRequest";
 import Validation from "helper/validation";
 
 const schema = Validation.object({

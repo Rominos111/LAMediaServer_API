@@ -1,14 +1,11 @@
 import APIRequest from "helper/APIRequest";
 import APIResponse from "helper/APIResponse";
 import Language from "helper/language";
-import RocketChatRequest from "helper/request";
+import RocketChatRequest from "helper/RocketChatRequest";
 import Validation from "helper/validation";
 import Message from "model/message";
 
 const schema = Validation.object({
-    token: Validation.jwt().required().messages({
-        "any.required": Language.get("validation.token.required"),
-    }),
     roomId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
@@ -22,7 +19,7 @@ const schema = Validation.object({
 });
 
 module.exports = APIRequest.post(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/chat.sendMessage", req.body.token, res, {
+    RocketChatRequest.request("POST", "/chat.sendMessage", req, res, {
         message: {
             rid: req.body.roomId,
             msg: req.body.message.trim(),
