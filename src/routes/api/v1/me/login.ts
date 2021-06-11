@@ -27,5 +27,11 @@ module.exports = APIRequest.post(schema, (req, res) => {
         return APIResponse.fromSuccess({
             token: token
         });
+    }, (r, data) => {
+        if (r.status === 401) {
+            return APIResponse.fromFailure(Language.get("login.unauthorized"), r.status, data);
+        } else {
+            return APIResponse.fromFailure(r.statusText, r.status, data);
+        }
     });
 });
