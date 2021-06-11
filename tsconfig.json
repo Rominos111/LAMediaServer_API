@@ -12,6 +12,7 @@
         ],
         "module": "commonjs",
         "moduleResolution": "node",
+        "noFallthroughCasesInSwitch": true,
         "noImplicitAny": false,
         "noImplicitReturns": true,
         "noImplicitThis": true,
@@ -19,8 +20,10 @@
         "outDir": "build",
         "preserveConstEnums": true,
         "removeComments": true,
+        "resolveJsonModule": true,
         "rootDir": "src",
         "sourceMap": true,
+        "skipLibCheck": true,
         "strict": true,
         "strictNullChecks": true,
         "target": "es6"
