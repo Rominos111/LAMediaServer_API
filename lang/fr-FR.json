@@ -33,5 +33,8 @@
         "emoji": {
             "required": "Vous devez préciser le nom de la réaction"
         }
+    },
+    "login": {
+        "unauthorized": "Votre nom d'utilisateur ou votre mot de passe est incorrect"
     }
 }
