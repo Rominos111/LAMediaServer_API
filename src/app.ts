@@ -1,7 +1,8 @@
+import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
-import RateLimiter from "express-rate-limit";
-import RateSlower from "express-slow-down";
+import rateLimiter from "express-rate-limit";
+import rateSlower from "express-slow-down";
 import walk from "fs-walk";
 import APIResponse from "helper/APIResponse";
 import envConfig from "helper/envConfig";
@@ -49,13 +50,16 @@ if (process.env.RELEASE_ENVIRONMENT === "dev") {
     app.use(logger("short"));
 }
 
+// Requêtes en JSON
+app.use(bodyParser.json())
+
 // JSON
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
 if (process.env.RELEASE_ENVIRONMENT !== "dev") {
     // Limite de requêtes, va renvoyer des erreurs 429 après une limit de requêtes.
-    app.use(RateLimiter({
+    app.use(rateLimiter({
         max: parseInt(<string>process.env.RATE_LIMIT_MAX_REQUESTS) + (parseInt(<string>process.env.RATE_LIMIT_MAX_DELAY) / parseInt(<string>process.env.RATE_LIMIT_DELAY_INCREMENT)),
         windowMs: parseInt(<string>process.env.RATE_LIMIT_WINDOW) * 1000,
         message: JSON.stringify(
@@ -69,7 +73,7 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
 
     // Limite de requêtes, va ralentir chaque requête au delà de 100 sur 2 minutes,
     //  en ajoutant 100 ms de latence par requête supplémentaire, avec comme maximum 1 seconde de latence
-    app.use(RateSlower({
+    app.use(rateSlower({
         windowMs: parseInt(<string>process.env.RATE_LIMIT_WINDOW) * 1000,
         delayAfter: parseInt(<string>process.env.RATE_LIMIT_MAX_REQUESTS),
         delayMs: parseInt(<string>process.env.RATE_LIMIT_DELAY_INCREMENT),

@@ -27,10 +27,10 @@ export default class APIRequest {
 
         let router = express.Router();
 
-        // Validation, GET
+        // Validation
         router.get(route, Validation.get(validationSchema), callback);
 
-        // Erreur 405 pour les autres méthodes que GET
+        // Erreur 405 pour les autres méthodes
         router.all(route, this._methodNotAllowed);
         return router;
     }
@@ -56,10 +56,10 @@ export default class APIRequest {
 
         let router = express.Router();
 
-        // Validation, GET
+        // Validation
         router.post(route, Validation.post(validationSchema), callback);
 
-        // Erreur 405 pour les autres méthodes que GET
+        // Erreur 405 pour les autres méthodes
         router.all(route, this._methodNotAllowed);
         return router;
     }
@@ -85,10 +85,10 @@ export default class APIRequest {
 
         let router = express.Router();
 
-        // Validation, GET
+        // Validation
         router.delete(route, Validation.delete(validationSchema), callback);
 
-        // Erreur 405 pour les autres méthodes que GET
+        // Erreur 405 pour les autres méthodes
         router.all(route, this._methodNotAllowed);
         return router;
     }
