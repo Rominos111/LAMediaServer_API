@@ -34,7 +34,7 @@ const corsOptions: cors.CorsOptions = {
     ],
     credentials: true,
     methods: 'GET,PUT,PATCH,POST,DELETE',
-    origin: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
+    origin: "*",
     preflightContinue: false,
 };
 
