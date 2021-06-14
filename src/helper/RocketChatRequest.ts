@@ -1,21 +1,21 @@
 import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
 import {Request, Response} from "express";
-import APIResponse from "helper/APIResponse";
-import RocketChat, {RocketChatAuthentication} from "helper/rocketChat";
+import {APIResponse} from "helper/APIResponse";
+import {RocketChat, RocketChatAuthentication} from "helper/rocketChat";
 
 /**
  * Méthodes de requête
  */
 enum RequestMethod {
     /**
+     * Supprime
+     */
+    DELETE = "DELETE",
+
+    /**
      * Récupération, listing. Cacheable
      */
     GET = "GET",
-
-    /**
-     * Update, remplace complètement
-     */
-    PUT = "PUT",
 
     /**
      * Update, remplace partiellement
@@ -28,35 +28,9 @@ enum RequestMethod {
     POST = "POST",
 
     /**
-     * Supprime
+     * Update, remplace complètement
      */
-    DELETE = "DELETE",
-}
-
-/**
- * Récupère la méthode Axios associée au type de requête associé
- * @param method Méthode, comme GET ou POST
- */
-function getMethodFunction(method: RequestMethod): { requestFunction: any, usePayload: boolean } {
-    switch (method) {
-        case RequestMethod.GET:
-            return {requestFunction: axios.get, usePayload: false};
-
-        case RequestMethod.PUT:
-            return {requestFunction: axios.put, usePayload: true};
-
-        case RequestMethod.PATCH:
-            return {requestFunction: axios.patch, usePayload: true};
-
-        case RequestMethod.POST:
-            return {requestFunction: axios.post, usePayload: true};
-
-        case RequestMethod.DELETE:
-            return {requestFunction: axios.delete, usePayload: false};
-
-        default:
-            throw new Error("No such HTTP method");
-    }
+    PUT = "PUT",
 }
 
 /**
@@ -77,23 +51,24 @@ class RocketChatRequest {
                           route: string,
                           authReq: Request | null = null,
                           res: Response,
-                          payload: Object | null = null,
+                          payload: object | null = null,
                           onSuccess: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
-                          onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null = null
+                          onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
     ): void {
         if (payload === null) {
             payload = {};
         }
 
+        let accessRoute = route;
         if (<RequestMethod>HTTPMethod === RequestMethod.GET) {
             // Cas spécial pour les requêtes GET, il faut les transformer en "/route?a=x&b=y"
-            route = this._setGetPayload(route, payload);
+            accessRoute = this._setGetPayload(route, payload);
         }
 
         // Headers envoyés à Rocket.chat
         let headers: AxiosRequestConfig = {
             "headers": {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             }
         };
 
@@ -111,10 +86,37 @@ class RocketChatRequest {
         }
 
         if (tokenAllowed) {
-            this._continueRequest(<RequestMethod>HTTPMethod, route, headers, res, payload, onSuccess, onFailure);
+            this._continueRequest(<RequestMethod>HTTPMethod, accessRoute, headers, res, payload, onSuccess, onFailure);
         } else {
             // Token invalide ou absent
             APIResponse.fromFailure("Invalid token", 401).send(res);
+        }
+    }
+
+    /**
+     * Récupère la méthode Axios associée au type de requête associé
+     * @param method Méthode, comme GET ou POST
+     * @private
+     */
+    private static _getMethodFunction(method: RequestMethod): { requestFunction: Function, usePayload: boolean } {
+        switch (method) {
+            case RequestMethod.GET:
+                return {requestFunction: axios.get, usePayload: false};
+
+            case RequestMethod.PUT:
+                return {requestFunction: axios.put, usePayload: true};
+
+            case RequestMethod.PATCH:
+                return {requestFunction: axios.patch, usePayload: true};
+
+            case RequestMethod.POST:
+                return {requestFunction: axios.post, usePayload: true};
+
+            case RequestMethod.DELETE:
+                return {requestFunction: axios.delete, usePayload: false};
+
+            default:
+                throw new Error("No such HTTP method");
         }
     }
 
@@ -122,11 +124,11 @@ class RocketChatRequest {
                                     route: string,
                                     headers: AxiosRequestConfig,
                                     res: Response,
-                                    payload: Object,
+                                    payload: object,
                                     onSuccess: ((r: AxiosResponse, data: any) => APIResponse) | null,
                                     onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null,
     ): void {
-        const {requestFunction, usePayload} = getMethodFunction(HTTPMethod);
+        const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
 
         if (onSuccess === null) {
             // Fonction de succès par défaut
@@ -181,7 +183,7 @@ class RocketChatRequest {
         });
     }
 
-    private static _getAuthenticationData(req: Request, method: RequestMethod): RocketChatAuthentication | null {
+    private static _getAuthenticationData(req: Request, _method: RequestMethod): RocketChatAuthentication | null {
         let token: string | null = null;
 
         if (req.body._token !== undefined) {
@@ -208,21 +210,20 @@ class RocketChatRequest {
      * @param payload Payload
      * @private
      */
-    private static _setGetPayload(route: string, payload: Object): string {
+    private static _setGetPayload(route: string, payload: object): string {
         const keys = Object.keys(payload);
         if (keys.length === 0) {
             return route;
         } else {
-            route += "?";
+            let newRoute = route + "?";
 
             for (const key of keys) {
-                route += `${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}&`;
+                newRoute += `${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}&`;
             }
 
-            return route.slice(0, -1);
+            return newRoute.slice(0, -1);
         }
     }
 }
 
 export {RocketChatRequest, RequestMethod}
-export default RocketChatRequest;

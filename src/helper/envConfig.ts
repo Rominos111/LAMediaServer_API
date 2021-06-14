@@ -1,11 +1,11 @@
 import {randomBytes} from "crypto";
 import dotenv from "dotenv";
-import Language from "helper/language";
+import {Language} from "helper/language";
 
 /**
  * Configuration de l'environnement
  */
-export default abstract class envConfig {
+abstract class envConfig {
     /**
      * Configuration
      */
@@ -49,3 +49,5 @@ export default abstract class envConfig {
         Language.config("fr-FR");
     }
 }
+
+export {envConfig};

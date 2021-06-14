@@ -1,4 +1,6 @@
 import {FileAttachment, ImageAttachment} from ".";
+import {ImageAttachmentSpecs} from "./imageAttachment";
+import {FileAttachmentSpecs} from "./fileAttachment";
 
 /**
  * Type de pièce-jointe
@@ -26,17 +28,19 @@ abstract class Attachment {
         return this._type;
     }
 
-    public static fromArray(rawAttachments: any[]): Attachment[] | undefined {
+    public static fromArray(rawAttachments: object[] | undefined): Attachment[] | undefined {
         if (rawAttachments === undefined) {
             return undefined;
         } else {
             let attachments: Attachment[] = [];
 
-            for (let rawAttachment of rawAttachments) {
-                if (rawAttachment.image_url !== undefined) {
-                    attachments.push(new ImageAttachment(rawAttachment.author_icon, rawAttachment.image_url));
+            for (const rawAttachment of rawAttachments) {
+                if (rawAttachment.hasOwnProperty("image_url")) {
+                    const imageAttachment = <ImageAttachmentSpecs>rawAttachment;
+                    attachments.push(new ImageAttachment(imageAttachment.author_icon, imageAttachment.image_url));
                 } else {
-                    attachments.push(new FileAttachment(rawAttachment.title_link, rawAttachment.title_link_download));
+                    const fileAttachment = <FileAttachmentSpecs>rawAttachment;
+                    attachments.push(new FileAttachment(fileAttachment.title_link, fileAttachment.title_link_download));
                 }
             }
 
@@ -44,9 +48,9 @@ abstract class Attachment {
         }
     }
 
-    public toJSON(): Object {
+    public toJSON(): object {
         return {
-            type: this.type
+            type: this.type,
         };
     }
 }

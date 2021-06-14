@@ -1,7 +1,7 @@
 /**
  * Réaction
  */
-export default class Reaction {
+class Reaction {
     /**
      * Réaction
      * @private
@@ -27,11 +27,11 @@ export default class Reaction {
         return this._usernames;
     }
 
-    public static fromObject(obj: any | undefined): Reaction[] | undefined {
+    public static fromObject(obj: object[] | undefined): Reaction[] | undefined {
         if (obj === undefined) {
             return undefined;
         } else {
-            let reactions: Reaction[] = [];
+            const reactions: Reaction[] = [];
 
             for (const reaction of Object.keys(obj)) {
                 reactions.push(new Reaction(reaction, obj[reaction].usernames));
@@ -41,10 +41,12 @@ export default class Reaction {
         }
     }
 
-    public toJSON(): Object {
+    public toJSON(): object {
         return {
             reaction: this.reaction,
             usernames: this.usernames,
         }
     }
 }
+
+export {Reaction};

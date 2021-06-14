@@ -8,24 +8,24 @@ import {Response} from "express";
  */
 enum APIRErrorType {
     /**
-     * Erreur lors de la requête
-     */
-    REQUEST = "request",
-
-    /**
      * Erreur lors de l'accès à la route, comme un 404 ou un 405
      */
     ACCESS = "access",
 
     /**
-     * Erreur de validation
+     * Erreur lors de la requête
      */
-    VALIDATION = "validation",
+    REQUEST = "request",
 
     /**
      * Erreur inconnue
      */
     UNKNOWN = "unknown",
+
+    /**
+     * Erreur de validation
+     */
+    VALIDATION = "validation",
 }
 
 /**
@@ -36,19 +36,19 @@ class APIResponse {
      * Data
      * @private
      */
-    private readonly _data: Object = {};
-
-    /**
-     * Statut HTTP
-     * @private
-     */
-    private readonly _statusCode: number = 200;
+    private readonly _data: object;
 
     /**
      * headers supplémentaires
      * @private
      */
-    private readonly _headers: Object = {};
+    private readonly _headers: object;
+
+    /**
+     * Statut HTTP
+     * @private
+     */
+    private readonly _statusCode: number;
 
     /**
      * Constructeur privé
@@ -57,7 +57,7 @@ class APIResponse {
      * @param headers Headers supplémentaires
      * @private
      */
-    private constructor(data: Object, statusCode: number = 200, headers: Object = {}) {
+    private constructor(data: object = {}, statusCode = 200, headers: object = {}) {
         this._data = data;
         this._statusCode = statusCode;
         this._headers = headers;
@@ -70,12 +70,12 @@ class APIResponse {
      * @param payload Payload
      * @param errorType Type d'erreur
      */
-    public static fromFailure(errorMessage: String = "",
-                              statusCode: number = 400,
-                              payload: Object | Object[] | null = null,
-                              errorType: APIRErrorType | string = "request"
+    public static fromFailure(errorMessage = "",
+                              statusCode = 400,
+                              payload: object | object[] | null = null,
+                              errorType: APIRErrorType | string = "request",
     ): APIResponse {
-        let headers = {};
+        const headers = {};
         if (statusCode === 401 || statusCode === 403) {
             headers["WWW-Authenticate"] = `Bearer realm="Token for the LAMediaServer API", charset="UTF-8"`;
         }
@@ -95,9 +95,9 @@ class APIResponse {
      * @param statusCode Code d'erreur
      * @param message Message
      */
-    public static fromSuccess(payload: Object | Object[] | null = null,
-                              statusCode: number = 200,
-                              message: String = "OK"): APIResponse {
+    public static fromSuccess(payload: object | object[] | null = null,
+                              statusCode = 200,
+                              message = "OK"): APIResponse {
         return new APIResponse({
             "message": message,
             "payload": payload,
@@ -108,9 +108,9 @@ class APIResponse {
      * Depuis une chaine
      * @param message Message
      */
-    public static fromString(message: string = ""): APIResponse {
+    public static fromString(message = ""): APIResponse {
         return this.fromSuccess({
-            "message": message
+            "message": message,
         });
     }
 
@@ -119,23 +119,22 @@ class APIResponse {
      * @param res Variable de réponse de Express
      */
     public send(res: Response): Response {
-        res = res.status(this._statusCode);
-        res = res.type("json");
+        let response = res.status(this._statusCode);
+        response = response.type("json");
 
         for (let key of Object.keys(this._headers)) {
-            res = res.set(key, this._headers[key]);
+            response = response.set(key, this._headers[key]);
         }
 
-        return res.json(this._data);
+        return response.json(this._data);
     }
 
     /**
      * Data raw
      */
-    public getRaw(): Object {
+    public getRaw(): object {
         return this._data;
     }
 }
 
-export {APIResponse}
-export default APIResponse;
+export {APIResponse};

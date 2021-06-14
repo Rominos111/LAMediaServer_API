@@ -2,10 +2,10 @@
  * Statut de connexion
  */
 enum UserStatus {
-    UNKNOWN = "unknown",
+    AWAY = "away",
     OFFLINE = "offline",
     ONLINE = "online",
-    AWAY = "away",
+    UNKNOWN = "unknown",
 }
 
 /**
@@ -19,10 +19,10 @@ class User {
     private readonly _id: string;
 
     /**
-     * Nom d'utilisateur
+     * Dernière activité
      * @private
      */
-    private readonly _username: string;
+    private readonly _lastSeen: Date | undefined;
 
     /**
      * Nom complet
@@ -37,10 +37,10 @@ class User {
     private readonly _status: UserStatus | undefined;
 
     /**
-     * Dernière activité
+     * Nom d'utilisateur
      * @private
      */
-    private readonly _lastSeen: Date | undefined;
+    private readonly _username: string;
 
     private constructor(id: string,
                         username: string,
@@ -58,8 +58,8 @@ class User {
         return this._id;
     }
 
-    public get username(): string {
-        return this._username;
+    public get lastSeen(): Date | undefined {
+        return this._lastSeen;
     }
 
     public get name(): string {
@@ -70,8 +70,8 @@ class User {
         return this._status;
     }
 
-    public get lastSeen(): Date | undefined {
-        return this._lastSeen;
+    public get username(): string {
+        return this._username;
     }
 
     public static fromFullUser(id: string,
@@ -98,16 +98,15 @@ class User {
     /**
      * Permet l'encodage en JSON
      */
-    public toJSON(): Object {
+    public toJSON(): object {
         return {
             id: this.id,
-            username: this.username,
+            lastSeen: this.lastSeen,
             name: this.name,
             status: this.status,
-            lastSeen: this.lastSeen,
+            username: this.username,
         }
     }
 }
 
 export {User, UserStatus};
-export default User;

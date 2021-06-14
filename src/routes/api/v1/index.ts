@@ -1,5 +1,5 @@
 import express from "express";
-import APIResponse from "helper/APIResponse"
+import {APIResponse} from "helper/APIResponse"
 
 let router = express.Router();
 

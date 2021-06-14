@@ -1,23 +1,17 @@
 /**
  * Canal
  */
-import Message from "model/message";
+import {Message} from "model/message";
 
 /**
  * Canal
  */
-export default class Channel {
+class Channel {
     /**
-     * ID
+     * Canal par défaut ou non
      * @private
      */
-    private readonly _id: string;
-
-    /**
-     * Nom
-     * @private
-     */
-    private readonly _name: string;
+    private readonly _defaultRoom: boolean;
 
     /**
      * Description
@@ -26,16 +20,22 @@ export default class Channel {
     private readonly _description: string;
 
     /**
-     * Canal par défaut ou non
+     * ID
      * @private
      */
-    private readonly _defaultRoom: boolean;
+    private readonly _id: string;
 
     /**
      * Dernier message
      * @private
      */
     private readonly _lastMessage: Message | undefined;
+
+    /**
+     * Nom
+     * @private
+     */
+    private readonly _name: string;
 
     /**
      * Constructeur
@@ -47,8 +47,8 @@ export default class Channel {
      */
     public constructor(id: string,
                        name: string,
-                       description: string = "",
-                       defaultRoom: boolean = false,
+                       description = "",
+                       defaultRoom = false,
                        lastMessage: Message | undefined = undefined) {
         this._id = id;
         this._name = name;
@@ -57,30 +57,30 @@ export default class Channel {
         this._lastMessage = lastMessage;
     }
 
-    public get id(): string {
-        return this._id;
-    }
-
-    public get name(): string {
-        return this._name;
+    public get defaultRoom(): boolean {
+        return this._defaultRoom;
     }
 
     public get description(): string {
         return this._description;
     }
 
-    public get defaultRoom(): boolean {
-        return this._defaultRoom;
+    public get id(): string {
+        return this._id;
     }
 
     public get lastMessage(): Message | undefined {
         return this._lastMessage;
     }
 
+    public get name(): string {
+        return this._name;
+    }
+
     /**
      * Permet l'encodage en JSON
      */
-    public toJSON(): Object {
+    public toJSON(): object {
         return {
             id: this.id,
             name: this.name,
@@ -90,3 +90,5 @@ export default class Channel {
         }
     }
 }
+
+export {Channel};

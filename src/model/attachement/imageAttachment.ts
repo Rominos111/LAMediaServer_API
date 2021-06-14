@@ -1,9 +1,14 @@
 import {Attachment, AttachmentType} from ".";
 
+interface ImageAttachmentSpecs {
+    author_icon: string,
+    image_url: string,
+}
+
 /**
  * Pièce-jointe image
  */
-export class ImageAttachment extends Attachment {
+class ImageAttachment extends Attachment {
     /**
      * Lien de la preview
      * @private
@@ -30,7 +35,7 @@ export class ImageAttachment extends Attachment {
         return this._imageURL;
     }
 
-    public toJSON(): Object {
+    public toJSON(): object {
         return {
             ...super.toJSON(),
             iconLink: this.iconLink,
@@ -38,3 +43,6 @@ export class ImageAttachment extends Attachment {
         };
     }
 }
+
+export {ImageAttachment};
+export type {ImageAttachmentSpecs};
