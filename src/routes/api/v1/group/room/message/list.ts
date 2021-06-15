@@ -15,11 +15,10 @@ module.exports = APIRequest.get(schema, (req, res) => {
     RocketChatRequest.request("GET", "/channels.messages", req, res, {
         roomId: req.body.roomId,
     }, (r, data) => {
-        const currentUserID = r.config.headers["X-User-Id"];
         const messages: Message[] = [];
 
         for (const elt of data.messages) {
-            messages.push(Message.fromFullMessage(elt, currentUserID));
+            messages.push(Message.fromFullMessage(elt, <string>r.currentUserId));
         }
 
         return APIResponse.fromSuccess(messages);

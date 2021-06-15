@@ -15,7 +15,6 @@ module.exports = APIRequest.get(schema, (req, res) => {
     RocketChatRequest.request("GET", "/channels.members", req, res, {
         roomId: req.body.roomId,
     }, (r, data) => {
-        const currentUserID = r.config.headers["X-User-Id"];
         const users: User[] = [];
 
         for (const elt of data.members) {
@@ -23,7 +22,7 @@ module.exports = APIRequest.get(schema, (req, res) => {
                 elt._id,
                 elt.username,
                 elt.name,
-                elt._id === currentUserID,
+                elt._id === r.currentUserId,
                 elt.status,
                 elt._updatedAt,
             ));
