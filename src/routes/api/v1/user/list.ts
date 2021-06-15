@@ -15,7 +15,6 @@ module.exports = APIRequest.get(null, (req, res) => {
                 elt.name,
                 elt._id === currentUserID,
                 elt.status,
-                undefined,
             ));
             // FIXME: Pas de `last seen` ?
         }

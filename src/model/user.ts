@@ -19,13 +19,11 @@ class User {
      */
     private readonly _id: string;
 
-    private readonly _isMe: boolean;
-
     /**
-     * Dernière activité
+     * Utilisateur courant ou non
      * @private
      */
-    private readonly _lastSeen: Date | undefined;
+    private readonly _isMe: boolean;
 
     /**
      * Nom complet
@@ -50,13 +48,12 @@ class User {
                         name: string,
                         isMe: boolean,
                         status: UserStatus | undefined = undefined,
-                        lastSeen: Date | undefined = undefined) {
+    ) {
         this._id = id;
         this._username = username;
         this._name = name;
         this._isMe = isMe;
         this._status = status;
-        this._lastSeen = lastSeen;
     }
 
     public get id(): string {
@@ -65,10 +62,6 @@ class User {
 
     public get isMe(): boolean {
         return this._isMe;
-    }
-
-    public get lastSeen(): Date | undefined {
-        return this._lastSeen;
     }
 
     public get name(): string {
@@ -88,13 +81,8 @@ class User {
                                name: string,
                                isMe: boolean,
                                status: string | UserStatus,
-                               lastSeen: string | Date | undefined,
     ): User {
-        if (lastSeen !== undefined) {
-            lastSeen = new Date(lastSeen);
-        }
-
-        return new this(id, username, name, isMe, <UserStatus>status, lastSeen);
+        return new this(id, username, name, isMe, <UserStatus>status);
     }
 
     public static fromPartialUser(id: string, username: string, name: string | undefined, isMe: boolean): User {
@@ -112,7 +100,6 @@ class User {
         return {
             id: this.id,
             isMe: this.isMe,
-            lastSeen: this.lastSeen,
             name: this.name,
             status: this.status,
             username: this.username,

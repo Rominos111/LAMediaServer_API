@@ -6,25 +6,25 @@ import {Validation} from "helper/validation";
 import {User} from "model/user";
 
 const schema = Validation.object({
-    roomId: Validation.string().required().messages({
+    groupId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });
 
 module.exports = APIRequest.get(schema, (req, res) => {
-    RocketChatRequest.request("GET", "/channels.members", req, res, {
-        roomId: req.body.roomId,
+    RocketChatRequest.request("GET", "/teams.members", req, res, {
+        teamId: req.body.groupId,
+        count: 0,
     }, (r, data) => {
         const users: User[] = [];
 
         for (const elt of data.members) {
             users.push(User.fromFullUser(
-                elt._id,
-                elt.username,
-                elt.name,
-                elt._id === r.currentUserId,
-                elt.status,
-                elt._updatedAt,
+                elt.user._id,
+                elt.user.username,
+                elt.user.name,
+                elt.user._id === r.currentUserId,
+                elt.user.status,
             ));
         }
 
