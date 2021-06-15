@@ -178,3 +178,4 @@ class Message {
 }
 
 export {Message};
+export type {RawMessage};

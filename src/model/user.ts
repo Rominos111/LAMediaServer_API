@@ -3,6 +3,7 @@
  */
 enum UserStatus {
     AWAY = "away",
+    BUSY = "busy",
     OFFLINE = "offline",
     ONLINE = "online",
     UNKNOWN = "unknown",
