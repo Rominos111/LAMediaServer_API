@@ -1,10 +1,6 @@
-import express from "express";
+import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse"
 
-let router = express.Router();
-
-router.get("/", (req, res) => {
-    APIResponse.fromString("OK").send(res);
+module.exports = APIRequest.get(null, (_req, res) => {
+    APIResponse.fromString("API v1").send(res);
 });
-
-module.exports = router;

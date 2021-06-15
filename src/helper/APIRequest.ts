@@ -92,6 +92,14 @@ class APIRequest {
         return router;
     }
 
+    public static wip(): express.Router {
+        let router = express.Router();
+        router.all("/", (_req, res) => {
+            APIResponse.fromFailure("Not Implemented", 501, null, "access").send(res);
+        });
+        return router;
+    }
+
     /**
      * Méthode non autorisée
      * @private
