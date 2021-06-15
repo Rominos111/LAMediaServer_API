@@ -1,7 +1,16 @@
-import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
-import {Request, Response} from "express";
+import axios, {
+    AxiosRequestConfig,
+    AxiosResponse
+} from "axios";
+import {
+    Request,
+    Response
+} from "express";
 import {APIResponse} from "helper/APIResponse";
-import {RocketChat, RocketChatAuthentication} from "helper/rocketChat";
+import {
+    RocketChat,
+    RocketChatAuthentication
+} from "helper/rocketChat";
 
 /**
  * Méthodes de requête
@@ -33,6 +42,10 @@ enum RequestMethod {
     PUT = "PUT",
 }
 
+interface CustomAxiosResponse extends AxiosResponse {
+    currentUserId: string | null,
+}
+
 /**
  * Requête à l'API de Rocket.chat
  */
@@ -52,7 +65,7 @@ class RocketChatRequest {
                           authReq: Request | null = null,
                           res: Response,
                           payload: object | null = null,
-                          onSuccess: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
+                          onSuccess: ((r: CustomAxiosResponse, data: any) => APIResponse) | null = null,
                           onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
     ): void {
         if (payload === null) {
@@ -125,7 +138,7 @@ class RocketChatRequest {
                                     headers: AxiosRequestConfig,
                                     res: Response,
                                     payload: object,
-                                    onSuccess: ((r: AxiosResponse, data: any) => APIResponse) | null,
+                                    onSuccess: ((r: CustomAxiosResponse, data: any) => APIResponse) | null,
                                     onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null,
     ): void {
         const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
@@ -163,7 +176,17 @@ class RocketChatRequest {
                     console.log("`r.data.success` is not true. Value:", r.data.success);
                 }
 
-                (<Function>onSuccess)(r, r.data).send(res);
+                let uid = null;
+                if (r.config.headers["X-User-Id"] !== undefined) {
+                    uid = r.config.headers["X-User-Id"];
+                }
+
+                let customRes: CustomAxiosResponse = {
+                    ...r,
+                    currentUserId: uid,
+                };
+
+                (<Function>onSuccess)(customRes, r.data).send(res);
             } else {
                 // Réponse invalide, erreur
                 (<Function>onFailure)(r, r.data).send(res);
@@ -226,4 +249,7 @@ class RocketChatRequest {
     }
 }
 
-export {RocketChatRequest, RequestMethod}
+export {
+    RocketChatRequest,
+    RequestMethod,
+}
