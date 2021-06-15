@@ -26,6 +26,7 @@ module.exports = APIRequest.post(schema, (req, res) => {
             msg: req.body.message.trim(),
         },
     }, (r, data) => {
-        return APIResponse.fromSuccess(Message.fromFullMessage(data.message));
+        const currentUserID = r.config.headers["X-User-Id"];
+        return APIResponse.fromSuccess(Message.fromFullMessage(data.message, currentUserID));
     });
 });

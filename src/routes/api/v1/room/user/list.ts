@@ -15,10 +15,18 @@ module.exports = APIRequest.get(schema, (req, res) => {
     RocketChatRequest.request("GET", "/channels.members", req, res, {
         roomId: req.body.roomId,
     }, (r, data) => {
+        const currentUserID = r.config.headers["X-User-Id"];
         const users: User[] = [];
 
         for (const elt of data.members) {
-            users.push(User.fromFullUser(elt._id, elt.username, elt.name, elt.status, elt._updatedAt));
+            users.push(User.fromFullUser(
+                elt._id,
+                elt.username,
+                elt.name,
+                elt._id === currentUserID,
+                elt.status,
+                elt._updatedAt,
+            ));
         }
 
         return APIResponse.fromSuccess(users);

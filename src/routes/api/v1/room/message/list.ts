@@ -14,13 +14,20 @@ const schema = Validation.object({
 module.exports = APIRequest.get(schema, (req, res) => {
     RocketChatRequest.request("GET", "/channels.messages", req, res, {
         roomId: req.body.roomId,
-    }, (_r, data) => {
+    }, (r, data) => {
+        const currentUserID = r.config.headers["X-User-Id"];
         const messages: Message[] = [];
 
         for (const elt of data.messages) {
-            messages.push(Message.fromFullMessage(elt));
+            messages.push(Message.fromFullMessage(elt, currentUserID));
         }
 
         return APIResponse.fromSuccess(messages);
+    }, (r, data) => {
+        if (r.status === 400 && data.errorType === "error-room-not-found") {
+            return APIResponse.fromFailure("Not Found", 404);
+        } else {
+            return APIResponse.fromFailure(r.statusText, r.status);
+        }
     });
 });

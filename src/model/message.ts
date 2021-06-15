@@ -117,12 +117,18 @@ class Message {
     /**
      * Depuis un message complet
      * @param rawMessage Message
+     * @param currentUserID ID de l'utilisateur courant, pour savoir si ce message vient de l'utilisateur connecté
      */
-    public static fromFullMessage(rawMessage: RawMessage): Message {
+    public static fromFullMessage(rawMessage: RawMessage, currentUserID: string): Message {
         return new this(
             rawMessage._id,
             rawMessage.msg,
-            User.fromPartialUser(rawMessage.u._id, rawMessage.u.username, rawMessage.u.name),
+            User.fromPartialUser(
+                rawMessage.u._id,
+                rawMessage.u.username,
+                rawMessage.u.name,
+                rawMessage.u._id === currentUserID,
+            ),
             rawMessage.rid,
             new Date(rawMessage.ts),
             Attachment.fromArray(rawMessage.attachments),
@@ -133,8 +139,9 @@ class Message {
     /**
      * Depuis un message partiel
      * @param rawMessage Message
+     * @param userID ID de l'utilisateur courant
      */
-    public static fromPartialMessage(rawMessage: object | undefined): Message | undefined {
+    public static fromPartialMessage(rawMessage: object | undefined, userID: string): Message | undefined {
         if (rawMessage === undefined || rawMessage.hasOwnProperty("msg")) {
             // FIXME: Gérer les cas où le dernier message est une réaction
             return undefined;
@@ -143,7 +150,12 @@ class Message {
             return new this(
                 partialMessage._id,
                 partialMessage.msg,
-                User.fromPartialUser(partialMessage.u._id, partialMessage.u.username, partialMessage.u.name),
+                User.fromPartialUser(
+                    partialMessage.u._id,
+                    partialMessage.u.username,
+                    partialMessage.u.name,
+                    partialMessage.u._id === userID,
+                ),
                 undefined,
                 undefined,
                 undefined,

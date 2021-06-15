@@ -18,6 +18,8 @@ class User {
      */
     private readonly _id: string;
 
+    private readonly _isMe: boolean;
+
     /**
      * Dernière activité
      * @private
@@ -45,17 +47,23 @@ class User {
     private constructor(id: string,
                         username: string,
                         name: string,
+                        isMe: boolean,
                         status: UserStatus | undefined = undefined,
                         lastSeen: Date | undefined = undefined) {
         this._id = id;
         this._username = username;
         this._name = name;
+        this._isMe = isMe;
         this._status = status;
         this._lastSeen = lastSeen;
     }
 
     public get id(): string {
         return this._id;
+    }
+
+    public get isMe(): boolean {
+        return this._isMe;
     }
 
     public get lastSeen(): Date | undefined {
@@ -77,6 +85,7 @@ class User {
     public static fromFullUser(id: string,
                                username: string,
                                name: string,
+                               isMe: boolean,
                                status: string | UserStatus,
                                lastSeen: string | Date | undefined,
     ): User {
@@ -84,14 +93,14 @@ class User {
             lastSeen = new Date(lastSeen);
         }
 
-        return new this(id, username, name, <UserStatus>status, lastSeen);
+        return new this(id, username, name, isMe, <UserStatus>status, lastSeen);
     }
 
-    public static fromPartialUser(id: string, username: string, name: string | undefined): User {
+    public static fromPartialUser(id: string, username: string, name: string | undefined, isMe: boolean): User {
         if (name === undefined) {
-            return new this(id, username, username);
+            return new this(id, username, username, isMe);
         } else {
-            return new this(id, username, name);
+            return new this(id, username, name, isMe);
         }
     }
 
@@ -101,6 +110,7 @@ class User {
     public toJSON(): object {
         return {
             id: this.id,
+            isMe: this.isMe,
             lastSeen: this.lastSeen,
             name: this.name,
             status: this.status,

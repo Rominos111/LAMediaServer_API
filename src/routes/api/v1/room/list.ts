@@ -6,6 +6,7 @@ import {Message} from "model/message";
 
 module.exports = APIRequest.get(null, (req, res) => {
     RocketChatRequest.request(RequestMethod.GET, "/rooms.get", req, res, null, (r, data) => {
+        const currentUserID = r.config.headers["X-User-Id"];
         let rooms: Channel[] = [];
 
         for (const elt of data.update) {
@@ -14,7 +15,7 @@ module.exports = APIRequest.get(null, (req, res) => {
                 elt.name,
                 elt.description,
                 elt.default,
-                Message.fromPartialMessage(elt.lastMessage))
+                Message.fromPartialMessage(elt.lastMessage, currentUserID))
             );
         }
 
