@@ -146,7 +146,7 @@ class Message {
             // FIXME: Gérer les cas où le dernier message est une réaction
             return undefined;
         } else {
-            const partialMessage = <PartialMessageSpecs>rawMessage;
+            const partialMessage = rawMessage as PartialMessageSpecs;
             return new this(
                 partialMessage._id,
                 partialMessage.msg,

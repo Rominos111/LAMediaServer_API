@@ -22,7 +22,7 @@ module.exports = APIRequest.get(schema, (req, res) => {
         const rooms: Room[] = [];
 
         for (const discussion of data.discussions) {
-            rooms.push(Room.fromFullObject(discussion, <string>r.currentUserId));
+            rooms.push(Room.fromFullObject(discussion, r.currentUserId as string));
         }
 
         return APIResponse.fromSuccess(rooms);

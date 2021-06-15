@@ -82,7 +82,7 @@ class User {
                                isMe: boolean,
                                status: string | UserStatus,
     ): User {
-        return new this(id, username, name, isMe, <UserStatus>status);
+        return new this(id, username, name, isMe, status as UserStatus);
     }
 
     public static fromPartialUser(id: string, username: string, name: string | undefined, isMe: boolean): User {

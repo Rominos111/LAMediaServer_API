@@ -36,10 +36,10 @@ abstract class Attachment {
 
             for (const rawAttachment of rawAttachments) {
                 if (rawAttachment.hasOwnProperty("image_url")) {
-                    const imageAttachment = <ImageAttachmentSpecs>rawAttachment;
+                    const imageAttachment = rawAttachment as ImageAttachmentSpecs;
                     attachments.push(new ImageAttachment(imageAttachment.author_icon, imageAttachment.image_url));
                 } else {
-                    const fileAttachment = <FileAttachmentSpecs>rawAttachment;
+                    const fileAttachment = rawAttachment as FileAttachmentSpecs;
                     attachments.push(new FileAttachment(fileAttachment.title_link, fileAttachment.title_link_download));
                 }
             }

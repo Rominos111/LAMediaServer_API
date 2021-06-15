@@ -73,7 +73,7 @@ class RocketChatRequest {
         }
 
         let accessRoute = route;
-        if (<RequestMethod>HTTPMethod === RequestMethod.GET) {
+        if (HTTPMethod as RequestMethod === RequestMethod.GET) {
             // Cas spécial pour les requêtes GET, il faut les transformer en "/route?a=x&b=y"
             accessRoute = this._setGetPayload(route, payload);
         }
@@ -87,7 +87,7 @@ class RocketChatRequest {
 
         let tokenAllowed = true;
         if (authReq !== null) {
-            const auth = this._getAuthenticationData(<Request>authReq, <RequestMethod>HTTPMethod);
+            const auth = this._getAuthenticationData(authReq as Request, HTTPMethod as RequestMethod);
 
             if (auth === null) {
                 tokenAllowed = false;
@@ -99,7 +99,7 @@ class RocketChatRequest {
         }
 
         if (tokenAllowed) {
-            this._continueRequest(<RequestMethod>HTTPMethod, accessRoute, headers, res, payload, onSuccess, onFailure);
+            this._continueRequest(HTTPMethod as RequestMethod, accessRoute, headers, res, payload, onSuccess, onFailure);
         } else {
             // Token invalide ou absent
             APIResponse.fromFailure("Invalid token", 401).send(res);
@@ -186,10 +186,10 @@ class RocketChatRequest {
                     currentUserId: uid,
                 };
 
-                (<Function>onSuccess)(customRes, r.data).send(res);
+                (onSuccess as Function)(customRes, r.data).send(res);
             } else {
                 // Réponse invalide, erreur
-                (<Function>onFailure)(r, r.data).send(res);
+                (onFailure as Function)(r, r.data).send(res);
             }
         }).catch((err) => {
             if (err.code && err.code === "ECONNREFUSED") {
@@ -197,7 +197,7 @@ class RocketChatRequest {
                 console.error("Connection refused with Rocket.chat");
                 APIResponse.fromFailure("Connection refused", 500).send(res);
             } else if (err.response) {
-                (<Function>onFailure)(err.response, err.response.data).send(res);
+                (onFailure as Function)(err.response, err.response.data).send(res);
             } else {
                 // Erreur inconnue
                 console.debug(err);

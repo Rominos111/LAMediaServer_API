@@ -82,7 +82,7 @@ class APIResponse {
 
         return new APIResponse({
             "error": {
-                "type": <APIRErrorType>((<string>errorType).toLowerCase()),
+                "type": ((errorType as string).toLowerCase()) as APIRErrorType,
             },
             "message": errorMessage,
             "payload": payload,

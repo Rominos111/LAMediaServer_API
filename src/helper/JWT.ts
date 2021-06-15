@@ -38,7 +38,7 @@ abstract class JWT {
         };
 
         // Création du token
-        return JWTLib.sign(payload, <string>process.env.JWT_SECRET, {
+        return JWTLib.sign(payload, process.env.JWT_SECRET as string, {
             expiresIn: "24h",
             issuer: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
             subject: username,
@@ -56,7 +56,7 @@ abstract class JWT {
 
         try {
             // Vérification du token JWT
-            obj = <Token | null>JWTLib.verify(token, <string>process.env.JWT_SECRET);
+            obj = JWTLib.verify(token, process.env.JWT_SECRET as string) as Token | null;
         } catch (err) {
             obj = null;
         }
@@ -79,7 +79,9 @@ abstract class JWT {
      * @private
      */
     private static _AES_encrypt(value: string): string {
-        const cipher = createCipheriv("aes-256-cbc", <string>process.env.AES_KEY, <string>process.env.AES_IV);
+        const AES_KEY = process.env.AES_KEY as string;
+        const AES_IV = process.env.AES_IV as string;
+        const cipher = createCipheriv("aes-256-cbc", AES_KEY, AES_IV);
         const encrypted = cipher.update(value, "ascii", "base64");
         return encrypted + cipher.final("base64");
     }
@@ -90,7 +92,9 @@ abstract class JWT {
      * @private
      */
     private static _AES_decrypt(encrypted: string): string {
-        const decipher = createDecipheriv("aes-256-cbc", <string>process.env.AES_KEY, <string>process.env.AES_IV);
+        const AES_KEY = process.env.AES_KEY as string;
+        const AES_IV = process.env.AES_IV as string;
+        const decipher = createDecipheriv("aes-256-cbc", AES_KEY, AES_IV);
         const decrypted = decipher.update(encrypted, "base64", "ascii");
         return decrypted + decipher.final("ascii");
     }

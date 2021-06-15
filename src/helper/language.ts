@@ -35,10 +35,10 @@ abstract class Language {
 
         if (typeof value === "string") {
             for (const replacement of replacementArray) {
-                value = (<string>value).replace("%%", <string>replacement);
+                value = (value as string).replace("%%", replacement as string);
             }
 
-            return <string>value;
+            return value as string;
         } else {
             return "(unknown string)";
         }

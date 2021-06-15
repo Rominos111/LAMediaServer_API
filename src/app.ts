@@ -59,9 +59,14 @@ app.use(express.urlencoded({extended: false}));
 
 if (process.env.RELEASE_ENVIRONMENT !== "dev") {
     // Limite de requêtes, va renvoyer des erreurs 429 après une limit de requêtes.
+    const RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS as string);
+    const RATE_LIMIT_MAX_DELAY = parseInt(process.env.RATE_LIMIT_MAX_DELAY as string);
+    const RATE_LIMIT_DELAY_INCREMENT = parseInt(process.env.RATE_LIMIT_DELAY_INCREMENT as string);
+    const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW as string) * 1000;
+
     app.use(rateLimiter({
-        max: parseInt(<string>process.env.RATE_LIMIT_MAX_REQUESTS) + (parseInt(<string>process.env.RATE_LIMIT_MAX_DELAY) / parseInt(<string>process.env.RATE_LIMIT_DELAY_INCREMENT)),
-        windowMs: parseInt(<string>process.env.RATE_LIMIT_WINDOW) * 1000,
+        max: RATE_LIMIT_MAX_REQUESTS + (RATE_LIMIT_MAX_DELAY / RATE_LIMIT_DELAY_INCREMENT),
+        windowMs: RATE_LIMIT_WINDOW,
         message: JSON.stringify(
             APIResponse
                 .fromFailure("Too many requests, please try again later.", 429, null, "access")
@@ -74,10 +79,10 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
     // Limite de requêtes, va ralentir chaque requête au delà de 100 sur 2 minutes,
     //  en ajoutant 100 ms de latence par requête supplémentaire, avec comme maximum 1 seconde de latence
     app.use(rateSlower({
-        windowMs: parseInt(<string>process.env.RATE_LIMIT_WINDOW) * 1000,
-        delayAfter: parseInt(<string>process.env.RATE_LIMIT_MAX_REQUESTS),
-        delayMs: parseInt(<string>process.env.RATE_LIMIT_DELAY_INCREMENT),
-        maxDelayMs: parseInt(<string>process.env.RATE_LIMIT_MAX_DELAY),
+        windowMs: RATE_LIMIT_WINDOW,
+        delayAfter: RATE_LIMIT_MAX_REQUESTS,
+        delayMs: RATE_LIMIT_DELAY_INCREMENT,
+        maxDelayMs: RATE_LIMIT_MAX_DELAY,
         // @ts-ignore
         headers: true,
     }));

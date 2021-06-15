@@ -18,7 +18,7 @@ module.exports = APIRequest.get(schema, (req, res) => {
         const messages: Message[] = [];
 
         for (const elt of data.messages) {
-            messages.push(Message.fromFullMessage(elt, <string>r.currentUserId));
+            messages.push(Message.fromFullMessage(elt, r.currentUserId as string));
         }
 
         return APIResponse.fromSuccess(messages);
