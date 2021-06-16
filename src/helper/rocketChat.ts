@@ -1,20 +1,20 @@
-import JWT from "helper/JWT";
+import {JWT} from "helper/JWT";
 
 /**
  * Authentification Rocket.chat
  */
 class RocketChatAuthentication {
     /**
-     * ID de l'utilisateur
-     * @private
-     */
-    private readonly _userId: string;
-
-    /**
      * Token d'authentification de l'utilisateur
      * @private
      */
     private readonly _authToken: string;
+
+    /**
+     * ID de l'utilisateur
+     * @private
+     */
+    private readonly _userId: string;
 
     /**
      * Constructeur
@@ -28,17 +28,17 @@ class RocketChatAuthentication {
     }
 
     /**
-     * ID de l'utilisateur
+     * Token d'authentification Rocket.chat
      */
-    public get userId() {
-        return this._userId;
+    public get authToken(): string {
+        return this._authToken;
     }
 
     /**
-     * Token d'authentification Rocket.chat
+     * ID de l'utilisateur
      */
-    public get authToken() {
-        return this._authToken;
+    public get userId(): string {
+        return this._userId;
     }
 
     /**
@@ -69,7 +69,7 @@ class RocketChat {
      * Récupère l'URL Rocket.chat à partir d'un endpoint
      * @param endpoint Destination de l'API, comme "/login"
      */
-    static getAPIUrl(endpoint: string = ""): string {
+    static getAPIUrl(endpoint = ""): string {
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
         }
@@ -79,4 +79,3 @@ class RocketChat {
 }
 
 export {RocketChat, RocketChatAuthentication};
-export default RocketChat;

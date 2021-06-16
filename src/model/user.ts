@@ -2,10 +2,11 @@
  * Statut de connexion
  */
 enum UserStatus {
-    UNKNOWN = "unknown",
+    AWAY = "away",
+    BUSY = "busy",
     OFFLINE = "offline",
     ONLINE = "online",
-    AWAY = "away",
+    UNKNOWN = "unknown",
 }
 
 /**
@@ -19,10 +20,10 @@ class User {
     private readonly _id: string;
 
     /**
-     * Nom d'utilisateur
+     * Utilisateur courant ou non
      * @private
      */
-    private readonly _username: string;
+    private readonly _isMe: boolean;
 
     /**
      * Nom complet
@@ -37,29 +38,30 @@ class User {
     private readonly _status: UserStatus | undefined;
 
     /**
-     * Dernière activité
+     * Nom d'utilisateur
      * @private
      */
-    private readonly _lastSeen: Date | undefined;
+    private readonly _username: string;
 
     private constructor(id: string,
                         username: string,
                         name: string,
+                        isMe: boolean,
                         status: UserStatus | undefined = undefined,
-                        lastSeen: Date | undefined = undefined) {
+    ) {
         this._id = id;
         this._username = username;
         this._name = name;
+        this._isMe = isMe;
         this._status = status;
-        this._lastSeen = lastSeen;
     }
 
     public get id(): string {
         return this._id;
     }
 
-    public get username(): string {
-        return this._username;
+    public get isMe(): boolean {
+        return this._isMe;
     }
 
     public get name(): string {
@@ -70,44 +72,39 @@ class User {
         return this._status;
     }
 
-    public get lastSeen(): Date | undefined {
-        return this._lastSeen;
+    public get username(): string {
+        return this._username;
     }
 
     public static fromFullUser(id: string,
                                username: string,
                                name: string,
+                               isMe: boolean,
                                status: string | UserStatus,
-                               lastSeen: string | Date | undefined,
     ): User {
-        if (lastSeen !== undefined) {
-            lastSeen = new Date(lastSeen);
-        }
-
-        return new this(id, username, name, <UserStatus>status, lastSeen);
+        return new this(id, username, name, isMe, status as UserStatus);
     }
 
-    public static fromPartialUser(id: string, username: string, name: string | undefined): User {
+    public static fromPartialUser(id: string, username: string, name: string | undefined, isMe: boolean): User {
         if (name === undefined) {
-            return new this(id, username, username);
+            return new this(id, username, username, isMe);
         } else {
-            return new this(id, username, name);
+            return new this(id, username, name, isMe);
         }
     }
 
     /**
      * Permet l'encodage en JSON
      */
-    public toJSON(): Object {
+    public toJSON(): object {
         return {
             id: this.id,
-            username: this.username,
+            isMe: this.isMe,
             name: this.name,
             status: this.status,
-            lastSeen: this.lastSeen,
+            username: this.username,
         }
     }
 }
 
 export {User, UserStatus};
-export default User;

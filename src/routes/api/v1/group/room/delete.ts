@@ -1,7 +1,7 @@
-import APIRequest from "helper/APIRequest";
-import Language from "helper/language";
-import RocketChatRequest from "helper/RocketChatRequest";
-import Validation from "helper/validation";
+import {APIRequest} from "helper/APIRequest";
+import {Language} from "helper/language";
+import {RocketChatRequest} from "helper/RocketChatRequest";
+import {Validation} from "helper/validation";
 
 const schema = Validation.object({
     roomId: Validation.string().required().messages({

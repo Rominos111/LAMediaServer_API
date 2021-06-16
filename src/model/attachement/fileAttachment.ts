@@ -1,9 +1,14 @@
 import {Attachment, AttachmentType} from ".";
 
+interface FileAttachmentSpecs {
+    title_link: string,
+    title_link_download: boolean,
+}
+
 /**
  * Pièce-jointe fichier
  */
-export class FileAttachment extends Attachment {
+class FileAttachment extends Attachment {
     /**
      * Lien du fichier
      * @private
@@ -30,7 +35,7 @@ export class FileAttachment extends Attachment {
         return this._isDownloadable;
     }
 
-    public toJSON(): Object {
+    public toJSON(): object {
         return {
             ...super.toJSON(),
             fileLink: this.fileLink,
@@ -38,3 +43,6 @@ export class FileAttachment extends Attachment {
         };
     }
 }
+
+export {FileAttachment};
+export type {FileAttachmentSpecs};

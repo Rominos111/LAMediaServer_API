@@ -1,5 +1,3 @@
-import express from "express";
+import {APIRequest} from "helper/APIRequest";
 
-let router = express.Router();
-
-module.exports = router;
+module.exports = APIRequest.wip();
