@@ -113,6 +113,20 @@ walk.filesSync(routesPath, (basedir, filename, _stat, _next) => {
     }
 });
 
+app.use((req, _res, next) => {
+    // HACK: Très peu orthodoxe de remplacer `req.query` et `req.body`
+
+    if (Object.keys(req.query).length === 0 && Object.keys(req.body).length !== 0) {
+        req.query = req.body;
+    }
+
+    if (Object.keys(req.body).length === 0 && Object.keys(req.query).length !== 0) {
+        req.body = req.query;
+    }
+
+    next();
+});
+
 for (let importedRoute of importedRoutes) {
     app.use(importedRoute.route, require(importedRoute.path));
 }

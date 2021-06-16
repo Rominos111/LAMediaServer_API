@@ -49,15 +49,11 @@ abstract class Validation {
     }
 
     public static get(schema: Joi.AnySchema): express.RequestHandler {
-        return validator.body(schema);
+        return validator.query(schema);
     }
 
     public static post(schema: Joi.AnySchema): express.RequestHandler {
         return validator.body(schema);
-    }
-
-    public static query(schema: Joi.AnySchema): express.RequestHandler {
-        return validator.query(schema);
     }
 }
 
