@@ -169,7 +169,7 @@ class RocketChatRequest {
         }
 
         promise.then((r) => {
-            if (Math.floor(r.status / 100) === 2) {
+            if (this._isGoodStatusCode(r.status)) {
                 // Réponse valide
 
                 if (r.data.success !== true && r.data.success !== undefined) {
@@ -206,13 +206,17 @@ class RocketChatRequest {
         });
     }
 
+    private static _isGoodStatusCode(statusCode: number): boolean {
+        return [200, 201, 204, 304].includes(statusCode);
+    }
+
     private static _getAuthenticationData(req: Request, _method: RequestMethod): RocketChatAuthentication | null {
         let token: string | null = null;
 
         if (req.body._token !== undefined) {
             token = req.body._token;
         } else if (req.headers["authorization"] !== undefined) {
-            token = req.headers["authorization"]?.split(' ')[1];
+            token = req.headers["authorization"].split(' ')[1];
         }
 
         if (token === null) {
