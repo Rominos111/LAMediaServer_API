@@ -27,11 +27,10 @@ if (process.env.REVERSE_PROXY !== undefined && ["1", "true"].includes(process.en
 
 const corsOptions: cors.CorsOptions = {
     allowedHeaders: [
-        "Origin",
-        "X-Requested-With",
-        "Content-Type",
         "Accept",
-        "X-Access-Token",
+        "Authorization",
+        "Content-Type",
+        "Origin",
     ],
     credentials: true,
     methods: 'GET,PUT,PATCH,POST,DELETE',
