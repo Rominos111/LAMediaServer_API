@@ -46,6 +46,9 @@ interface CustomAxiosResponse extends AxiosResponse {
     currentUserId: string | null,
 }
 
+type SuccessCallback = (r: CustomAxiosResponse, data: any) => APIResponse | Promise<APIResponse> | null;
+type FailureCallback = (r: AxiosResponse, data: any) => APIResponse | Promise<APIResponse> | null;
+
 /**
  * Requête à l'API de Rocket.chat
  */
@@ -60,14 +63,14 @@ class RocketChatRequest {
      * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
      * @param onFailure Fonction appelée en cas d'échec HTTP
      */
-    public static request(HTTPMethod: RequestMethod | string,
-                          route: string,
-                          authReq: Request | null = null,
-                          res: Response,
-                          payload: object | null = null,
-                          onSuccess: ((r: CustomAxiosResponse, data: any) => APIResponse) | null = null,
-                          onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null = null,
-    ): void {
+    public static async request(HTTPMethod: RequestMethod | string,
+                                route: string,
+                                authReq: Request | null = null,
+                                res: Response | null,
+                                payload: object | null = null,
+                                onSuccess: SuccessCallback | null = null,
+                                onFailure: FailureCallback | null = null,
+    ): Promise<void> {
         if (payload === null) {
             payload = {};
         }
@@ -99,8 +102,16 @@ class RocketChatRequest {
         }
 
         if (tokenAllowed) {
-            this._continueRequest(HTTPMethod as RequestMethod, accessRoute, headers, res, payload, onSuccess, onFailure);
-        } else {
+            await this._continueRequest(
+                HTTPMethod as RequestMethod,
+                accessRoute,
+                headers,
+                res,
+                payload,
+                onSuccess,
+                onFailure
+            );
+        } else if (res !== null) {
             // Token invalide ou absent
             APIResponse.fromFailure("Invalid token", 401).send(res);
         }
@@ -133,14 +144,14 @@ class RocketChatRequest {
         }
     }
 
-    private static _continueRequest(HTTPMethod: RequestMethod,
-                                    route: string,
-                                    headers: AxiosRequestConfig,
-                                    res: Response,
-                                    payload: object,
-                                    onSuccess: ((r: CustomAxiosResponse, data: any) => APIResponse) | null,
-                                    onFailure: ((r: AxiosResponse, data: any) => APIResponse) | null,
-    ): void {
+    private static async _continueRequest(HTTPMethod: RequestMethod,
+                                          route: string,
+                                          headers: AxiosRequestConfig,
+                                          res: Response | null,
+                                          payload: object,
+                                          onSuccess: SuccessCallback | null,
+                                          onFailure: FailureCallback | null,
+    ): Promise<void> {
         const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
 
         if (onSuccess === null) {
@@ -168,7 +179,8 @@ class RocketChatRequest {
             promise = requestFunction(RocketChat.getAPIUrl(route), headers);
         }
 
-        promise.then((r) => {
+        let promiseOrRes: APIResponse | Promise<APIResponse> | null = null;
+        await promise.then(async (r) => {
             if (this._isGoodStatusCode(r.status)) {
                 // Réponse valide
 
@@ -186,24 +198,30 @@ class RocketChatRequest {
                     currentUserId: uid,
                 };
 
-                (onSuccess as Function)(customRes, r.data).send(res);
+                promiseOrRes = (onSuccess as Function)(customRes, r.data);
             } else {
                 // Réponse invalide, erreur
-                (onFailure as Function)(r, r.data).send(res);
+                promiseOrRes = (onFailure as Function)(r, r.data);
             }
         }).catch((err) => {
             if (err.code && err.code === "ECONNREFUSED") {
                 // Rocket.chat n'est pas lancé
                 console.error("Connection refused with Rocket.chat");
-                APIResponse.fromFailure("Connection refused", 500).send(res);
+                promiseOrRes = APIResponse.fromFailure("Connection refused", 500);
             } else if (err.response) {
-                (onFailure as Function)(err.response, err.response.data).send(res);
+                promiseOrRes = (onFailure as Function)(err.response, err.response.data);
             } else {
                 // Erreur inconnue
                 console.debug(err);
-                APIResponse.fromFailure("Unknown error", 500).send(res);
+                promiseOrRes = APIResponse.fromFailure("Unknown error", 500);
             }
         });
+
+        let resAPI: APIResponse | null = await promiseOrRes;
+
+        if (resAPI !== null && res !== null) {
+            (<APIResponse>resAPI).send(res);
+        }
     }
 
     private static _isGoodStatusCode(statusCode: number): boolean {
