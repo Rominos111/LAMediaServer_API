@@ -60,5 +60,5 @@ abstract class Attachment {
 
 export {
     Attachment,
-    AttachmentType
+    AttachmentType,
 };
