@@ -204,10 +204,13 @@ class RocketChatRequest {
                 promiseOrRes = (onFailure as Function)(r, r.data);
             }
         }).catch((err) => {
-            if (err.code && err.code === "ECONNREFUSED") {
+            if (err.code === "ECONNREFUSED") {
                 // Rocket.chat n'est pas lancé
-                console.error("Connection refused with Rocket.chat");
+                console.error("Connection refusée avec Rocket.chat");
                 promiseOrRes = APIResponse.fromFailure("Connection refused", 500);
+            } else if (err.code === "ECONNRESET") {
+                console.info("Socket hang up");
+                promiseOrRes = null;
             } else if (err.response) {
                 promiseOrRes = (onFailure as Function)(err.response, err.response.data);
             } else {
