@@ -9,8 +9,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.delete(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/teams.delete", req, res, {
+module.exports = APIRequest.delete(schema, async (req, res) => {
+    await RocketChatRequest.request("POST", "/teams.delete", req, res, {
         teamId: req.body.groupId,
     });
 });

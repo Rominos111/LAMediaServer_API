@@ -13,8 +13,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.delete(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/chat.delete", req, res, {
+module.exports = APIRequest.delete(schema, async (req, res) => {
+    await RocketChatRequest.request("POST", "/chat.delete", req, res, {
         roomId: req.body.roomId,
         msgId: req.body.messageId,
         asUser: true,
@@ -26,5 +26,5 @@ module.exports = APIRequest.delete(schema, (req, res) => {
         }
     }, (_r, _data) => {
         return APIResponse.fromFailure();
-    }).then();
+    });
 });

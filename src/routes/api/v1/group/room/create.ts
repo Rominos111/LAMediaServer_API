@@ -11,8 +11,8 @@ const schema = Validation.object({
     groupRoomId: Validation.string().required(),
 });
 
-module.exports = APIRequest.post(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/rooms.createDiscussion", req, res, {
+module.exports = APIRequest.post(schema, async (req, res) => {
+    await RocketChatRequest.request("POST", "/rooms.createDiscussion", req, res, {
         t_name: req.body.name,
         prid: req.body.groupRoomId,
     }, (_r, data) => {

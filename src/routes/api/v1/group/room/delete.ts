@@ -9,8 +9,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.delete(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/channels.delete", req, res, {
+module.exports = APIRequest.delete(schema, async (req, res) => {
+    await RocketChatRequest.request("POST", "/channels.delete", req, res, {
         roomId: req.body.roomId,
     });
 });

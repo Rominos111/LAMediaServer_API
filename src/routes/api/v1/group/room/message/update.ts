@@ -1,12 +1,10 @@
 import {APIRequest} from "helper/APIRequest";
-import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
 import {
     RequestMethod,
     RocketChatRequest,
 } from "helper/RocketChatRequest";
 import {Validation} from "helper/validation";
-import {Room} from "model/room";
 
 const schema = Validation.object({
     groupRoomId: Validation.string().required().messages({
@@ -24,13 +22,13 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.put(schema, (req, res) => {
-    RocketChatRequest.request(RequestMethod.POST, "/chat.update", req, res, {
+module.exports = APIRequest.put(schema, async (req, res) => {
+    await RocketChatRequest.request(RequestMethod.POST, "/chat.update", req, res, {
         roomId: req.body.groupRoomId,
         msgId: req.body.messageId,
         text: req.body.message,
     }, (r, data) => {
         console.log(r);
         return null;
-    }).then();
+    });
 });

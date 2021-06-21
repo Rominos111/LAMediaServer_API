@@ -14,9 +14,9 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.get(schema, (req, res) => {
+module.exports = APIRequest.get(schema, async (req, res) => {
     // FIXME: Utiliser `.query` (cf. `app.js`)
-    RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", req, res, {
+    await RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", req, res, {
         roomId: req.body.groupRoomId,
         count: 0,
     }, (r, data) => {

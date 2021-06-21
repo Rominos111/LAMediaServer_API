@@ -3,11 +3,11 @@ import {APIResponse} from "helper/APIResponse";
 import {RocketChatRequest} from "helper/RocketChatRequest";
 import {Group} from "model/group";
 
-module.exports = APIRequest.get(null, (req, res) => {
-    RocketChatRequest.request("GET", "/teams.list", req, res, {
+module.exports = APIRequest.get(null, async (req, res) => {
+    await RocketChatRequest.request("GET", "/teams.list", req, res, {
         count: 0,
     }, async (r, data) => {
-        const groups: (Group|null)[] = [];
+        const groups: (Group | null)[] = [];
         const promises: Promise<void>[] = [];
 
         for (let i = 0; i < data.teams.length; ++i) {
@@ -38,5 +38,5 @@ module.exports = APIRequest.get(null, (req, res) => {
 
         const groupsFiltered = groups.filter(group => group !== null);
         return APIResponse.fromSuccess(groupsFiltered);
-    }).then();
+    });
 });

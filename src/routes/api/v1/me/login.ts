@@ -18,8 +18,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.post(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/login", null, res, {
+module.exports = APIRequest.post(schema, async (req, res) => {
+    await RocketChatRequest.request("POST", "/login", null, res, {
         username: req.body.username,
         password: req.body.password
     }, (r, data) => {
