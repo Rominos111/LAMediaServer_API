@@ -5,7 +5,7 @@
     "scripts": {
         "start": "ts-node --project tsconfig-run.json --require tsconfig-paths/register src/app.ts",
         "test": "mocha",
-        "ts-build": "tsc --build --project tsconfig-build.json",
+        "ts-build": "tsc --project tsconfig-build.json",
         "watch:ts-build": "tsc --watch",
         "watch:start": "nodemon"
     },
