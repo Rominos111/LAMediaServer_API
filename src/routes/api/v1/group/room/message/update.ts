@@ -1,15 +1,18 @@
 import {APIRequest} from "helper/APIRequest";
-import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
-import {RocketChatRequest} from "helper/RocketChatRequest";
+import {
+    RequestMethod,
+    RocketChatRequest,
+} from "helper/RocketChatRequest";
 import {Validation} from "helper/validation";
-import {Message} from "model/message";
 
 const schema = Validation.object({
-    roomId: Validation.string().required().messages({
+    groupRoomId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
-    // FIXME: Set la limite en variable d'environnement ?
+    messageId: Validation.string().required().messages({
+        "any.required": Language.get("validation.id.required"),
+    }),
     message: Validation.string().trim().min(1).max(2_000).required().messages({
         "any.required": Language.get("validation.message.required"),
         "string.empty": Language.get("validation.message.short"),
@@ -19,13 +22,13 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.post(schema, async (req, res) => {
-    await RocketChatRequest.request("POST", "/chat.sendMessage", req, res, {
-        message: {
-            rid: req.body.roomId,
-            msg: req.body.message.trim(),
-        },
+module.exports = APIRequest.put(schema, async (req, res) => {
+    await RocketChatRequest.request(RequestMethod.POST, "/chat.update", req, res, {
+        roomId: req.body.groupRoomId,
+        msgId: req.body.messageId,
+        text: req.body.message,
     }, (r, data) => {
-        return APIResponse.fromSuccess(Message.fromFullMessage(data.message, r.currentUserId as string));
+        console.log(r);
+        return null;
     });
 });

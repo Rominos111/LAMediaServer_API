@@ -4,13 +4,13 @@ import {RocketChatRequest} from "helper/RocketChatRequest";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    roomId: Validation.string().required().messages({
+    groupId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });
 
 module.exports = APIRequest.delete(schema, async (req, res) => {
-    await RocketChatRequest.request("POST", "/channels.delete", req, res, {
-        roomId: req.body.roomId,
+    await RocketChatRequest.request("POST", "/teams.delete", req, res, {
+        teamId: req.body.groupId,
     });
 });

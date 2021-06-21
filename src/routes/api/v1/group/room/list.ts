@@ -14,8 +14,9 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.get(schema, (req, res) => {
-    RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", req, res, {
+module.exports = APIRequest.get(schema, async (req, res) => {
+    // FIXME: Utiliser `.query` (cf. `app.js`)
+    await RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", req, res, {
         roomId: req.body.groupRoomId,
         count: 0,
     }, (r, data) => {
@@ -26,5 +27,12 @@ module.exports = APIRequest.get(schema, (req, res) => {
         }
 
         return APIResponse.fromSuccess(rooms);
+    }, (r, data) => {
+        if (r.status === 400 && data.errorType === "error-room-not-found") {
+            return APIResponse.fromFailure("Room not found", 404);
+        } else {
+            console.debug(data);
+            return APIResponse.fromFailure(r.statusText, r.status);
+        }
     });
 });

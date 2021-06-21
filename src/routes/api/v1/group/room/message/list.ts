@@ -11,14 +11,18 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.get(schema, (req, res) => {
-    RocketChatRequest.request("GET", "/channels.messages", req, res, {
+module.exports = APIRequest.get(schema, async (req, res) => {
+    await RocketChatRequest.request("GET", "/groups.history", req, res, {
         roomId: req.body.roomId,
+        count: 0, // FIXME: Ajouter une limite
     }, (r, data) => {
         const messages: Message[] = [];
 
-        for (const elt of data.messages) {
-            messages.push(Message.fromFullMessage(elt, r.currentUserId as string));
+        for (const rawMessage of data.messages) {
+            if (rawMessage.t === undefined) {
+                // FIXME: Gérer ces messages spéciaux, comme les invitations
+                messages.push(Message.fromFullMessage(rawMessage, r.currentUserId as string));
+            }
         }
 
         return APIResponse.fromSuccess(messages);

@@ -3,21 +3,21 @@ import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
 import {RocketChatRequest} from "helper/RocketChatRequest";
 import {Validation} from "helper/validation";
-import {Room} from "model/room";
 
 const schema = Validation.object({
     name: Validation.string().required().messages({
         "any.required": Language.get("validation.name.required"),
     }),
-    members: Validation.array().items(Validation.string().required()),
+    groupRoomId: Validation.string().required(),
 });
 
-module.exports = APIRequest.post(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/channels.create", req, res, {
-        name: req.body.name,
-        members: [req.body.members] // FIXME: Nécessaire ?
+module.exports = APIRequest.post(schema, async (req, res) => {
+    await RocketChatRequest.request("POST", "/rooms.createDiscussion", req, res, {
+        t_name: req.body.name,
+        prid: req.body.groupRoomId,
     }, (_r, data) => {
-        // TODO:
+        console.debug(data);
+        // TODO: S'occuper du message de réponse
         return APIResponse.fromString("TODO");
         // return APIResponse.fromSuccess(new Room(data.channel._id, data.channel.name));
     });

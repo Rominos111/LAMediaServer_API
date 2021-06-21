@@ -17,9 +17,9 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.post(schema, (req, res) => {
+module.exports = APIRequest.post(schema, async (req, res) => {
     console.log(req.body.operation);
-    RocketChatRequest.request("POST", "/chat.react", req, res, {
+    await RocketChatRequest.request("POST", "/chat.react", req, res, {
         emoji: req.body.emojiName.trim(),
         messageId: req.body.messageId,
         shouldReact: req.body.operation.toLowerCase() === "set",

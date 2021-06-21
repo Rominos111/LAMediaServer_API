@@ -12,8 +12,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.post(schema, (req, res) => {
-    RocketChatRequest.request("POST", "/channels.invite", req, res, {
+module.exports = APIRequest.post(schema, async (req, res) => {
+    await RocketChatRequest.request("POST", "/channels.invite", req, res, {
         roomId: req.body.roomId,
     });
 });

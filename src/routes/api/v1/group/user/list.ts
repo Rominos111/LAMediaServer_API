@@ -11,8 +11,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.get(schema, (req, res) => {
-    RocketChatRequest.request("GET", "/teams.members", req, res, {
+module.exports = APIRequest.get(schema, async (req, res) => {
+    await RocketChatRequest.request("GET", "/teams.members", req, res, {
         teamId: req.body.groupId,
         count: 0,
     }, (r, data) => {
