@@ -1,4 +1,7 @@
-import {Attachment, AttachmentType} from ".";
+import {
+    Attachment,
+    AttachmentType,
+} from ".";
 
 interface FileAttachmentSpecs {
     title_link: string,

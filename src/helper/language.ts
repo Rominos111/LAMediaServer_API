@@ -45,4 +45,4 @@ abstract class Language {
     }
 }
 
-export {Language}
+export {Language};

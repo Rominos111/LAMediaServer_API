@@ -1,4 +1,7 @@
-import {createCipheriv, createDecipheriv} from "crypto";
+import {
+    createCipheriv,
+    createDecipheriv,
+} from "crypto";
 import JWTLib from "jsonwebtoken";
 
 /**
@@ -6,8 +9,8 @@ import JWTLib from "jsonwebtoken";
  */
 type Token = {
     data: {
-        userId: string,
         authToken: string,
+        userId: string,
     },
 }
 
@@ -30,10 +33,10 @@ abstract class JWT {
      */
     public static createToken(userId: string, authToken: string, username: string): string {
         // Payload du token
-        let payload = {
+        const payload = {
             data: {
-                userId: userId,
                 authToken: this._AES_encrypt(authToken),
+                userId,
             },
         };
 

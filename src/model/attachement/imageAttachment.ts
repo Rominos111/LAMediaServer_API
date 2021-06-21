@@ -1,4 +1,7 @@
-import {Attachment, AttachmentType} from ".";
+import {
+    Attachment,
+    AttachmentType,
+} from ".";
 
 interface ImageAttachmentSpecs {
     author_icon: string,

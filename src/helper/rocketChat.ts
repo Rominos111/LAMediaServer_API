@@ -46,7 +46,7 @@ class RocketChatAuthentication {
      * @param token Token JWT
      */
     public static fromToken(token: string): RocketChatAuthentication | null {
-        let auth = JWT.decodeToken(token);
+        const auth = JWT.decodeToken(token);
         if (auth === null) {
             return null;
         } else {
@@ -69,7 +69,8 @@ class RocketChat {
      * Récupère l'URL Rocket.chat à partir d'un endpoint
      * @param endpoint Destination de l'API, comme "/login"
      */
-    static getAPIUrl(endpoint = ""): string {
+    public static getAPIUrl(endpointRaw = ""): string {
+        let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
         }
@@ -78,4 +79,7 @@ class RocketChat {
     }
 }
 
-export {RocketChat, RocketChatAuthentication};
+export {
+    RocketChat,
+    RocketChatAuthentication,
+};

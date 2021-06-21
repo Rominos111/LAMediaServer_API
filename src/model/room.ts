@@ -25,16 +25,16 @@ type RawFullRoom = {
  */
 class Room {
     /**
-     * Canal par défaut ou non
-     * @private
-     */
-    private readonly _isDefault: boolean;
-
-    /**
      * ID
      * @private
      */
     private readonly _id: string;
+
+    /**
+     * Canal par défaut ou non
+     * @private
+     */
+    private readonly _isDefault: boolean;
 
     /**
      * Dernier message
@@ -81,8 +81,24 @@ class Room {
         this._messagesCount = messagesCount;
     }
 
+    public get id(): string {
+        return this._id;
+    }
+
+    public get isDefault(): boolean {
+        return this._isDefault;
+    }
+
+    public get lastMessage(): Message | undefined {
+        return this._lastMessage;
+    }
+
     public get messagesCount(): number {
         return this._messagesCount;
+    }
+
+    public get name(): string {
+        return this._name;
     }
 
     public get parentRoomId(): string {
@@ -91,22 +107,6 @@ class Room {
 
     public get usersCount(): number {
         return this._usersCount;
-    }
-
-    public get isDefault(): boolean {
-        return this._isDefault;
-    }
-
-    public get id(): string {
-        return this._id;
-    }
-
-    public get lastMessage(): Message | undefined {
-        return this._lastMessage;
-    }
-
-    public get name(): string {
-        return this._name;
     }
 
     public static fromFullObject(obj: RawFullRoom, currentUserId: string): Room {
@@ -118,7 +118,7 @@ class Room {
             obj.prid,
             obj.usersCount,
             obj.msgs,
-        )
+        );
     }
 
     /**
@@ -127,13 +127,13 @@ class Room {
     public toJSON(): object {
         return {
             id: this.id,
-            name: this.name,
             isDefault: this.isDefault,
             lastMessage: this.lastMessage,
             messagesCount: this.messagesCount,
-            usersCount: this.usersCount,
+            name: this.name,
             parentRoomId: this.parentRoomId,
-        }
+            usersCount: this.usersCount,
+        };
     }
 }
 

@@ -77,15 +77,16 @@ class APIResponse {
     ): APIResponse {
         const headers = {};
         if (statusCode === 401 || statusCode === 403) {
-            headers["WWW-Authenticate"] = `Bearer realm="Token for the LAMediaServer API", charset="UTF-8"`;
+            headers["WWW-Authenticate"] = "Bearer realm=\"Token for the LAMediaServer API\", charset=\"UTF-8\"";
+            // FIXME: `Basic` plutôt non ?
         }
 
         return new APIResponse({
-            "error": {
-                "type": ((errorType as string).toLowerCase()) as APIRErrorType,
+            error: {
+                type: ((errorType as string).toLowerCase()) as APIRErrorType,
             },
-            "message": errorMessage,
-            "payload": payload,
+            message: errorMessage,
+            payload,
         }, statusCode, headers);
     }
 
@@ -99,8 +100,8 @@ class APIResponse {
                               statusCode = 200,
                               message = "OK"): APIResponse {
         return new APIResponse({
-            "message": message,
-            "payload": payload,
+            message,
+            payload,
         }, statusCode);
     }
 
@@ -110,7 +111,7 @@ class APIResponse {
      */
     public static fromString(message = ""): APIResponse {
         return this.fromSuccess({
-            "message": message,
+            message,
         });
     }
 
@@ -122,7 +123,7 @@ class APIResponse {
         let response = res.status(this._statusCode);
         response = response.type("json");
 
-        for (let key of Object.keys(this._headers)) {
+        for (const key of Object.keys(this._headers)) {
             response = response.set(key, this._headers[key]);
         }
 

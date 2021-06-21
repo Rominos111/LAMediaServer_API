@@ -45,7 +45,7 @@ class Reaction {
         return {
             reaction: this.reaction,
             usernames: this.usernames,
-        }
+        };
     }
 }
 

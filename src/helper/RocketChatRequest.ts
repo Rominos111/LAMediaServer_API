@@ -1,15 +1,15 @@
 import axios, {
     AxiosRequestConfig,
-    AxiosResponse
+    AxiosResponse,
 } from "axios";
 import {
     Request,
-    Response
+    Response,
 } from "express";
 import {APIResponse} from "helper/APIResponse";
 import {
     RocketChat,
-    RocketChatAuthentication
+    RocketChatAuthentication,
 } from "helper/rocketChat";
 
 /**
@@ -59,7 +59,7 @@ class RocketChatRequest {
      * @param route Route / endpoint
      * @param authReq Authentification requise ou non
      * @param res Réponse express
-     * @param payload Payload fourni
+     * @param rawPayload Payload fourni
      * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
      * @param onFailure Fonction appelée en cas d'échec HTTP
      */
@@ -67,10 +67,11 @@ class RocketChatRequest {
                                 route: string,
                                 authReq: Request | null = null,
                                 res: Response | null,
-                                payload: object | null = null,
+                                rawPayload: object | null = null,
                                 onSuccess: SuccessCallback | null = null,
                                 onFailure: FailureCallback | null = null,
     ): Promise<void> {
+        let payload = rawPayload;
         if (payload === null) {
             payload = {};
         }
@@ -83,7 +84,7 @@ class RocketChatRequest {
 
         // Headers envoyés à Rocket.chat
         let headers: AxiosRequestConfig = {
-            "headers": {
+            headers: {
                 "Content-Type": "application/json",
             }
         };
@@ -109,7 +110,7 @@ class RocketChatRequest {
                 res,
                 payload,
                 onSuccess,
-                onFailure
+                onFailure,
             );
         } else if (res !== null) {
             // Token invalide ou absent
@@ -149,25 +150,27 @@ class RocketChatRequest {
                                           headers: AxiosRequestConfig,
                                           res: Response | null,
                                           payload: object,
-                                          onSuccess: SuccessCallback | null,
-                                          onFailure: FailureCallback | null,
+                                          onSuccessCallback: SuccessCallback | null,
+                                          onFailureCallback: FailureCallback | null,
     ): Promise<void> {
         const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
 
+        let onSuccess = onSuccessCallback;
         if (onSuccess === null) {
             // Fonction de succès par défaut
             onSuccess = (r, data) => {
                 console.debug(data);
                 return APIResponse.fromSuccess(null, r.status);
-            }
+            };
         }
 
+        let onFailure = onFailureCallback;
         if (onFailure === null) {
             // Fonction d'échec par défaut
             onFailure = (r, data) => {
                 console.debug(data);
                 return APIResponse.fromFailure(r.statusText, r.status);
-            }
+            };
         }
 
         let promise: Promise<AxiosResponse>;
@@ -193,7 +196,7 @@ class RocketChatRequest {
                     uid = r.config.headers["X-User-Id"];
                 }
 
-                let customRes: CustomAxiosResponse = {
+                const customRes: CustomAxiosResponse = {
                     ...r,
                     currentUserId: uid,
                 };
@@ -220,8 +223,7 @@ class RocketChatRequest {
             }
         });
 
-        let resAPI: APIResponse | null = await promiseOrRes;
-
+        const resAPI: APIResponse | null = await promiseOrRes;
         if (resAPI !== null && res !== null) {
             (<APIResponse>resAPI).send(res);
         }

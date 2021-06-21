@@ -13,8 +13,8 @@ const schema = Validation.object({
 
 module.exports = APIRequest.get(schema, async (req, res) => {
     await RocketChatRequest.request("GET", "/groups.history", req, res, {
-        roomId: req.body.roomId,
         count: 0, // FIXME: Ajouter une limite
+        roomId: req.body.roomId,
     }, (r, data) => {
         const messages: Message[] = [];
 

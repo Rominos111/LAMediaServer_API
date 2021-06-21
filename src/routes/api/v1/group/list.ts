@@ -16,8 +16,8 @@ module.exports = APIRequest.get(null, async (req, res) => {
             groups.push(null);
 
             const p = RocketChatRequest.request("GET", "/rooms.getDiscussions", req, null, {
-                roomId: group.roomId,
                 count: 1,
+                roomId: group.roomId,
             }, () => {
                 groups[i] = group;
                 return null;
@@ -36,7 +36,7 @@ module.exports = APIRequest.get(null, async (req, res) => {
             await p;
         }
 
-        const groupsFiltered = groups.filter(group => group !== null);
+        const groupsFiltered = groups.filter((group) => group !== null);
         return APIResponse.fromSuccess(groupsFiltered);
     });
 });
