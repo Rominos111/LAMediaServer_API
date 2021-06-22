@@ -62,6 +62,7 @@ class RocketChatRequest {
      * @param rawPayload Payload fourni
      * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
      * @param onFailure Fonction appelée en cas d'échec HTTP
+     * @param useAPIPrefix Utilise le préfixe API "/api/v1/" ou non. Très rarement faux.
      */
     public static async request(HTTPMethod: RequestMethod | string,
                                 route: string,
@@ -70,6 +71,7 @@ class RocketChatRequest {
                                 rawPayload: object | null = null,
                                 onSuccess: SuccessCallback | null = null,
                                 onFailure: FailureCallback | null = null,
+                                useAPIPrefix = true,
     ): Promise<void> {
         let payload = rawPayload;
         if (payload === null) {
@@ -111,6 +113,7 @@ class RocketChatRequest {
                 payload,
                 onSuccess,
                 onFailure,
+                useAPIPrefix,
             );
         } else if (res !== null) {
             // Token invalide ou absent
@@ -152,6 +155,7 @@ class RocketChatRequest {
                                           payload: object,
                                           onSuccessCallback: SuccessCallback | null,
                                           onFailureCallback: FailureCallback | null,
+                                          useAPIPrefix: boolean,
     ): Promise<void> {
         const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
 
@@ -173,13 +177,14 @@ class RocketChatRequest {
             };
         }
 
+        const APIRoute = useAPIPrefix ? RocketChat.getAPIUrl(route) : route;
         let promise: Promise<AxiosResponse>;
         if (usePayload) {
             // Méthodes utilisant un payload, comme POST
-            promise = requestFunction(RocketChat.getAPIUrl(route), payload, headers);
+            promise = requestFunction(APIRoute, payload, headers);
         } else {
             // Méthodes n'utilisant pas de payload, comme GET
-            promise = requestFunction(RocketChat.getAPIUrl(route), headers);
+            promise = requestFunction(APIRoute, headers);
         }
 
         let promiseOrRes: APIResponse | Promise<APIResponse> | null = null;

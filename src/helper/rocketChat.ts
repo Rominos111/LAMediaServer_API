@@ -67,7 +67,7 @@ class RocketChatAuthentication {
 class RocketChat {
     /**
      * Récupère l'URL Rocket.chat à partir d'un endpoint
-     * @param endpoint Destination de l'API, comme "/login"
+     * @param endpointRaw Destination de l'API, comme "/login"
      */
     public static getAPIUrl(endpointRaw = ""): string {
         let endpoint = endpointRaw;
@@ -76,6 +76,15 @@ class RocketChat {
         }
 
         return `${process.env.ROCKETCHAT_PROTOCOL}://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/api/v1/${endpoint}`;
+    }
+
+    public static getRawRocketChatUrl(endpointRaw = ""): string {
+        let endpoint = endpointRaw;
+        if (endpoint.startsWith("/")) {
+            endpoint = endpoint.substr(1);
+        }
+
+        return `${process.env.ROCKETCHAT_PROTOCOL}://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/${endpoint}`;
     }
 }
 

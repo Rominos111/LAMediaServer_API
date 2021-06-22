@@ -28,6 +28,11 @@ enum APIRErrorType {
     VALIDATION = "validation",
 }
 
+enum ResponseType {
+    JSON,
+    SVG,
+}
+
 /**
  * Réponse API
  */
@@ -44,6 +49,8 @@ class APIResponse {
      */
     private readonly _headers: object;
 
+    private readonly _responseType: ResponseType;
+
     /**
      * Statut HTTP
      * @private
@@ -55,12 +62,18 @@ class APIResponse {
      * @param data Data contenue
      * @param statusCode Code d'erreur
      * @param headers Headers supplémentaires
+     * @param responseType Type de réponse (JSON, SVG...)
      * @private
      */
-    private constructor(data: object = {}, statusCode = 200, headers: object = {}) {
+    private constructor(data: object = {},
+                        statusCode = 200,
+                        headers: object = {},
+                        responseType: ResponseType = ResponseType.JSON,
+    ) {
         this._data = data;
         this._statusCode = statusCode;
         this._headers = headers;
+        this._responseType = responseType;
     }
 
     /**
@@ -98,11 +111,19 @@ class APIResponse {
      */
     public static fromSuccess(payload: object | object[] | null = null,
                               statusCode = 200,
-                              message = "OK"): APIResponse {
+                              message = "OK",
+    ): APIResponse {
         return new APIResponse({
             message,
             payload,
         }, statusCode);
+    }
+
+    public static fromRaw(rawObject: any,
+                          statusCode = 200,
+                          responseType: ResponseType = ResponseType.JSON,
+    ): APIResponse {
+        return new APIResponse(rawObject, statusCode, undefined, responseType);
     }
 
     /**
@@ -121,13 +142,18 @@ class APIResponse {
      */
     public send(res: Response): Response {
         let response = res.status(this._statusCode);
-        response = response.type("json");
 
         for (const key of Object.keys(this._headers)) {
             response = response.set(key, this._headers[key]);
         }
 
-        return response.json(this._data);
+        if (this._responseType === ResponseType.SVG) {
+            response = response.type("image/svg+xml");
+            return response.send(this._data);
+        } else if (this._responseType === ResponseType.JSON || true) {
+            response = response.type("json");
+            return response.json(this._data);
+        }
     }
 
     /**
@@ -138,4 +164,7 @@ class APIResponse {
     }
 }
 
-export {APIResponse};
+export {
+    APIResponse,
+    ResponseType,
+};
