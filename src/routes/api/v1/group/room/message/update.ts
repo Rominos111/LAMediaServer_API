@@ -7,9 +7,6 @@ import {
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    groupRoomId: Validation.string().required().messages({
-        "any.required": Language.get("validation.id.required"),
-    }),
     message: Validation.string().trim().min(1).max(2_000).required().messages({
         "any.required": Language.get("validation.message.required"),
         "string.empty": Language.get("validation.message.short"),
@@ -20,12 +17,15 @@ const schema = Validation.object({
     messageId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
+    roomId: Validation.string().required().messages({
+        "any.required": Language.get("validation.id.required"),
+    }),
 });
 
 module.exports = APIRequest.put(schema, async (req, res) => {
     await RocketChatRequest.request(RequestMethod.POST, "/chat.update", req, res, {
         msgId: req.body.messageId,
-        roomId: req.body.groupRoomId,
+        roomId: req.body.roomId,
         text: req.body.message,
     }, (r, data) => {
         console.log(r);
