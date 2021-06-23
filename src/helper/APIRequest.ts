@@ -1,9 +1,12 @@
 import express from "express";
+import expressWs from "express-ws";
 import {APIResponse} from "helper/APIResponse";
 import {
     ObjectSchema,
     Validation,
 } from "helper/validation";
+
+import * as WebSocket from "ws";
 
 /**
  * Requête API
@@ -70,6 +73,19 @@ class APIRequest {
         router.all("/", (_req, res) => {
             APIResponse.fromFailure("Not Implemented", 501, null, "access").send(res);
         });
+        return router;
+    }
+
+    public static ws(validationSchema: ObjectSchema | null = null,
+                     callback: (ws: WebSocket, req: express.Request) => void,
+                     route = "/",
+    ): expressWs.Router {
+        const schema = validationSchema;
+        const router: expressWs.Router = express.Router();
+        router.ws(route, (ws, req) => {
+            callback(ws, req);
+        });
+
         return router;
     }
 

@@ -6,13 +6,13 @@ import rateSlower from "express-slow-down";
 import walk from "fs-walk";
 import {APIResponse} from "helper/APIResponse";
 import {envConfig} from "helper/envConfig";
-import http from "http";
 import createError from "http-errors";
 import logger from "morgan";
 import path from "path";
+import expressWs from "express-ws";
 
-const app = express();
-const server = http.createServer(app);
+const expressWsInstance = expressWs(express());
+const app = expressWsInstance.app;
 
 envConfig.config();
 
@@ -174,6 +174,6 @@ app.use((err, _req, res, _next) => {
 // @ts-ignore
 app.options("*", cors(corsOptions));
 
-server.listen(process.env.SERVER_PORT, () => {
+app.listen(process.env.SERVER_PORT, () => {
     console.info(`Server is now listening on port ${process.env.SERVER_PORT}...`);
 });
