@@ -3,7 +3,7 @@ import {Language} from "helper/language";
 import {
     RequestMethod,
     RocketChatRequest,
-} from "helper/RocketChatRequest";
+} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({

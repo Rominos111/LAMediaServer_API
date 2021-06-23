@@ -5,7 +5,7 @@ import {
 } from "helper/APIResponse";
 import {Language} from "helper/language";
 import {RocketChat} from "helper/rocketChat";
-import {RocketChatRequest} from "helper/RocketChatRequest";
+import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({

@@ -1,6 +1,6 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
-import {RocketChatRequest} from "helper/RocketChatRequest";
+import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Group} from "model/group";
 
 module.exports = APIRequest.get(null, async (req, res) => {
