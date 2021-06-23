@@ -9,7 +9,7 @@ import {RocketChatRequest} from "helper/RocketChatRequest";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    username: Validation.string().alphanum().messages({
+    username: Validation.string().messages({
         "any.required": Language.get("validation.username.required"),
         "string.empty": Language.get("validation.username.empty"),
     }),
