@@ -26,6 +26,7 @@
         "joi": "^17.4.0",
         "jsonwebtoken": "^8.5.1",
         "morgan": "^1.10.0",
+        "rocket.chat.realtime.api.rxjs": "^2.1.1",
         "tsconfig-paths": "^3.9.0"
     },
     "devDependencies": {

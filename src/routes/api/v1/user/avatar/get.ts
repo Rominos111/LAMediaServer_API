@@ -16,7 +16,7 @@ const schema = Validation.object({
 });
 
 module.exports = APIRequest.get(schema, async (req, res) => {
-    const route = RocketChat.getRawRocketChatUrl("/avatar/" + req.body.username);
+    const route = RocketChat.getWebEndpoint("/avatar/" + req.body.username);
 
     await RocketChatRequest.request("GET", route, null, res, null, (r, data) => {
         return APIResponse.fromRaw(data, 200, ResponseType.SVG);

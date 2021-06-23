@@ -177,7 +177,7 @@ class RocketChatRequest {
             };
         }
 
-        const APIRoute = useAPIPrefix ? RocketChat.getAPIUrl(route) : route;
+        const APIRoute = useAPIPrefix ? RocketChat.getREST_Endpoint(route) : route;
         let promise: Promise<AxiosResponse>;
         if (usePayload) {
             // Méthodes utilisant un payload, comme POST

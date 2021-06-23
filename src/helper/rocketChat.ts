@@ -69,22 +69,43 @@ class RocketChat {
      * Récupère l'URL Rocket.chat à partir d'un endpoint
      * @param endpointRaw Destination de l'API, comme "/login"
      */
-    public static getAPIUrl(endpointRaw = ""): string {
+    public static getREST_Endpoint(endpointRaw = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
         }
 
-        return `${process.env.ROCKETCHAT_PROTOCOL}://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/api/v1/${endpoint}`;
+        return `` +
+            `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
+            `://${process.env.ROCKETCHAT_ADDRESS}` +
+            `:${process.env.ROCKETCHAT_PORT}` +
+            `/api/v1/${endpoint}`;
     }
 
-    public static getRawRocketChatUrl(endpointRaw = ""): string {
+    public static getWebEndpoint(endpointRaw = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
         }
 
-        return `${process.env.ROCKETCHAT_PROTOCOL}://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/${endpoint}`;
+        return `` +
+            `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
+            `://${process.env.ROCKETCHAT_ADDRESS}` +
+            `:${process.env.ROCKETCHAT_PORT}` +
+            `/${endpoint}`;
+    }
+
+    public static getWebSocketEndpoint(endpointRaw = ""): string {
+        let endpoint = endpointRaw;
+        if (endpoint.startsWith("/")) {
+            endpoint = endpoint.substr(1);
+        }
+
+        return `` +
+            `${process.env.ROCKETCHAT_WEBSOCKET_PROTOCOL}` +
+            `://${process.env.ROCKETCHAT_ADDRESS}` +
+            `:${process.env.ROCKETCHAT_PORT}` +
+            `/${endpoint}`;
     }
 }
 
