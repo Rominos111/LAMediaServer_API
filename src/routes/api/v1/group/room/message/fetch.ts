@@ -4,23 +4,40 @@ import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    username: Validation.string().messages({
-        "any.required": Language.get("validation.username.required"),
-        "string.empty": Language.get("validation.username.empty"),
+    _token: Validation.jwt().required().messages({
+        "any.required": Language.get("validation.token.required"),
+    }),
+    roomId: Validation.string().required().messages({
+        "any.required": Language.get("validation.id.required"),
     }),
 });
 
 module.exports = APIRequest.ws(schema, async (ws, req) => {
-    console.log("socket");
+    const subscription = "stream-room-messages";
 
-    RocketChatWebSocket
-        .getSocket(req.query["token"] as string)
-        .onResponse(() => {
+    const rcws = RocketChatWebSocket
+        .getSocket()
+        .withToken(req.query._token as string)
+        .subscribedTo(subscription, [
+            req.query.roomId as string,
+            false,
+        ])
+        .onResponse((data) => {
+            if (data.msg === "error") {
+                console.debug("WebSocket client error:", data.reason);
+                ws.send(JSON.stringify(data));
+            } else if (data.msg === "changed" && data.collection === subscription) {
+                ws.send(JSON.stringify(data.fields.args));
+            }
+        });
 
-        })
-        .open();
+    rcws.open();
 
     ws.on("message", (msg) => {
-        console.log("message:", msg);
-    })
+        rcws.send(msg.toString());
+    });
+
+    ws.on("close", () => {
+        rcws.close();
+    });
 });
