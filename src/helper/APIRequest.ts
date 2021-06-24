@@ -80,12 +80,27 @@ class APIRequest {
                      callback: (ws: WebSocket, req: express.Request) => void,
                      route = "/",
     ): expressWs.Router {
-        const schema = validationSchema;
+        const validation = (ws: WebSocket, req: express.Request, next: express.NextFunction) => {
+            if (validationSchema !== null) {
+                const valid = validationSchema.validate(req.query);
+
+                if (valid.error) {
+                    // Validation échouée
+                    console.debug("WebSocket validation error:", valid.error.message);
+                    ws.close();
+                } else {
+                    next();
+                }
+            } else {
+                next();
+            }
+        };
+
         const router: expressWs.Router = express.Router();
-        router.ws(route, (ws, req) => {
+        router.ws(route, validation, (ws: WebSocket, req: express.Request) => {
             callback(ws, req);
         });
-
+        router.all(route, this._methodNotAllowed);
         return router;
     }
 

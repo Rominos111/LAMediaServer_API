@@ -75,7 +75,7 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        return `` +
+        return "" +
             `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
             `://${process.env.ROCKETCHAT_ADDRESS}` +
             `:${process.env.ROCKETCHAT_PORT}` +
@@ -88,7 +88,7 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        return `` +
+        return "" +
             `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
             `://${process.env.ROCKETCHAT_ADDRESS}` +
             `:${process.env.ROCKETCHAT_PORT}` +
@@ -101,11 +101,11 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        return `` +
+        return "" +
             `${process.env.ROCKETCHAT_WEBSOCKET_PROTOCOL}` +
             `://${process.env.ROCKETCHAT_ADDRESS}` +
             `:${process.env.ROCKETCHAT_PORT}` +
-            `/${endpoint}`;
+            `/websocket/${endpoint}`;
     }
 }
 
