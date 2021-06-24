@@ -2,6 +2,7 @@ import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
 import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
+import {Message} from "model/message";
 
 const schema = Validation.object({
     _token: Validation.jwt().required().messages({
@@ -27,7 +28,12 @@ module.exports = APIRequest.ws(schema, async (ws, req) => {
                 console.debug("WebSocket client error:", data.reason);
                 ws.send(JSON.stringify(data));
             } else if (data.msg === "changed" && data.collection === subscription) {
-                ws.send(JSON.stringify(data.fields.args));
+                let messages: Message[] = [];
+                for (let rawMessage of data.fields.args) {
+                    rawMessage.ts = rawMessage.ts["$date"];
+                    messages.push(Message.fromFullMessage(rawMessage, data.currentUserId));
+                }
+                ws.send(JSON.stringify(messages));
             }
         });
 

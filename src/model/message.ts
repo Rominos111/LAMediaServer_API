@@ -18,7 +18,7 @@ interface PartialMessageSpecs {
 interface RawMessage extends PartialMessageSpecs {
     md: unknown, // TODO: gérer ce `md` ?
     rid: string,
-    ts: Date | string,
+    ts: Date | string | number,
     attachments: object[] | undefined,
     reactions: object[] | undefined,
 }

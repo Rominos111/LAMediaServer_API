@@ -39,7 +39,9 @@ enum RocketChatWebSocketState {
     SUBSCRIBED,
 }
 
-type RocketChatWebSocketCallback = (data: any) => void;
+type RocketChatWebSocketCallbackData = { currentUserId: string | null } & any;
+
+type RocketChatWebSocketCallback = (data: RocketChatWebSocketCallbackData) => void;
 
 class RocketChatWebSocket {
     /**
@@ -134,27 +136,34 @@ class RocketChatWebSocket {
         }
 
         this._rocketChatSocket.addEventListener("message", (evt) => {
+            let message: any;
             try {
-                const message = JSON.parse(evt.data);
-                if (message.msg === "ping") {
-                    rcws.send(JSON.stringify({
-                        msg: "pong",
-                    }));
-                } else {
-                    if (this._state === RocketChatWebSocketState.OPEN && message.server_id !== undefined) {
-                        this._state = RocketChatWebSocketState.LINKED;
-                    } else if (this._state === RocketChatWebSocketState.LINKED && message.msg === "connected") {
-                        this._state = RocketChatWebSocketState.CONNECTED;
-                    } else {
-                        if (this._state === RocketChatWebSocketState.SUBSCRIBED) {
-                            this._responseCallback(message);
-                        } else if (message.msg === "ready") {
-                            this._state = RocketChatWebSocketState.SUBSCRIBED;
-                        }
-                    }
-                }
+                message = JSON.parse(evt.data);
             } catch (e) {
                 console.warn("RC message is not an object:", evt.data);
+            }
+
+            if (message.msg === "ping") {
+                rcws.send(JSON.stringify({
+                    msg: "pong",
+                }));
+            } else {
+                if (this._state === RocketChatWebSocketState.OPEN && message.server_id !== undefined) {
+                    this._state = RocketChatWebSocketState.LINKED;
+                } else if (this._state === RocketChatWebSocketState.LINKED && message.msg === "connected") {
+                    this._state = RocketChatWebSocketState.CONNECTED;
+                } else {
+                    if (this._state === RocketChatWebSocketState.SUBSCRIBED) {
+                        const messageWithUserId: RocketChatWebSocketCallbackData = message;
+                        messageWithUserId.currentUserId = null;
+                        if (jwt !== null) {
+                            messageWithUserId.currentUserId = jwt.data.userId;
+                        }
+                        this._responseCallback(messageWithUserId);
+                    } else if (message.msg === "ready") {
+                        this._state = RocketChatWebSocketState.SUBSCRIBED;
+                    }
+                }
             }
         });
 
@@ -192,8 +201,12 @@ class RocketChatWebSocket {
             console.debug("RocketChat WebSocket closed");
         });
 
-        this._rocketChatSocket.addEventListener("error", (evt) => {
-            console.warn("error RC:", evt);
+        this._rocketChatSocket.addEventListener("error", (err) => {
+            if (err.type === "error" && err.target.readyState === WebSocket.CLOSING) {
+                console.debug(err.message);
+            } else {
+                console.warn("error RC:", err);
+            }
         });
     }
 
