@@ -23,7 +23,7 @@ module.exports = APIRequest.get(null, async (req, res) => {
                 return null;
             }, (r, data) => {
                 if (r.status !== 400 || data.errorType !== "error-room-not-found") {
-                    console.debug("/group/list:", r.status, r.statusText, data)
+                    console.debug("/group/list:", r.status, r.statusText, data);
                 }
 
                 return null;

@@ -75,7 +75,7 @@ class Message {
                         roomId: string | undefined,
                         timestamp: Date | undefined,
                         attachments: Attachment[] | undefined,
-                        reactions: Reaction[] | undefined
+                        reactions: Reaction[] | undefined,
     ) {
         this._id = id;
         this._content = content;

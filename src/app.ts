@@ -3,13 +3,13 @@ import cors from "cors";
 import express from "express";
 import rateLimiter from "express-rate-limit";
 import rateSlower from "express-slow-down";
+import expressWs from "express-ws";
 import walk from "fs-walk";
 import {APIResponse} from "helper/APIResponse";
 import {envConfig} from "helper/envConfig";
 import createError from "http-errors";
 import logger from "morgan";
 import path from "path";
-import expressWs from "express-ws";
 
 const expressWsInstance = expressWs(express());
 const app = expressWsInstance.app;
@@ -45,7 +45,7 @@ app.use(cors(corsOptions));
 if (process.env.RELEASE_ENVIRONMENT === "dev") {
     app.use(logger("dev"));
 } else {
-    console.debug = (..._: any[]) => undefined;
+    console.debug = (..._: any[]) => void null;
     app.use(logger("short"));
 }
 
@@ -70,7 +70,7 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
         message: JSON.stringify(
             APIResponse
                 .fromFailure("Too many requests, please try again later.", 429, null, "access")
-                .getRaw()
+                .getRaw(),
         ),
         windowMs: RATE_LIMIT_WINDOW,
     }));

@@ -88,7 +88,7 @@ class RocketChatRequest {
         let headers: AxiosRequestConfig = {
             headers: {
                 "Content-Type": "application/json",
-            }
+            },
         };
 
         let tokenAllowed = true;
@@ -244,7 +244,7 @@ class RocketChatRequest {
         if (req.body._token !== undefined) {
             token = req.body._token;
         } else if (req.headers["authorization"] !== undefined) {
-            token = req.headers["authorization"].split(' ')[1];
+            token = req.headers["authorization"].split(" ")[1];
         }
 
         if (token === null) {
@@ -284,4 +284,4 @@ class RocketChatRequest {
 export {
     RocketChatRequest,
     RequestMethod,
-}
+};

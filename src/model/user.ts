@@ -107,4 +107,7 @@ class User {
     }
 }
 
-export {User, UserStatus};
+export {
+    User,
+    UserStatus,
+};
