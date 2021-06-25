@@ -88,11 +88,16 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        return "" +
+        let resEndpoint = "" +
             `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
             `://${process.env.ROCKETCHAT_ADDRESS}` +
-            `:${process.env.ROCKETCHAT_PORT}` +
-            `/${endpoint}`;
+            `:${process.env.ROCKETCHAT_PORT}`;
+
+        if (endpointRaw !== "") {
+            resEndpoint += `/${endpoint}`;
+        }
+
+        return resEndpoint;
     }
 
     public static getWebSocketEndpoint(endpointRaw = ""): string {
