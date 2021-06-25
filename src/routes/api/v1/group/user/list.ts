@@ -1,7 +1,7 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
-import {RocketChatRequest} from "helper/RocketChatRequest";
+import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {User} from "model/user";
 
@@ -13,8 +13,8 @@ const schema = Validation.object({
 
 module.exports = APIRequest.get(schema, async (req, res) => {
     await RocketChatRequest.request("GET", "/teams.members", req, res, {
-        teamId: req.body.groupId,
         count: 0,
+        teamId: req.body.groupId,
     }, (r, data) => {
         const users: User[] = [];
 
@@ -29,5 +29,11 @@ module.exports = APIRequest.get(schema, async (req, res) => {
         }
 
         return APIResponse.fromSuccess(users);
+    }, (r, data) => {
+        if (r.status === 400 && data.error === "team-does-not-exist") {
+            return APIResponse.fromFailure("Group does not exist", 404);
+        } else {
+            return APIResponse.fromFailure(r.statusText, r.status);
+        }
     });
 });

@@ -1,15 +1,15 @@
 import axios, {
     AxiosRequestConfig,
-    AxiosResponse
+    AxiosResponse,
 } from "axios";
 import {
     Request,
-    Response
+    Response,
 } from "express";
 import {APIResponse} from "helper/APIResponse";
 import {
     RocketChat,
-    RocketChatAuthentication
+    RocketChatAuthentication,
 } from "helper/rocketChat";
 
 /**
@@ -59,18 +59,21 @@ class RocketChatRequest {
      * @param route Route / endpoint
      * @param authReq Authentification requise ou non
      * @param res Réponse express
-     * @param payload Payload fourni
+     * @param rawPayload Payload fourni
      * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
      * @param onFailure Fonction appelée en cas d'échec HTTP
+     * @param useAPIPrefix Utilise le préfixe API "/api/v1/" ou non. Très rarement faux.
      */
     public static async request(HTTPMethod: RequestMethod | string,
                                 route: string,
                                 authReq: Request | null = null,
                                 res: Response | null,
-                                payload: object | null = null,
+                                rawPayload: object | null = null,
                                 onSuccess: SuccessCallback | null = null,
                                 onFailure: FailureCallback | null = null,
+                                useAPIPrefix = true,
     ): Promise<void> {
+        let payload = rawPayload;
         if (payload === null) {
             payload = {};
         }
@@ -83,9 +86,9 @@ class RocketChatRequest {
 
         // Headers envoyés à Rocket.chat
         let headers: AxiosRequestConfig = {
-            "headers": {
+            headers: {
                 "Content-Type": "application/json",
-            }
+            },
         };
 
         let tokenAllowed = true;
@@ -109,7 +112,8 @@ class RocketChatRequest {
                 res,
                 payload,
                 onSuccess,
-                onFailure
+                onFailure,
+                useAPIPrefix,
             );
         } else if (res !== null) {
             // Token invalide ou absent
@@ -149,34 +153,38 @@ class RocketChatRequest {
                                           headers: AxiosRequestConfig,
                                           res: Response | null,
                                           payload: object,
-                                          onSuccess: SuccessCallback | null,
-                                          onFailure: FailureCallback | null,
+                                          onSuccessCallback: SuccessCallback | null,
+                                          onFailureCallback: FailureCallback | null,
+                                          useAPIPrefix: boolean,
     ): Promise<void> {
         const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
 
+        let onSuccess = onSuccessCallback;
         if (onSuccess === null) {
             // Fonction de succès par défaut
             onSuccess = (r, data) => {
                 console.debug(data);
                 return APIResponse.fromSuccess(null, r.status);
-            }
+            };
         }
 
+        let onFailure = onFailureCallback;
         if (onFailure === null) {
             // Fonction d'échec par défaut
             onFailure = (r, data) => {
                 console.debug(data);
                 return APIResponse.fromFailure(r.statusText, r.status);
-            }
+            };
         }
 
+        const APIRoute = useAPIPrefix ? RocketChat.getREST_Endpoint(route) : route;
         let promise: Promise<AxiosResponse>;
         if (usePayload) {
             // Méthodes utilisant un payload, comme POST
-            promise = requestFunction(RocketChat.getAPIUrl(route), payload, headers);
+            promise = requestFunction(APIRoute, payload, headers);
         } else {
             // Méthodes n'utilisant pas de payload, comme GET
-            promise = requestFunction(RocketChat.getAPIUrl(route), headers);
+            promise = requestFunction(APIRoute, headers);
         }
 
         let promiseOrRes: APIResponse | Promise<APIResponse> | null = null;
@@ -193,7 +201,7 @@ class RocketChatRequest {
                     uid = r.config.headers["X-User-Id"];
                 }
 
-                let customRes: CustomAxiosResponse = {
+                const customRes: CustomAxiosResponse = {
                     ...r,
                     currentUserId: uid,
                 };
@@ -220,8 +228,7 @@ class RocketChatRequest {
             }
         });
 
-        let resAPI: APIResponse | null = await promiseOrRes;
-
+        const resAPI: APIResponse | null = await promiseOrRes;
         if (resAPI !== null && res !== null) {
             (<APIResponse>resAPI).send(res);
         }
@@ -237,7 +244,7 @@ class RocketChatRequest {
         if (req.body._token !== undefined) {
             token = req.body._token;
         } else if (req.headers["authorization"] !== undefined) {
-            token = req.headers["authorization"].split(' ')[1];
+            token = req.headers["authorization"].split(" ")[1];
         }
 
         if (token === null) {
@@ -277,4 +284,4 @@ class RocketChatRequest {
 export {
     RocketChatRequest,
     RequestMethod,
-}
+};

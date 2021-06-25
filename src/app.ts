@@ -3,16 +3,16 @@ import cors from "cors";
 import express from "express";
 import rateLimiter from "express-rate-limit";
 import rateSlower from "express-slow-down";
+import expressWs from "express-ws";
 import walk from "fs-walk";
 import {APIResponse} from "helper/APIResponse";
 import {envConfig} from "helper/envConfig";
-import http from "http";
 import createError from "http-errors";
 import logger from "morgan";
 import path from "path";
 
-const app = express();
-const server = http.createServer(app);
+const expressWsInstance = expressWs(express());
+const app = expressWsInstance.app;
 
 envConfig.config();
 
@@ -33,7 +33,7 @@ const corsOptions: cors.CorsOptions = {
         "Origin",
     ],
     credentials: true,
-    methods: 'GET,PUT,PATCH,POST,DELETE',
+    methods: "GET,PUT,PATCH,POST,DELETE",
     origin: "*",
     preflightContinue: false,
 };
@@ -45,12 +45,12 @@ app.use(cors(corsOptions));
 if (process.env.RELEASE_ENVIRONMENT === "dev") {
     app.use(logger("dev"));
 } else {
-    console.debug = (..._: any[]) => undefined;
+    console.debug = (..._: any[]) => void null;
     app.use(logger("short"));
 }
 
 // Requêtes en JSON
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 // JSON
 app.use(express.json());
@@ -64,26 +64,26 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
     const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW as string) * 1000;
 
     app.use(rateLimiter({
+        draft_polli_ratelimit_headers: true,
+        headers: true,
         max: RATE_LIMIT_MAX_REQUESTS + (RATE_LIMIT_MAX_DELAY / RATE_LIMIT_DELAY_INCREMENT),
-        windowMs: RATE_LIMIT_WINDOW,
         message: JSON.stringify(
             APIResponse
                 .fromFailure("Too many requests, please try again later.", 429, null, "access")
-                .getRaw()
+                .getRaw(),
         ),
-        headers: true,
-        draft_polli_ratelimit_headers: true,
+        windowMs: RATE_LIMIT_WINDOW,
     }));
 
     // Limite de requêtes, va ralentir chaque requête au delà de 100 sur 2 minutes,
     //  en ajoutant 100 ms de latence par requête supplémentaire, avec comme maximum 1 seconde de latence
     app.use(rateSlower({
-        windowMs: RATE_LIMIT_WINDOW,
         delayAfter: RATE_LIMIT_MAX_REQUESTS,
         delayMs: RATE_LIMIT_DELAY_INCREMENT,
-        maxDelayMs: RATE_LIMIT_MAX_DELAY,
         // @ts-ignore
         headers: true,
+        maxDelayMs: RATE_LIMIT_MAX_DELAY,
+        windowMs: RATE_LIMIT_WINDOW,
     }));
 }
 
@@ -94,18 +94,19 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
 const routesPathRelative = "routes";
 const routesPath = path.join(__dirname, routesPathRelative);
 
-let importedRoutes: { route: string, path: string }[] = [];
+const importedRoutes: { path: string, route: string }[] = [];
 
-walk.filesSync(routesPath, (basedir, filename, _stat, _next) => {
+walk.filesSync(routesPath, (basedir, rawFilename, _stat, _next) => {
+    let filename = rawFilename;
     if (/^index\.[tj]s$/.test(filename)) {
         filename = "";
     }
 
     filename = filename.replace(/\.[jt]s$/, "");
-    let route = '/' + path.relative(routesPath, path.join(basedir, filename)).replace(/\\/g, '/');
+    const route = "/" + path.relative(routesPath, path.join(basedir, filename)).replace(/\\/g, "/");
     importedRoutes.push({
-        route: route,
-        path: path.join(basedir, filename)
+        path: path.join(basedir, filename),
+        route,
     });
 }, (err) => {
     if (err) {
@@ -127,7 +128,7 @@ app.use((req, _res, next) => {
     next();
 });
 
-for (let importedRoute of importedRoutes) {
+for (const importedRoute of importedRoutes) {
     app.use(importedRoute.route, require(importedRoute.path));
 }
 
@@ -149,15 +150,15 @@ app.use((err, _req, res, _next) => {
     } else if (err.error) {
         // Erreur de validation JOI
         let error: { message: string, key: string } = {
+            key: "?",
             message: "?",
-            key: "?"
         };
 
         for (const validationError of err.error.details) {
             console.debug("Validation error. type:", validationError.type, "key:", validationError.context.key);
             error = {
-                "message": validationError.message,
-                "key": validationError.context.key,  // TODO: Gérer le champ erroné ?
+                key: validationError.context.key,  // TODO: Gérer le champ erroné ?
+                message: validationError.message,
             };
         }
 
@@ -173,6 +174,6 @@ app.use((err, _req, res, _next) => {
 // @ts-ignore
 app.options("*", cors(corsOptions));
 
-server.listen(process.env.SERVER_PORT, () => {
+app.listen(process.env.SERVER_PORT, () => {
     console.info(`Server is now listening on port ${process.env.SERVER_PORT}...`);
 });

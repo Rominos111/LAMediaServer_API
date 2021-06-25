@@ -103,8 +103,11 @@ class User {
             name: this.name,
             status: this.status,
             username: this.username,
-        }
+        };
     }
 }
 
-export {User, UserStatus};
+export {
+    User,
+    UserStatus,
+};

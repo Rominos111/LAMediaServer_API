@@ -1,7 +1,7 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
-import {RocketChatRequest} from "helper/RocketChatRequest";
+import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {Message} from "model/message";
 
@@ -13,8 +13,8 @@ const schema = Validation.object({
 
 module.exports = APIRequest.get(schema, async (req, res) => {
     await RocketChatRequest.request("GET", "/groups.history", req, res, {
-        roomId: req.body.roomId,
         count: 0, // FIXME: Ajouter une limite
+        roomId: req.body.roomId,
     }, (r, data) => {
         const messages: Message[] = [];
 

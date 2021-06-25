@@ -46,7 +46,7 @@ class RocketChatAuthentication {
      * @param token Token JWT
      */
     public static fromToken(token: string): RocketChatAuthentication | null {
-        let auth = JWT.decodeToken(token);
+        const auth = JWT.decodeToken(token);
         if (auth === null) {
             return null;
         } else {
@@ -67,15 +67,65 @@ class RocketChatAuthentication {
 class RocketChat {
     /**
      * Récupère l'URL Rocket.chat à partir d'un endpoint
-     * @param endpoint Destination de l'API, comme "/login"
+     * @param endpointRaw Destination de l'API, comme "/login"
      */
-    static getAPIUrl(endpoint = ""): string {
+    public static getREST_Endpoint(endpointRaw = ""): string {
+        let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
         }
 
-        return `${process.env.ROCKETCHAT_PROTOCOL}://${process.env.ROCKETCHAT_ADDRESS}:${process.env.ROCKETCHAT_PORT}/api/v1/${endpoint}`;
+        let resEndpoint = "" +
+            `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
+            `://${process.env.ROCKETCHAT_ADDRESS}`;
+
+        if (process.env.ROCKETCHAT_PORT) {
+            resEndpoint += `:${process.env.ROCKETCHAT_PORT}`;
+        }
+
+        return resEndpoint + `/api/v1/${endpoint}`;
+    }
+
+    public static getWebEndpoint(endpointRaw = ""): string {
+        let endpoint = endpointRaw;
+        if (endpoint.startsWith("/")) {
+            endpoint = endpoint.substr(1);
+        }
+
+        let resEndpoint = "" +
+            `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
+            `://${process.env.ROCKETCHAT_ADDRESS}`;
+
+        if (process.env.ROCKETCHAT_PORT) {
+            resEndpoint += `:${process.env.ROCKETCHAT_PORT}`;
+        }
+
+        if (endpointRaw !== "") {
+            resEndpoint += `/${endpoint}`;
+        }
+
+        return resEndpoint;
+    }
+
+    public static getWebSocketEndpoint(endpointRaw = ""): string {
+        let endpoint = endpointRaw;
+        if (endpoint.startsWith("/")) {
+            endpoint = endpoint.substr(1);
+        }
+
+        let resEndpoint = "" +
+            `${process.env.ROCKETCHAT_WEBSOCKET_PROTOCOL}` +
+            `://${process.env.ROCKETCHAT_ADDRESS}`;
+
+        if (process.env.ROCKETCHAT_PORT) {
+            resEndpoint += `:${process.env.ROCKETCHAT_PORT}`;
+        }
+
+        return resEndpoint + `/websocket/${endpoint}`;
     }
 }
 
-export {RocketChat, RocketChatAuthentication};
+export {
+    RocketChat,
+    RocketChatAuthentication,
+};

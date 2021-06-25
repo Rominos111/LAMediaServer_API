@@ -4,7 +4,7 @@ import {Language} from "helper/language";
 import {
     RequestMethod,
     RocketChatRequest,
-} from "helper/RocketChatRequest";
+} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {Room} from "model/room";
 
@@ -17,8 +17,8 @@ const schema = Validation.object({
 module.exports = APIRequest.get(schema, async (req, res) => {
     // FIXME: Utiliser `.query` (cf. `app.js`)
     await RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", req, res, {
-        roomId: req.body.groupRoomId,
         count: 0,
+        roomId: req.body.groupRoomId,
     }, (r, data) => {
         const rooms: Room[] = [];
 

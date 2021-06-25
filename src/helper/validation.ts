@@ -1,8 +1,7 @@
-import {ExpressJoiInstance} from "express-joi-validation";
-import Joi from "joi";
-
-import JoiValidator from "express-joi-validation";
 import express from "express";
+
+import JoiValidator, {ExpressJoiInstance} from "express-joi-validation";
+import Joi from "joi";
 
 const validator: ExpressJoiInstance = JoiValidator.createValidator({
     passError: true,

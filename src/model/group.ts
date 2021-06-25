@@ -9,12 +9,12 @@ type RawFullGroup = {
 };
 
 class Group {
+    private readonly _createdAt: Date;
     private readonly _id: string;
     private readonly _name: string;
-    private readonly _createdAt: Date;
-    private readonly _updatedAt: Date;
     private readonly _roomId: string;
     private readonly _roomsCount: number;
+    private readonly _updatedAt: Date;
     private readonly _usersCount: number;
 
     private constructor(id: string,
@@ -34,6 +34,10 @@ class Group {
         this._usersCount = usersCount;
     }
 
+    public get createdAt(): Date {
+        return this._createdAt;
+    }
+
     public get id(): string {
         return this._id;
     }
@@ -42,20 +46,16 @@ class Group {
         return this._name;
     }
 
-    public get createdAt(): Date {
-        return this._createdAt;
-    }
-
-    public get updatedAt(): Date {
-        return this._updatedAt;
-    }
-
     public get roomId(): string {
         return this._roomId;
     }
 
     public get roomsCount(): number {
         return this._roomsCount;
+    }
+
+    public get updatedAt(): Date {
+        return this._updatedAt;
     }
 
     public get usersCount(): number {
@@ -76,12 +76,12 @@ class Group {
 
     public toJSON(): object {
         return {
+            createdAt: this.createdAt,
             id: this.id,
             name: this.name,
-            createdAt: this.createdAt,
-            updatedAt: this.updatedAt,
             roomId: this.roomId,
             roomsCount: this.roomsCount,
+            updatedAt: this.updatedAt,
             usersCount: this.usersCount,
         };
     }

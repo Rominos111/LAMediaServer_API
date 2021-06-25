@@ -1,6 +1,9 @@
-import {FileAttachment, ImageAttachment} from ".";
-import {ImageAttachmentSpecs} from "./imageAttachment";
+import {
+    FileAttachment,
+    ImageAttachment,
+} from ".";
 import {FileAttachmentSpecs} from "./fileAttachment";
+import {ImageAttachmentSpecs} from "./imageAttachment";
 
 /**
  * Type de pièce-jointe
@@ -32,7 +35,7 @@ abstract class Attachment {
         if (rawAttachments === undefined) {
             return undefined;
         } else {
-            let attachments: Attachment[] = [];
+            const attachments: Attachment[] = [];
 
             for (const rawAttachment of rawAttachments) {
                 if (rawAttachment.hasOwnProperty("image_url")) {
@@ -55,4 +58,7 @@ abstract class Attachment {
     }
 }
 
-export {Attachment, AttachmentType};
+export {
+    Attachment,
+    AttachmentType,
+};

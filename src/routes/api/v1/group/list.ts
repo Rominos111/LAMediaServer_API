@@ -1,6 +1,6 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
-import {RocketChatRequest} from "helper/RocketChatRequest";
+import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Group} from "model/group";
 
 module.exports = APIRequest.get(null, async (req, res) => {
@@ -16,14 +16,14 @@ module.exports = APIRequest.get(null, async (req, res) => {
             groups.push(null);
 
             const p = RocketChatRequest.request("GET", "/rooms.getDiscussions", req, null, {
-                roomId: group.roomId,
                 count: 1,
+                roomId: group.roomId,
             }, () => {
                 groups[i] = group;
                 return null;
             }, (r, data) => {
                 if (r.status !== 400 || data.errorType !== "error-room-not-found") {
-                    console.debug("/group/list:", r.status, r.statusText, data)
+                    console.debug("/group/list:", r.status, r.statusText, data);
                 }
 
                 return null;
@@ -36,7 +36,7 @@ module.exports = APIRequest.get(null, async (req, res) => {
             await p;
         }
 
-        const groupsFiltered = groups.filter(group => group !== null);
+        const groupsFiltered = groups.filter((group) => group !== null);
         return APIResponse.fromSuccess(groupsFiltered);
     });
 });
