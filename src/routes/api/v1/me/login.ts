@@ -11,7 +11,7 @@ const schema = Validation.object({
         "string.empty": Language.get("validation.password.empty"),
     }),
     // FIXME: Pas besoin de limites ?
-    username: Validation.string().alphanum().min(3).max(32).required().messages({
+    username: Validation.string().min(3).max(32).required().messages({
         "any.required": Language.get("validation.username.required"),
         "string.empty": Language.get("validation.username.empty"),
         "string.max": Language.get("validation.username.long"),
