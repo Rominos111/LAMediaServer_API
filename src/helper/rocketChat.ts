@@ -75,11 +75,15 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        return "" +
+        let resEndpoint = "" +
             `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
-            `://${process.env.ROCKETCHAT_ADDRESS}` +
-            `:${process.env.ROCKETCHAT_PORT}` +
-            `/api/v1/${endpoint}`;
+            `://${process.env.ROCKETCHAT_ADDRESS}`;
+
+        if (process.env.ROCKETCHAT_PORT) {
+            resEndpoint += `:${process.env.ROCKETCHAT_PORT}`;
+        }
+
+        return resEndpoint + `/api/v1/${endpoint}`;
     }
 
     public static getWebEndpoint(endpointRaw = ""): string {
@@ -90,8 +94,11 @@ class RocketChat {
 
         let resEndpoint = "" +
             `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
-            `://${process.env.ROCKETCHAT_ADDRESS}` +
-            `:${process.env.ROCKETCHAT_PORT}`;
+            `://${process.env.ROCKETCHAT_ADDRESS}`;
+
+        if (process.env.ROCKETCHAT_PORT) {
+            resEndpoint += `:${process.env.ROCKETCHAT_PORT}`;
+        }
 
         if (endpointRaw !== "") {
             resEndpoint += `/${endpoint}`;
@@ -106,11 +113,15 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        return "" +
+        let resEndpoint = "" +
             `${process.env.ROCKETCHAT_WEBSOCKET_PROTOCOL}` +
-            `://${process.env.ROCKETCHAT_ADDRESS}` +
-            `:${process.env.ROCKETCHAT_PORT}` +
-            `/websocket/${endpoint}`;
+            `://${process.env.ROCKETCHAT_ADDRESS}`;
+
+        if (process.env.ROCKETCHAT_PORT) {
+            resEndpoint += `:${process.env.ROCKETCHAT_PORT}`;
+        }
+
+        return resEndpoint + `/websocket/${endpoint}`;
     }
 }
 
