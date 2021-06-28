@@ -42,11 +42,12 @@ abstract class OpenVidu {
 
     public static getOptions(method: RequestMethod | string, path: string): RequestOptions {
         let opt: RequestOptions = {
-            hostname: `${process.env.OPENVIDU_HTTP_PROTOCOL}://${process.env.OPENVIDU_ADDRESS}`,
+            hostname: `${process.env.OPENVIDU_ADDRESS}`,
             path,
             method,
             headers: {
-                Authorization: "Basic " + btoa("OPENVIDUAPP:" + process.env.OPENVIDU_SECRET),
+                authorization: "Basic " + Buffer.from("OPENVIDUAPP:" + process.env.OPENVIDU_SECRET).toString("base64"),
+                "content-type": "application/json",
             },
             rejectUnauthorized: false,
             // requestCert: true,

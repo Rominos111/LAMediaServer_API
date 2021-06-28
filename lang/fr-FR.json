@@ -1,10 +1,21 @@
 {
+    "login": {
+        "unauthorized": "Votre nom d'utilisateur ou votre mot de passe est incorrect"
+    },
     "validation": {
-        "username": {
-            "empty": "Votre nom d'utilisateur ne peut pas être vide",
-            "short": "Votre nom d'utilisateur est trop court",
-            "long": "Votre nom d'utilisateur est trop long",
-            "required": "Vous devez fournir votre nom d'utilisateur"
+        "emoji": {
+            "required": "Vous devez préciser le nom de la réaction"
+        },
+        "id": {
+            "required": "Un identifiant est nécessaire"
+        },
+        "message": {
+            "short": "Le message à envoyer ne peut être vide",
+            "long": "Le message à envoyer est trop long",
+            "required": "Le contenu du message est requis"
+        },
+        "name": {
+            "required": "Un nom est nécessaire"
         },
         "password": {
             "empty": "Votre mot de passe ne peut pas être vide",
@@ -12,29 +23,21 @@
             "long": "Votre mot de passe est trop long",
             "required": "Vous devez fournir votre mot de passe"
         },
-        "token": {
-            "required": "Un token est nécessaire"
-        },
-        "id": {
-            "required": "Un identifiant est nécessaire"
-        },
-        "name": {
-            "required": "Un nom est nécessaire"
-        },
-        "message": {
-            "short": "Le message à envoyer ne peut être vide",
-            "long": "Le message à envoyer est trop long",
-            "required": "Le contenu du message est requis"
-        },
         "reaction-operation": {
             "invalid": "Seules les valeurs `set` et `clear` sont acceptées",
             "required": "Le type d'opération à effectuer est requis"
         },
-        "emoji": {
-            "required": "Vous devez préciser le nom de la réaction"
+        "token": {
+            "required": "Un token est nécessaire"
+        },
+        "username": {
+            "empty": "Votre nom d'utilisateur ne peut pas être vide",
+            "long": "Votre nom d'utilisateur est trop long",
+            "required": "Vous devez fournir votre nom d'utilisateur",
+            "short": "Votre nom d'utilisateur est trop court"
         }
     },
-    "login": {
-        "unauthorized": "Votre nom d'utilisateur ou votre mot de passe est incorrect"
+    "videoconference": {
+        "not-found": "Cette conférence n'existe pas"
     }
 }
