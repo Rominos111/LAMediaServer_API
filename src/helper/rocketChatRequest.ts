@@ -5,7 +5,10 @@ import axios, {
 import {Response} from "express";
 import {APIResponse} from "helper/APIResponse";
 import {Authentication} from "helper/authentication";
-import {RequestMethod} from "helper/requestMethod";
+import {
+    isValidStatusCode,
+    RequestMethod,
+} from "helper/requestMethod";
 import {RocketChat} from "helper/rocketChat";
 
 interface CustomAxiosResponse extends AxiosResponse {
@@ -143,7 +146,7 @@ class RocketChatRequest {
 
         let promiseOrRes: APIResponse | Promise<APIResponse> | null = null;
         await promise.then(async (r) => {
-            if (this._isGoodStatusCode(r.status)) {
+            if (isValidStatusCode(r.status)) {
                 // Réponse valide
 
                 if (r.data.success !== true && r.data.success !== undefined) {
@@ -186,10 +189,6 @@ class RocketChatRequest {
         if (resAPI !== null && res !== null) {
             (<APIResponse>resAPI).send(res);
         }
-    }
-
-    private static _isGoodStatusCode(statusCode: number): boolean {
-        return [200, 201, 204, 304].includes(statusCode);
     }
 
     /**

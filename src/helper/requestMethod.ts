@@ -28,4 +28,8 @@ enum RequestMethod {
     PUT = "PUT",
 }
 
-export {RequestMethod};
+const isValidStatusCode = (statusCode: number): boolean => {
+    return [200, 201, 204, 304].includes(statusCode);
+}
+
+export {RequestMethod, isValidStatusCode};
