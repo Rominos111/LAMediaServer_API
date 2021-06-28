@@ -75,15 +75,7 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        let resEndpoint = "" +
-            `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
-            `://${process.env.ROCKETCHAT_ADDRESS}`;
-
-        if (process.env.ROCKETCHAT_PORT) {
-            resEndpoint += `:${process.env.ROCKETCHAT_PORT}`;
-        }
-
-        return resEndpoint + `/api/v1/${endpoint}`;
+        return this.getWebEndpoint(`/api/v1/${endpoint}`);
     }
 
     public static getWebEndpoint(endpointRaw = ""): string {
