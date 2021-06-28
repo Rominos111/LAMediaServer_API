@@ -78,13 +78,18 @@ class VideoConferenceConnection {
             token = token.replace(/^.+[?&]token=(.*?)(&.*)?$/, "$1");
         }
 
+        let targetWebSocketURL = "" +
+            `${process.env.OPENVIDU_WEBSOCKET_PROTOCOL}://` +
+            `${process.env.OPENVIDU_ADDRESS}/openvidu` +
+            `?sessionId=${obj.sessionId}&token=${token}`;
+
         return new this(
             new Date(obj.createdAt),
             obj.id,
             obj.serverData,
             obj.sessionId,
             obj.status as VideoConferenceConnectionStatus,
-            obj.token,
+            targetWebSocketURL,
             token,
         );
     }
