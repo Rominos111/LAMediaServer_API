@@ -1,9 +1,7 @@
 import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
 import {RequestMethod} from "helper/requestMethod";
-import {
-    RocketChatRequest,
-} from "helper/rocketChatRequest";
+import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
@@ -22,8 +20,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.put(schema, async (req, res) => {
-    await RocketChatRequest.request(RequestMethod.POST, "/chat.update", req, res, {
+module.exports = APIRequest.put(schema, true, async (req, res, auth) => {
+    await RocketChatRequest.request(RequestMethod.POST, "/chat.update", auth, res, {
         msgId: req.body.messageId,
         roomId: req.body.roomId,
         text: req.body.message,

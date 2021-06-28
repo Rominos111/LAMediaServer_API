@@ -3,8 +3,8 @@ import {APIResponse} from "helper/APIResponse";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {User} from "model/user";
 
-module.exports = APIRequest.get(null, async (req, res) => {
-    await RocketChatRequest.request("GET", "/me", req, res, null, (_r, data) => {
+module.exports = APIRequest.get(null, true, async (req, res, auth) => {
+    await RocketChatRequest.request("GET", "/me", auth, res, null, (_r, data) => {
         return APIResponse.fromSuccess(User.fromFullUser(
             data._id,
             data.username,

@@ -3,8 +3,8 @@ import {APIResponse} from "helper/APIResponse";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {User} from "model/user";
 
-module.exports = APIRequest.get(null, async (req, res) => {
-    await RocketChatRequest.request("GET", "/users.list", req, res, null, (r, data) => {
+module.exports = APIRequest.get(null, true, async (req, res, auth) => {
+    await RocketChatRequest.request("GET", "/users.list", auth, res, null, (r, data) => {
         const currentUserID = r.config.headers["X-User-Id"];
         const users: User[] = [];
 

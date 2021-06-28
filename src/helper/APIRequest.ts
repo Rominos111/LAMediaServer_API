@@ -1,12 +1,15 @@
-import express from "express";
+import express, {Request} from "express";
 import expressWs from "express-ws";
 import {APIResponse} from "helper/APIResponse";
+import {Authentication} from "helper/authentication";
 import {
     ObjectSchema,
     Validation,
 } from "helper/validation";
 
 import * as WebSocket from "ws";
+
+type RequestCallback = (req: express.Request, res: express.Response, auth: Authentication | null) => void;
 
 /**
  * Requête API
@@ -15,56 +18,71 @@ class APIRequest {
     /**
      * GET
      * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
      * @param callback Callback
      * @param route Route locale, '/' par défaut
      */
     public static get(validationSchema: ObjectSchema | null = null,
-                      callback: (req: express.Request, res: express.Response) => void,
+                      authenticationRequired: boolean,
+                      callback: RequestCallback,
                       route = "/",
     ): express.Router {
-        const {schema, router} = this._before(validationSchema);
-        router.get(route, Validation.get(schema), callback);
+        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
+        router.get(route, Validation.get(schema), expressCallback);
         return this._after(route, router);
     }
 
     /**
      * POST
      * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
      * @param callback Callback
      * @param route Route locale, '/' par défaut
      * @see APIRequest.get
      */
     public static post(validationSchema: ObjectSchema | null = null,
-                       callback: (req: express.Request, res: express.Response) => void,
+                       authenticationRequired: boolean,
+                       callback: RequestCallback,
                        route = "/",
     ): express.Router {
-        const {schema, router} = this._before(validationSchema);
-        router.post(route, Validation.post(schema), callback);
+        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
+        router.post(route, Validation.post(schema), expressCallback);
         return this._after(route, router);
     }
 
     /**
      * POST
      * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
      * @param callback Callback
      * @param route Route locale, '/' par défaut
      * @see APIRequest.get
      */
     public static delete(validationSchema: ObjectSchema | null = null,
-                         callback: (req: express.Request, res: express.Response) => void,
+                         authenticationRequired: boolean,
+                         callback: RequestCallback,
                          route = "/",
     ): express.Router {
-        const {schema, router} = this._before(validationSchema);
-        router.delete(route, Validation.delete(schema), callback);
+        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
+        router.delete(route, Validation.delete(schema), expressCallback);
         return this._after(route, router);
     }
 
+    /**
+     * PUT
+     * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
+     * @param callback Callback
+     * @param route Route locale, '/' par défaut
+     * @see APIRequest.get
+     */
     public static put(validationSchema: ObjectSchema | null = null,
-                      callback: (req: express.Request, res: express.Response) => void,
+                      authenticationRequired: boolean,
+                      callback: RequestCallback,
                       route = "/",
     ): express.Router {
-        const {schema, router} = this._before(validationSchema);
-        router.put(route, Validation.delete(schema), callback);
+        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
+        router.put(route, Validation.delete(schema), expressCallback);
         return this._after(route, router);
     }
 
@@ -77,22 +95,34 @@ class APIRequest {
     }
 
     public static ws(validationSchema: ObjectSchema | null = null,
+                     authenticationRequired: boolean,
                      callback: (ws: WebSocket, req: express.Request) => void,
                      route = "/",
     ): expressWs.Router {
         const validation = (ws: WebSocket, req: express.Request, next: express.NextFunction) => {
+            let canContinue = true;
             if (validationSchema !== null) {
                 const valid = validationSchema.validate(req.query);
 
                 if (valid.error) {
                     // Validation échouée
                     console.debug("WebSocket validation error:", valid.error.message);
-                    ws.close();
-                } else {
-                    next();
+                    canContinue = false;
                 }
-            } else {
+            }
+
+            if (canContinue && authenticationRequired) {
+                const auth = this._getAuthenticationData(req);
+                if (auth === null) {
+                    console.debug("Invalid WebSocket token");
+                    canContinue = false;
+                }
+            }
+
+            if (canContinue) {
                 next();
+            } else {
+                close();
             }
         };
 
@@ -104,7 +134,13 @@ class APIRequest {
         return router;
     }
 
-    private static _before(validationSchema: ObjectSchema | null): { schema: ObjectSchema, router: express.Router } {
+    private static _before(validationSchema: ObjectSchema | null,
+                           authenticationRequired: boolean,
+                           callback: RequestCallback): {
+        expressCallback: (req: express.Request, res: express.Response) => void
+        router: express.Router,
+        schema: ObjectSchema,
+    } {
         let schema = validationSchema;
         if (schema === null) {
             schema = Validation.object({});
@@ -114,9 +150,23 @@ class APIRequest {
             _token: Validation.jwt(),
         });
 
+        const expressCallback = (req, res) => {
+            if (authenticationRequired) {
+                const auth = this._getAuthenticationData(req);
+                if (auth === null) {
+                    APIResponse.fromFailure("Invalid token", 401).send(res);
+                } else {
+                    callback(req, res, auth);
+                }
+            } else {
+                callback(req, res, null);
+            }
+        };
+
         return {
-            schema,
+            expressCallback: expressCallback,
             router: express.Router(),
+            schema,
         };
     }
 
@@ -124,6 +174,29 @@ class APIRequest {
         // Erreur 405 pour les autres méthodes
         router.all(route, this._methodNotAllowed);
         return router;
+    }
+
+    private static _getAuthenticationData(req: Request): Authentication | null {
+        let token: string | null = null;
+
+        if (req.body._token !== undefined) {
+            token = req.body._token;
+        } else if (req.query._token !== undefined) {
+            token = req.query._token as string;
+        } else if (req.headers.authorization !== undefined) {
+            token = req.headers.authorization.split(" ")[1];
+        }
+
+        if (token === null) {
+            return null;
+        } else {
+            const auth = Authentication.fromToken(token);
+            if (auth === null) {
+                return null;
+            } else {
+                return auth;
+            }
+        }
     }
 
     /**

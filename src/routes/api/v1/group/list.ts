@@ -3,8 +3,8 @@ import {APIResponse} from "helper/APIResponse";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Group} from "model/group";
 
-module.exports = APIRequest.get(null, async (req, res) => {
-    await RocketChatRequest.request("GET", "/teams.list", req, res, {
+module.exports = APIRequest.get(null, true, async (req, res, auth) => {
+    await RocketChatRequest.request("GET", "/teams.list", auth, res, {
         count: 0,
     }, async (r, data) => {
         const groups: (Group | null)[] = [];
@@ -15,7 +15,7 @@ module.exports = APIRequest.get(null, async (req, res) => {
             const group = Group.fromFullObject(team);
             groups.push(null);
 
-            const p = RocketChatRequest.request("GET", "/rooms.getDiscussions", req, null, {
+            const p = RocketChatRequest.request("GET", "/rooms.getDiscussions", auth, null, {
                 count: 1,
                 roomId: group.roomId,
             }, () => {
