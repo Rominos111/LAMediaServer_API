@@ -13,7 +13,7 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.ws(schema, async (ws, req) => {
+module.exports = APIRequest.ws(schema, true, async (ws, req) => {
     const subscription = "stream-room-messages";
 
     const rcws = RocketChatWebSocket

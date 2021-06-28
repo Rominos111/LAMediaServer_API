@@ -2,45 +2,14 @@ import axios, {
     AxiosRequestConfig,
     AxiosResponse,
 } from "axios";
-import {
-    Request,
-    Response,
-} from "express";
+import {Response} from "express";
 import {APIResponse} from "helper/APIResponse";
+import {Authentication} from "helper/authentication";
 import {
-    RocketChat,
-    RocketChatAuthentication,
-} from "helper/rocketChat";
-
-/**
- * Méthodes de requête
- */
-enum RequestMethod {
-    /**
-     * Supprime
-     */
-    DELETE = "DELETE",
-
-    /**
-     * Récupération, listing. Cacheable
-     */
-    GET = "GET",
-
-    /**
-     * Update, remplace partiellement
-     */
-    PATCH = "PATCH",
-
-    /**
-     * Crée
-     */
-    POST = "POST",
-
-    /**
-     * Update, remplace complètement
-     */
-    PUT = "PUT",
-}
+    isValidStatusCode,
+    RequestMethod,
+} from "helper/requestMethod";
+import {RocketChat} from "helper/rocketChat";
 
 interface CustomAxiosResponse extends AxiosResponse {
     currentUserId: string | null,
@@ -57,7 +26,7 @@ class RocketChatRequest {
      * Requête
      * @param HTTPMethod Méthode HTTP, comme GET ou POST
      * @param route Route / endpoint
-     * @param authReq Authentification requise ou non
+     * @param authentication Authentification
      * @param res Réponse express
      * @param rawPayload Payload fourni
      * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
@@ -66,7 +35,7 @@ class RocketChatRequest {
      */
     public static async request(HTTPMethod: RequestMethod | string,
                                 route: string,
-                                authReq: Request | null = null,
+                                authentication: Authentication | null = null,
                                 res: Response | null,
                                 rawPayload: object | null = null,
                                 onSuccess: SuccessCallback | null = null,
@@ -91,34 +60,22 @@ class RocketChatRequest {
             },
         };
 
-        let tokenAllowed = true;
-        if (authReq !== null) {
-            const auth = this._getAuthenticationData(authReq as Request, HTTPMethod as RequestMethod);
-
-            if (auth === null) {
-                tokenAllowed = false;
-            } else {
-                // Headers d'authentification
-                headers.headers["X-User-Id"] = auth.userId;
-                headers.headers["X-Auth-Token"] = auth.authToken;
-            }
+        if (authentication !== null) {
+            // Headers d'authentification
+            headers.headers["X-User-Id"] = authentication.userId;
+            headers.headers["X-Auth-Token"] = authentication.authToken;
         }
 
-        if (tokenAllowed) {
-            await this._continueRequest(
-                HTTPMethod as RequestMethod,
-                accessRoute,
-                headers,
-                res,
-                payload,
-                onSuccess,
-                onFailure,
-                useAPIPrefix,
-            );
-        } else if (res !== null) {
-            // Token invalide ou absent
-            APIResponse.fromFailure("Invalid token", 401).send(res);
-        }
+        await this._continueRequest(
+            HTTPMethod as RequestMethod,
+            accessRoute,
+            headers,
+            res,
+            payload,
+            onSuccess,
+            onFailure,
+            useAPIPrefix,
+        );
     }
 
     /**
@@ -189,7 +146,7 @@ class RocketChatRequest {
 
         let promiseOrRes: APIResponse | Promise<APIResponse> | null = null;
         await promise.then(async (r) => {
-            if (this._isGoodStatusCode(r.status)) {
+            if (isValidStatusCode(r.status)) {
                 // Réponse valide
 
                 if (r.data.success !== true && r.data.success !== undefined) {
@@ -234,31 +191,6 @@ class RocketChatRequest {
         }
     }
 
-    private static _isGoodStatusCode(statusCode: number): boolean {
-        return [200, 201, 204, 304].includes(statusCode);
-    }
-
-    private static _getAuthenticationData(req: Request, _method: RequestMethod): RocketChatAuthentication | null {
-        let token: string | null = null;
-
-        if (req.body._token !== undefined) {
-            token = req.body._token;
-        } else if (req.headers["authorization"] !== undefined) {
-            token = req.headers["authorization"].split(" ")[1];
-        }
-
-        if (token === null) {
-            return null;
-        } else {
-            const auth = RocketChatAuthentication.fromToken(token);
-            if (auth === null) {
-                return null;
-            } else {
-                return auth;
-            }
-        }
-    }
-
     /**
      * Configure le payload des requêtes GET
      * @param route Route de base
@@ -283,5 +215,4 @@ class RocketChatRequest {
 
 export {
     RocketChatRequest,
-    RequestMethod,
 };

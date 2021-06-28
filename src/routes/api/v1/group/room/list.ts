@@ -1,10 +1,8 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
-import {
-    RequestMethod,
-    RocketChatRequest,
-} from "helper/rocketChatRequest";
+import {RequestMethod} from "helper/requestMethod";
+import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {Room} from "model/room";
 
@@ -14,9 +12,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.get(schema, async (req, res) => {
-    // FIXME: Utiliser `.query` (cf. `app.js`)
-    await RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", req, res, {
+module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
+    await RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", auth, res, {
         count: 0,
         roomId: req.body.groupRoomId,
     }, (r, data) => {
