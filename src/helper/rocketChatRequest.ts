@@ -7,40 +7,11 @@ import {
     Response,
 } from "express";
 import {APIResponse} from "helper/APIResponse";
+import {RequestMethod} from "helper/requestMethod";
 import {
     RocketChat,
     RocketChatAuthentication,
 } from "helper/rocketChat";
-
-/**
- * Méthodes de requête
- */
-enum RequestMethod {
-    /**
-     * Supprime
-     */
-    DELETE = "DELETE",
-
-    /**
-     * Récupération, listing. Cacheable
-     */
-    GET = "GET",
-
-    /**
-     * Update, remplace partiellement
-     */
-    PATCH = "PATCH",
-
-    /**
-     * Crée
-     */
-    POST = "POST",
-
-    /**
-     * Update, remplace complètement
-     */
-    PUT = "PUT",
-}
 
 interface CustomAxiosResponse extends AxiosResponse {
     currentUserId: string | null,
@@ -283,5 +254,5 @@ class RocketChatRequest {
 
 export {
     RocketChatRequest,
-    RequestMethod,
+
 };

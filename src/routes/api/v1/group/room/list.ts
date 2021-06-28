@@ -1,8 +1,8 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
+import {RequestMethod} from "helper/requestMethod";
 import {
-    RequestMethod,
     RocketChatRequest,
 } from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
