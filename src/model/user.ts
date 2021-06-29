@@ -96,7 +96,7 @@ class User {
     /**
      * Permet l'encodage en JSON
      */
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             id: this.id,
             isMe: this.isMe,

@@ -38,7 +38,7 @@ class ImageAttachment extends Attachment {
         return this._imageURL;
     }
 
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             ...super.toJSON(),
             iconLink: this.iconLink,

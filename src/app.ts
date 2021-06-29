@@ -45,7 +45,7 @@ app.use(cors(corsOptions));
 if (process.env.RELEASE_ENVIRONMENT === "dev") {
     app.use(logger("dev"));
 } else {
-    console.debug = (..._: any[]) => void null;
+    console.debug = () => void null;
     app.use(logger("short"));
 }
 
@@ -96,7 +96,7 @@ const routesPath = path.join(__dirname, routesPathRelative);
 
 const importedRoutes: { path: string, route: string }[] = [];
 
-walk.filesSync(routesPath, (basedir, rawFilename, _stat, _next) => {
+walk.filesSync(routesPath, (basedir, rawFilename) => {
     let filename = rawFilename;
     if (/^index\.[tj]s$/.test(filename)) {
         filename = "";
@@ -116,6 +116,7 @@ walk.filesSync(routesPath, (basedir, rawFilename, _stat, _next) => {
 
 app.use((req, _res, next) => {
     // HACK: Très peu orthodoxe de remplacer `req.query` et `req.body`
+    void _res;
 
     if (Object.keys(req.query).length === 0 && Object.keys(req.body).length !== 0) {
         req.query = req.body;
@@ -134,11 +135,16 @@ for (const importedRoute of importedRoutes) {
 
 // Redirige les 404 vers la gestion des erreurs
 app.use((_req, _res, next) => {
+    void _req;
+    void _res;
     next(createError(404));
 });
 
 // Gestion des erreurs
 app.use((err, _req, res, _next) => {
+    void _req;
+    void _next;
+
     res.locals.message = err.message;
     res.locals.error = process.env.RELEASE_ENVIRONMENT === "dev" ? err : {};
 

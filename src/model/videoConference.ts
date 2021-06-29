@@ -1,4 +1,7 @@
-import {VideoConferenceConnection, RawVideoConferenceConnection} from "model/videoConferenceConnection";
+import {
+    RawVideoConferenceConnection,
+    VideoConferenceConnection,
+} from "model/videoConferenceConnection";
 
 interface RawVideoConference {
     id: string,
@@ -94,7 +97,7 @@ class VideoConference {
         );
     }
 
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             connections: this.connections,
             createdAt: this.createdAt,

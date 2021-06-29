@@ -31,7 +31,7 @@ abstract class Attachment {
         return this._type;
     }
 
-    public static fromArray(rawAttachments: object[] | undefined): Attachment[] | undefined {
+    public static fromArray(rawAttachments: (ImageAttachmentSpecs | FileAttachmentSpecs)[] | undefined): Attachment[] | undefined {
         if (rawAttachments === undefined) {
             return undefined;
         } else {
@@ -51,7 +51,7 @@ abstract class Attachment {
         }
     }
 
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             type: this.type,
         };

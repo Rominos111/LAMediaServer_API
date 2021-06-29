@@ -104,7 +104,7 @@ class VideoConferenceConnection {
         return connections;
     }
 
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             createdAt: this.createdAt,
             id: this.id,

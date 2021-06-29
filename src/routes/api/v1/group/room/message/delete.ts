@@ -18,13 +18,13 @@ module.exports = APIRequest.delete(schema, true, async (req, res, auth) => {
         asUser: true,
         msgId: req.body.messageId,
         roomId: req.body.roomId,
-    }, (_r, data) => {
+    }, (r, data) => {
         if (data.success === true) {
             return APIResponse.fromSuccess();
         } else {
-            return APIResponse.fromFailure();
+            return APIResponse.fromFailure(r.statusText, r.status);
         }
-    }, (_r, _data) => {
-        return APIResponse.fromFailure();
+    }, (r) => {
+        return APIResponse.fromFailure(r.statusText, r.status);
     });
 });

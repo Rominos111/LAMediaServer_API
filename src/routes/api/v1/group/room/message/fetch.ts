@@ -2,7 +2,10 @@ import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
 import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
-import {Message} from "model/message";
+import {
+    Message,
+    RawMessage,
+} from "model/message";
 
 const schema = Validation.object({
     _token: Validation.jwt().required().messages({
@@ -29,9 +32,12 @@ module.exports = APIRequest.ws(schema, true, async (ws, req) => {
                 ws.send(JSON.stringify(data));
             } else if (data.msg === "changed" && data.collection === subscription) {
                 let messages: Message[] = [];
-                for (let rawMessage of data.fields.args) {
+                const fields: Record<string, unknown> = data.fields as Record<string, unknown>;
+                const args: {ts: {"$date": Date} | Date}[] = fields.args as {ts: {"$date": Date}}[];
+                // FIXME: Types
+                for (let rawMessage of args) {
                     rawMessage.ts = rawMessage.ts["$date"];
-                    messages.push(Message.fromFullMessage(rawMessage, data.currentUserId));
+                    messages.push(Message.fromFullMessage(rawMessage as RawMessage, data.currentUserId as string));
                 }
                 ws.send(JSON.stringify(messages));
             }

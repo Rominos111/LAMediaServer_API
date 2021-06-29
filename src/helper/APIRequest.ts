@@ -89,6 +89,7 @@ class APIRequest {
     public static wip(): express.Router {
         const router = express.Router();
         router.all("/", (_req, res) => {
+            void _req;
             APIResponse.fromFailure("Not Implemented", 501, null, "access").send(res);
         });
         return router;
@@ -204,6 +205,7 @@ class APIRequest {
      * @private
      */
     private static _methodNotAllowed(_req: express.Request, res: express.Response): void {
+        void _req;
         APIResponse.fromFailure("Method Not Allowed", 405, null, "access").send(res);
     }
 }

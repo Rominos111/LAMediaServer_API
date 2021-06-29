@@ -16,6 +16,7 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
         prid: req.body.groupRoomId,
         t_name: req.body.name,
     }, (_r, data) => {
+        void _r;
         console.debug(data);
         // TODO: S'occuper du message de réponse
         return APIResponse.fromString("TODO");

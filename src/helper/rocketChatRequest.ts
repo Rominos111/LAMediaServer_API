@@ -37,7 +37,7 @@ class RocketChatRequest {
                                 route: string,
                                 authentication: Authentication | null = null,
                                 res: Response | null,
-                                rawPayload: object | null = null,
+                                rawPayload: Record<string, unknown> | null = null,
                                 onSuccess: SuccessCallback | null = null,
                                 onFailure: FailureCallback | null = null,
                                 useAPIPrefix = true,
@@ -109,7 +109,7 @@ class RocketChatRequest {
                                           route: string,
                                           headers: AxiosRequestConfig,
                                           res: Response | null,
-                                          payload: object,
+                                          payload: Record<string, unknown>,
                                           onSuccessCallback: SuccessCallback | null,
                                           onFailureCallback: FailureCallback | null,
                                           useAPIPrefix: boolean,
@@ -197,7 +197,7 @@ class RocketChatRequest {
      * @param payload Payload
      * @private
      */
-    private static _setGetPayload(route: string, payload: object): string {
+    private static _setGetPayload(route: string, payload: Record<string, unknown>): string {
         const keys = Object.keys(payload);
         if (keys.length === 0) {
             return route;
@@ -205,7 +205,8 @@ class RocketChatRequest {
             let newRoute = route + "?";
 
             for (const key of keys) {
-                newRoute += `${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}&`;
+                const component = payload[key];
+                newRoute += `${encodeURIComponent(key)}=${encodeURIComponent(component as string | number | boolean)}&`;
             }
 
             return newRoute.slice(0, -1);
