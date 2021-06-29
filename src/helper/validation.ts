@@ -23,6 +23,10 @@ abstract class Validation {
         return Joi.array();
     }
 
+    public static date(): Joi.DateSchema {
+        return Joi.date();
+    }
+
     public static jwt(): Joi.StringSchema {
         return Joi.string().regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/);
     }
