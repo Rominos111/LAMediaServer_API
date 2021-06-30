@@ -206,7 +206,8 @@ class RocketChatWebSocket {
 
         this._rocketChatSocket.addEventListener("error", (err) => {
             if (err.type === "error" && err.target.readyState === WebSocket.CLOSING) {
-                console.debug(err.message);
+                // WebSocket fermée avant que la connexion soit établie, pas un problème en soi
+                console.debug("Socket fermée avant qu'une connexion soit établie:", err.message);
             } else {
                 console.warn("error RC:", err);
             }
