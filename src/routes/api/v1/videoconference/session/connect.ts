@@ -27,7 +27,7 @@ module.exports = APIRequest.post(schema, true, async (req, res, _auth) => {
 
         r.on("end", () => {
             if (r.statusCode === 404) {
-                APIResponse.fromFailure(Language.get("videoconference.not-found"), 400).send(res);
+                APIResponse.fromFailure(Language.get("videoconference.not-found"), 404).send(res);
             } else if (isValidStatusCode(r.statusCode as number)) {
                 const obj = JSON.parse(data);
                 APIResponse.fromSuccess(VideoConferenceConnection.fromObject(obj), r.statusCode).send(res);
