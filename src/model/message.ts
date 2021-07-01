@@ -1,4 +1,6 @@
 import {Attachment} from "model/attachement";
+import {FileAttachmentSpecs} from "model/attachement/fileAttachment";
+import {ImageAttachmentSpecs} from "model/attachement/imageAttachment";
 import {Reaction} from "model/reaction";
 import {User} from "model/user";
 
@@ -19,8 +21,8 @@ interface RawMessage extends PartialMessageSpecs {
     md: unknown, // TODO: gérer ce `md` ?
     rid: string,
     ts: Date | string | number,
-    attachments: object[] | undefined,
-    reactions: object[] | undefined,
+    attachments: (ImageAttachmentSpecs | FileAttachmentSpecs)[] | undefined,
+    reactions: Record<string, unknown>[] | undefined,
 }
 
 /**
@@ -141,7 +143,7 @@ class Message {
      * @param rawMessage Message
      * @param userID ID de l'utilisateur courant
      */
-    public static fromPartialMessage(rawMessage: object | undefined, userID: string): Message | undefined {
+    public static fromPartialMessage(rawMessage: PartialMessageSpecs | undefined, userID: string): Message | undefined {
         if (rawMessage === undefined || rawMessage.hasOwnProperty("msg")) {
             // FIXME: Gérer les cas où le dernier message est une réaction
             return undefined;
@@ -164,7 +166,7 @@ class Message {
         }
     }
 
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             attachments: this.attachments,
             content: this.content,

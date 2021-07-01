@@ -27,7 +27,7 @@ class Reaction {
         return this._usernames;
     }
 
-    public static fromObject(obj: object[] | undefined): Reaction[] | undefined {
+    public static fromObject(obj: Record<string, unknown>[] | undefined): Reaction[] | undefined {
         if (obj === undefined) {
             return undefined;
         } else {
@@ -41,7 +41,7 @@ class Reaction {
         }
     }
 
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             reaction: this.reaction,
             usernames: this.usernames,

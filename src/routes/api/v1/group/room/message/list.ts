@@ -11,8 +11,8 @@ const schema = Validation.object({
     }),
 });
 
-module.exports = APIRequest.get(schema, async (req, res) => {
-    await RocketChatRequest.request("GET", "/groups.history", req, res, {
+module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
+    await RocketChatRequest.request("GET", "/groups.history", auth, res, {
         count: 0, // FIXME: Ajouter une limite
         roomId: req.body.roomId,
     }, (r, data) => {

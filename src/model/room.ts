@@ -124,7 +124,7 @@ class Room {
     /**
      * Permet l'encodage en JSON
      */
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             id: this.id,
             isDefault: this.isDefault,

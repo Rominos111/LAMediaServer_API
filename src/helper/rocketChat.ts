@@ -1,69 +1,3 @@
-import {JWT} from "helper/JWT";
-
-/**
- * Authentification Rocket.chat
- */
-class RocketChatAuthentication {
-    /**
-     * Token d'authentification de l'utilisateur
-     * @private
-     */
-    private readonly _authToken: string;
-
-    /**
-     * ID de l'utilisateur
-     * @private
-     */
-    private readonly _userId: string;
-
-    /**
-     * Constructeur
-     * @param userId ID de l'utilisateur
-     * @param authToken Token d'authentification Rocket.chat
-     * @private
-     */
-    private constructor(userId: string, authToken: string) {
-        this._userId = userId;
-        this._authToken = authToken;
-    }
-
-    /**
-     * Token d'authentification Rocket.chat
-     */
-    public get authToken(): string {
-        return this._authToken;
-    }
-
-    /**
-     * ID de l'utilisateur
-     */
-    public get userId(): string {
-        return this._userId;
-    }
-
-    /**
-     * Depuis un token
-     * @param token Token JWT
-     */
-    public static fromToken(token: string): RocketChatAuthentication | null {
-        const auth = JWT.decodeToken(token);
-        if (auth === null) {
-            return null;
-        } else {
-            return new this(auth.data.userId, auth.data.authToken);
-        }
-    }
-
-    /**
-     * Depuis des valeurs directes
-     * @param userId
-     * @param authToken
-     */
-    public static fromValues(userId: string, authToken: string): RocketChatAuthentication {
-        return new this(userId, authToken);
-    }
-}
-
 class RocketChat {
     /**
      * Récupère l'URL Rocket.chat à partir d'un endpoint
@@ -75,15 +9,7 @@ class RocketChat {
             endpoint = endpoint.substr(1);
         }
 
-        let resEndpoint = "" +
-            `${process.env.ROCKETCHAT_REST_PROTOCOL}` +
-            `://${process.env.ROCKETCHAT_ADDRESS}`;
-
-        if (process.env.ROCKETCHAT_PORT) {
-            resEndpoint += `:${process.env.ROCKETCHAT_PORT}`;
-        }
-
-        return resEndpoint + `/api/v1/${endpoint}`;
+        return this.getWebEndpoint(`/api/v1/${endpoint}`);
     }
 
     public static getWebEndpoint(endpointRaw = ""): string {
@@ -127,5 +53,4 @@ class RocketChat {
 
 export {
     RocketChat,
-    RocketChatAuthentication,
 };

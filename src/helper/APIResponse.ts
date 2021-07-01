@@ -41,13 +41,13 @@ class APIResponse {
      * Data
      * @private
      */
-    private readonly _data: object;
+    private readonly _data: Record<string, unknown>;
 
     /**
      * headers supplémentaires
      * @private
      */
-    private readonly _headers: object;
+    private readonly _headers: Record<string, string>;
 
     private readonly _responseType: ResponseType;
 
@@ -65,9 +65,9 @@ class APIResponse {
      * @param responseType Type de réponse (JSON, SVG...)
      * @private
      */
-    private constructor(data: object = {},
+    private constructor(data: Record<string, unknown> = {},
                         statusCode = 200,
-                        headers: object = {},
+                        headers: Record<string, string> = {},
                         responseType: ResponseType = ResponseType.JSON,
     ) {
         this._data = data;
@@ -83,8 +83,8 @@ class APIResponse {
      * @param payload Payload
      * @param errorType Type d'erreur
      */
-    public static fromFailure(errorMessage = "",
-                              statusCode = 400,
+    public static fromFailure(errorMessage,
+                              statusCode,
                               payload: object | object[] | null = null,
                               errorType: APIRErrorType | string = "request",
     ): APIResponse {
@@ -119,11 +119,11 @@ class APIResponse {
         }, statusCode);
     }
 
-    public static fromRaw(rawObject: any,
+    public static fromRaw(rawObject: Record<string, unknown>,
                           statusCode = 200,
                           responseType: ResponseType = ResponseType.JSON,
     ): APIResponse {
-        return new APIResponse(rawObject, statusCode, undefined, responseType);
+        return new APIResponse(rawObject, statusCode, {}, responseType);
     }
 
     /**
@@ -159,7 +159,7 @@ class APIResponse {
     /**
      * Data raw
      */
-    public getRaw(): object {
+    public getRaw(): Record<string, unknown> {
         return this._data;
     }
 }

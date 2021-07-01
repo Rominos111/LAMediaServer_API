@@ -38,7 +38,7 @@ class FileAttachment extends Attachment {
         return this._isDownloadable;
     }
 
-    public toJSON(): object {
+    public toJSON(): Record<string, unknown> {
         return {
             ...super.toJSON(),
             fileLink: this.fileLink,

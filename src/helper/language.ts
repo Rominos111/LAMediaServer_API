@@ -8,7 +8,7 @@ abstract class Language {
      * Langue courante
      * @private
      */
-    private static _lang: object = {};
+    private static _lang: Record<string, string> = {};
 
     /**
      * Configuration de la langue
@@ -26,7 +26,7 @@ abstract class Language {
      */
     public static get(key: string, ...replacementArray: any[]): string {
         const keyParts = key.split(".");
-        let value: object | string | undefined = this._lang;
+        let value: Record<string, string> | string | undefined = this._lang;
         for (const keyPart of keyParts) {
             if (typeof value === "object") {
                 value = value[keyPart];

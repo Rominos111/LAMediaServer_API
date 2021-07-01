@@ -39,7 +39,9 @@ enum RocketChatWebSocketState {
     SUBSCRIBED,
 }
 
-type RocketChatWebSocketCallbackData = { currentUserId: string | null } & any;
+// type RocketChatWebSocketCallbackData = Record<string, unknown> & { currentUserId: string | null };
+// TODO: Typage
+type RocketChatWebSocketCallbackData = Record<string, unknown>;
 
 type RocketChatWebSocketCallback = (data: RocketChatWebSocketCallbackData) => void;
 
@@ -136,11 +138,12 @@ class RocketChatWebSocket {
         }
 
         this._rocketChatSocket.addEventListener("message", (evt) => {
-            let message: any;
+            let message: Record<string, unknown>;
             try {
                 message = JSON.parse(evt.data);
             } catch (e) {
                 console.warn("RC message is not an object:", evt.data);
+                return;
             }
 
             if (message.msg === "ping") {
@@ -167,7 +170,7 @@ class RocketChatWebSocket {
             }
         });
 
-        this._rocketChatSocket.addEventListener("open", (_evt) => {
+        this._rocketChatSocket.addEventListener("open", () => {
             this._state = RocketChatWebSocketState.OPEN;
 
             const connectRequest = {
@@ -197,13 +200,14 @@ class RocketChatWebSocket {
             rcws.send(JSON.stringify(subscribeRequest));
         });
 
-        this._rocketChatSocket.addEventListener("close", (_evt) => {
+        this._rocketChatSocket.addEventListener("close", () => {
             console.debug("RocketChat WebSocket closed");
         });
 
         this._rocketChatSocket.addEventListener("error", (err) => {
             if (err.type === "error" && err.target.readyState === WebSocket.CLOSING) {
-                console.debug(err.message);
+                // WebSocket fermée avant que la connexion soit établie, pas un problème en soi
+                console.debug("Socket fermée avant qu'une connexion soit établie:", err.message);
             } else {
                 console.warn("error RC:", err);
             }

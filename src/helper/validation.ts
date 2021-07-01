@@ -23,6 +23,10 @@ abstract class Validation {
         return Joi.array();
     }
 
+    public static date(): Joi.DateSchema {
+        return Joi.date();
+    }
+
     public static jwt(): Joi.StringSchema {
         return Joi.string().regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/);
     }
@@ -31,7 +35,7 @@ abstract class Validation {
         return Joi.number();
     }
 
-    public static object(obj: object = {}): Joi.ObjectSchema {
+    public static object(obj: Record<string, Joi.SchemaLike> = {}): Joi.ObjectSchema {
         return Joi.object(obj);
     }
 
