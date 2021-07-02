@@ -28,6 +28,10 @@ enum RequestMethod {
     PUT = "PUT",
 }
 
+/**
+ * Détermine si un code HTTP est correct ou non
+ * @param statusCode Code HTTP
+ */
 const isValidStatusCode = (statusCode: number): boolean => {
     return [200, 201, 204, 304].includes(statusCode);
 }

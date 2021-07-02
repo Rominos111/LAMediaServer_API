@@ -19,7 +19,7 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
         void _r;
         console.debug(data);
         // TODO: S'occuper du message de réponse
-        return APIResponse.fromString("TODO");
+        return APIResponse.fromSuccess(null, 200, "TODO");
         // return APIResponse.fromSuccess(new Room(data.channel._id, data.channel.name));
     });
 });

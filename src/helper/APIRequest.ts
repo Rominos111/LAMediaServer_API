@@ -9,10 +9,13 @@ import {
 
 import * as WebSocket from "ws";
 
+/**
+ * Callback des requêtes
+ */
 type RequestCallback = (req: express.Request, res: express.Response, auth: Authentication | null) => void;
 
 /**
- * Requête API
+ * Requête effectuée par le client à l'API. Permet de définir l'endpoint
  */
 class APIRequest {
     /**
@@ -27,6 +30,7 @@ class APIRequest {
                       callback: RequestCallback,
                       route = "/",
     ): express.Router {
+        // On récupère le "vrai" callback Express et on le set
         const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
         router.get(route, Validation.get(schema), expressCallback);
         return this._after(route, router);
@@ -86,6 +90,9 @@ class APIRequest {
         return this._after(route, router);
     }
 
+    /**
+     * Route en cours de développement
+     */
     public static wip(): express.Router {
         const router = express.Router();
         router.all("/", (_req, res) => {
@@ -95,11 +102,19 @@ class APIRequest {
         return router;
     }
 
+    /**
+     * WebSocket
+     * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
+     * @param callback Callback appelé une fois la WebSocket ouverte
+     * @param route Route locale, '/' par défaut
+     */
     public static ws(validationSchema: ObjectSchema | null = null,
                      authenticationRequired: boolean,
                      callback: (ws: WebSocket, req: express.Request) => void,
                      route = "/",
     ): expressWs.Router {
+        // La validation n'est appelée que lors de la demande d'ouverture de la WebSocket
         const validation = (ws: WebSocket, req: express.Request, next: express.NextFunction) => {
             let canContinue = true;
             if (validationSchema !== null) {
@@ -123,6 +138,7 @@ class APIRequest {
             if (canContinue) {
                 next();
             } else {
+                // On ferme la WebSocket
                 close();
             }
         };
@@ -135,6 +151,13 @@ class APIRequest {
         return router;
     }
 
+    /**
+     * Routine exécutée en amont de chaque requête
+     * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
+     * @param callback Callback
+     * @private
+     */
     private static _before(validationSchema: ObjectSchema | null,
                            authenticationRequired: boolean,
                            callback: RequestCallback): {
@@ -147,6 +170,7 @@ class APIRequest {
             schema = Validation.object({});
         }
 
+        // FIXME: N'ajouter cette clé que si `authenticationRequired` est true ?
         schema = schema.append({
             _token: Validation.jwt(),
         });
@@ -171,20 +195,33 @@ class APIRequest {
         };
     }
 
+    /**
+     * Routine post-requête
+     * @param route Route locale
+     * @param router Routeur Express
+     * @private
+     */
     private static _after(route: string, router: express.Router): express.Router {
-        // Erreur 405 pour les autres méthodes
+        // Erreur 405 pour les autres méthodes HTTP que celle utilisée
         router.all(route, this._methodNotAllowed);
         return router;
     }
 
+    /**
+     * Récupère les données d'authentification d'une requête Express
+     * @private
+     */
     private static _getAuthenticationData(req: Request): Authentication | null {
         let token: string | null = null;
 
         if (req.body._token !== undefined) {
+            // Token dans le body
             token = req.body._token;
         } else if (req.query._token !== undefined) {
+            // Token dans la query
             token = req.query._token as string;
         } else if (req.headers.authorization !== undefined) {
+            // Token dans le header
             token = req.headers.authorization.split(" ")[1];
         }
 

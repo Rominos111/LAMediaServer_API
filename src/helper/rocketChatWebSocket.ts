@@ -2,6 +2,9 @@ import {JWT} from "helper/JWT";
 import {RocketChat} from "helper/rocketChat";
 import WebSocket from "ws";
 
+/**
+ * État actuel de la WebSocket
+ */
 enum RocketChatWebSocketState {
     /**
      * Socket fermée
@@ -99,10 +102,17 @@ class RocketChatWebSocket {
         this._uid = (Math.floor(Math.random() * Math.pow(2, 32))).toString();
     }
 
+    /**
+     * Récupère une socket
+     */
     public static getSocket(): RocketChatWebSocket {
         return new this();
     }
 
+    /**
+     * Set le token
+     * @param token Token
+     */
     public withToken(token: string | undefined): RocketChatWebSocket {
         let tokenSanitized: string = "";
         if (token !== undefined) {
@@ -112,17 +122,29 @@ class RocketChatWebSocket {
         return this;
     }
 
+    /**
+     * Set l'abonnement, i.e. le flux suivi (messages, etc)
+     * @param name Nom du flix
+     * @param params Paramètres
+     */
     public subscribedTo(name: string, params: (string | boolean)[]): RocketChatWebSocket {
         this._subscribeRequestName = name;
         this._subscribeRequestParams = params;
         return this;
     }
 
+    /**
+     * Callback de réponse
+     * @param responseCallback
+     */
     public onResponse(responseCallback: RocketChatWebSocketCallback): RocketChatWebSocket {
         this._responseCallback = responseCallback;
         return this;
     }
 
+    /**
+     * Ouvre la socket
+     */
     public open(): void {
         this._rocketChatSocket = new WebSocket(RocketChat.getWebSocketEndpoint());
         this._state = RocketChatWebSocketState.INIT;
@@ -147,6 +169,7 @@ class RocketChatWebSocket {
             }
 
             if (message.msg === "ping") {
+                // Keep-alive
                 rcws.send(JSON.stringify({
                     msg: "pong",
                 }));
@@ -173,13 +196,15 @@ class RocketChatWebSocket {
         this._rocketChatSocket.addEventListener("open", () => {
             this._state = RocketChatWebSocketState.OPEN;
 
+            // Connexion WebSocket Rocket.chat
             const connectRequest = {
                 msg: "connect",
                 version: "1",
-                support: ["1", "pre2", "pre1"],
+                support: ["1"],
             };
             rcws.send(JSON.stringify(connectRequest));
 
+            // Login
             const loginRequest = {
                 msg: "method",
                 method: "login",
@@ -190,6 +215,7 @@ class RocketChatWebSocket {
             };
             rcws.send(JSON.stringify(loginRequest));
 
+            // Souscription
             const subscribeRequest = {
                 msg: "sub",
                 id: this._uid,

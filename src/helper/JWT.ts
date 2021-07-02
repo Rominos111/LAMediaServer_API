@@ -19,8 +19,8 @@ type Token = {
  * Contenu d'un token :
  * <code>
  *     {
- *          userId: "ID utilisateur Rocket.chat",
- *          auToken: AES("Token d'authentification Rocket.chat")
+ *          userId: `ID utilisateur Rocket.chat`,
+ *          auToken: AES256(`Token d'authentification Rocket.chat`)
  *     }
  * </code>
  */
@@ -46,7 +46,7 @@ abstract class JWT {
             issuer: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
             subject: username,
         });
-        // TODO: aud ?
+        // TODO: Champ `aud` ?
     }
 
     /**
