@@ -1,6 +1,9 @@
 import {RequestMethod} from "helper/requestMethod";
 import {RequestOptions} from "https";
 
+/**
+ * Informations relatives à OpenVidu
+ */
 abstract class OpenVidu {
     public static getWebEndpoint(endpointRaw = ""): string {
         let endpoint = endpointRaw;
@@ -40,6 +43,11 @@ abstract class OpenVidu {
         return resEndpoint + `/openvidu/${endpoint}`;
     }
 
+    /**
+     * Construit les options HTTPS utilisées par OpenVidu
+     * @param method Méthode HTTP de requête
+     * @param path Chemin OpenVidu
+     */
     public static getOptions(method: RequestMethod | string, path: string): RequestOptions {
         let opt: RequestOptions = {
             hostname: `${process.env.OPENVIDU_ADDRESS}`,

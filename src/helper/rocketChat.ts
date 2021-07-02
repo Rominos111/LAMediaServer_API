@@ -1,3 +1,6 @@
+/**
+ * Informations relatives à Rocket.chat
+ */
 class RocketChat {
     /**
      * Récupère l'URL Rocket.chat à partir d'un endpoint

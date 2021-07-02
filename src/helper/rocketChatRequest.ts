@@ -11,11 +11,21 @@ import {
 } from "helper/requestMethod";
 import {RocketChat} from "helper/rocketChat";
 
+/**
+ * Réponse Axios avec nos propres champs
+ */
 interface CustomAxiosResponse extends AxiosResponse {
     currentUserId: string | null,
 }
 
+/**
+ * Callback de succès
+ */
 type SuccessCallback = (r: CustomAxiosResponse, data: any) => APIResponse | Promise<APIResponse> | null;
+
+/**
+ * Callback d'échec
+ */
 type FailureCallback = (r: AxiosResponse, data: any) => APIResponse | Promise<APIResponse> | null;
 
 /**
@@ -26,10 +36,10 @@ class RocketChatRequest {
      * Requête
      * @param HTTPMethod Méthode HTTP, comme GET ou POST
      * @param route Route / endpoint
-     * @param authentication Authentification
+     * @param authentication Authentification utilisée
      * @param res Réponse express
      * @param rawPayload Payload fourni
-     * @param onSuccess Fonction appelée en cas de succès HTTP (2XX)
+     * @param onSuccess Fonction appelée en cas de succès HTTP
      * @param onFailure Fonction appelée en cas d'échec HTTP
      * @param useAPIPrefix Utilise le préfixe API "/api/v1/" ou non. Très rarement faux.
      */
@@ -105,6 +115,18 @@ class RocketChatRequest {
         }
     }
 
+    /**
+     * Effectue la requête
+     * @param HTTPMethod Méthode HTTP
+     * @param route Route / endpoint
+     * @param headers Headers
+     * @param res Réponse Express, peut être nulle
+     * @param payload Payload
+     * @param onSuccessCallback Callback de succès
+     * @param onFailureCallback Callback d'échec
+     * @param useAPIPrefix Utilise le préfixe "/api/v1/" ou non
+     * @private
+     */
     private static async _continueRequest(HTTPMethod: RequestMethod,
                                           route: string,
                                           headers: AxiosRequestConfig,
@@ -114,6 +136,7 @@ class RocketChatRequest {
                                           onFailureCallback: FailureCallback | null,
                                           useAPIPrefix: boolean,
     ): Promise<void> {
+        // Récupère la fonction Express à utiliser
         const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
 
         let onSuccess = onSuccessCallback;
@@ -150,14 +173,16 @@ class RocketChatRequest {
                 // Réponse valide
 
                 if (r.data.success !== true && r.data.success !== undefined) {
-                    console.log("`r.data.success` is not true. Value:", r.data.success);
+                    console.debug("`r.data.success` is not true. Value:", r.data.success);
                 }
 
-                let uid = null;
+                // ID de l'utilisateur, si présent
+                let uid: string | null = null;
                 if (r.config.headers["X-User-Id"] !== undefined) {
                     uid = r.config.headers["X-User-Id"];
                 }
 
+                // Réponse Axios avec nos propres informations
                 const customRes: CustomAxiosResponse = {
                     ...r,
                     currentUserId: uid,
@@ -174,6 +199,7 @@ class RocketChatRequest {
                 console.error("Connection refusée avec Rocket.chat");
                 promiseOrRes = APIResponse.fromFailure("Connection refused", 500);
             } else if (err.code === "ECONNRESET") {
+                // FIXME: Utile ou non ?
                 console.info("Socket hang up");
                 promiseOrRes = null;
             } else if (err.response) {
@@ -187,6 +213,7 @@ class RocketChatRequest {
 
         const resAPI: APIResponse | null = await promiseOrRes;
         if (resAPI !== null && res !== null) {
+            // On envoie la réponse de l'API si nécessaire
             (<APIResponse>resAPI).send(res);
         }
     }

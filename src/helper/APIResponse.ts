@@ -1,6 +1,3 @@
-/**
- * Réponse API générique
- */
 import {Response} from "express";
 
 /**
@@ -28,13 +25,16 @@ enum APIRErrorType {
     VALIDATION = "validation",
 }
 
+/**
+ * Type de réponse, type MIME
+ */
 enum ResponseType {
-    JSON,
-    SVG,
+    JSON = "json",
+    SVG = "image/svg+xml",
 }
 
 /**
- * Réponse API
+ * Réponse API générique
  */
 class APIResponse {
     /**
@@ -49,6 +49,10 @@ class APIResponse {
      */
     private readonly _headers: Record<string, string>;
 
+    /**
+     * Type de réponse
+     * @private
+     */
     private readonly _responseType: ResponseType;
 
     /**
@@ -90,8 +94,7 @@ class APIResponse {
     ): APIResponse {
         const headers = {};
         if (statusCode === 401 || statusCode === 403) {
-            headers["WWW-Authenticate"] = "Bearer realm=\"Token for the LAMediaServer API\", charset=\"UTF-8\"";
-            // FIXME: `Basic` plutôt non ?
+            headers["WWW-Authenticate"] = "Basic realm=\"Token pour LAMediaServer\", charset=\"UTF-8\"";
         }
 
         return new APIResponse({
@@ -119,21 +122,17 @@ class APIResponse {
         }, statusCode);
     }
 
+    /**
+     * Objet brut, comme un fichier SVG ou un fichier binaire
+     * @param rawObject Objet brut
+     * @param statusCode Code d'erreur
+     * @param responseType Type de réponse
+     */
     public static fromRaw(rawObject: Record<string, unknown>,
                           statusCode = 200,
                           responseType: ResponseType = ResponseType.JSON,
     ): APIResponse {
         return new APIResponse(rawObject, statusCode, {}, responseType);
-    }
-
-    /**
-     * Depuis une chaine
-     * @param message Message
-     */
-    public static fromString(message = ""): APIResponse {
-        return this.fromSuccess({
-            message,
-        });
     }
 
     /**
@@ -147,13 +146,8 @@ class APIResponse {
             response = response.set(key, this._headers[key]);
         }
 
-        if (this._responseType === ResponseType.SVG) {
-            response = response.type("image/svg+xml");
-            return response.send(this._data);
-        } else if (this._responseType === ResponseType.JSON || true) {
-            response = response.type("json");
-            return response.json(this._data);
-        }
+        response = response.type(this._responseType as string);
+        return response.send(this._data);
     }
 
     /**

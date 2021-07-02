@@ -1,7 +1,7 @@
 import {JWT} from "helper/JWT";
 
 /**
- * Authentification Rocket.chat
+ * Authentification de l'API
  */
 class Authentication {
     /**
@@ -35,7 +35,7 @@ class Authentication {
     }
 
     /**
-     * ID de l'utilisateur
+     * ID de l'utilisateur Rocket.chat
      */
     public get userId(): string {
         return this._userId;
@@ -52,15 +52,6 @@ class Authentication {
         } else {
             return new this(auth.data.userId, auth.data.authToken);
         }
-    }
-
-    /**
-     * Depuis des valeurs directes
-     * @param userId
-     * @param authToken
-     */
-    public static fromValues(userId: string, authToken: string): Authentication {
-        return new this(userId, authToken);
     }
 }
 
