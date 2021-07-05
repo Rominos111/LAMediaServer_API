@@ -28,7 +28,7 @@ interface WebSocketData extends RawMessage {
 }
 
 interface EditedMessage {
-    edited: {
+    editor: {
         timestamp: Date,
         user: {
             id: string,
@@ -57,7 +57,7 @@ module.exports = APIRequest.ws(schema, true, async (ws, req) => {
                 if (rawMessage.editedAt !== undefined && rawMessage.editedBy !== undefined) {
                     // Évite de compter les nouveaux messages comme des messages modifiés
                     messages.push({
-                        edited: {
+                        editor: {
                             timestamp: new Date(rawMessage.editedAt.$date),
                             user: {
                                 id: rawMessage.editedBy._id,
