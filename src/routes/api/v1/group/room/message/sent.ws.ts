@@ -16,6 +16,17 @@ const schema = Validation.object({
     }),
 });
 
+interface WebSocketData extends RawMessage {
+    $date: number | Date,
+    editedAt: undefined | {
+        $date: number | Date,
+    },
+    editedBy: undefined | {
+        _id: string,
+        username: string,
+    }
+}
+
 module.exports = APIRequest.ws(schema, true, async (ws, req) => {
     const subscription = "stream-room-messages";
 
@@ -27,17 +38,17 @@ module.exports = APIRequest.ws(schema, true, async (ws, req) => {
             false,
         ])
         .onResponse((data) => {
-            if (data.msg === "changed" && data.collection === subscription) {
-                let messages: Message[] = [];
-                const fields: Record<string, unknown> = data.fields as Record<string, unknown>;
-                const args: { ts: { "$date": Date } | Date }[] = fields.args as { ts: { "$date": Date } }[];
-                // FIXME: Types
-                for (let rawMessage of args) {
-                    rawMessage.ts = rawMessage.ts["$date"];
-                    messages.push(Message.fromFullMessage(rawMessage as RawMessage, data.currentUserId as string));
+            let messages: Message[] = [];
+            const fields: Record<string, unknown> = data.fields as Record<string, unknown>;
+            const args: WebSocketData[] = fields.args as WebSocketData[];
+            for (let rawMessage of args) {
+                rawMessage.ts = rawMessage.ts["$date"];
+                if (rawMessage.editedAt === undefined && rawMessage.editedBy === undefined) {
+                    // Évite de compter les messages modifiés comme de nouveaux messages
+                    messages.push(Message.fromFullMessage(rawMessage, data.currentUserId as string));
                 }
-                ws.send(JSON.stringify(messages));
             }
+            ws.send(JSON.stringify(messages));
         });
 
     rcws.open();
