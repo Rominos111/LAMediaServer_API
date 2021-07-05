@@ -32,6 +32,7 @@ module.exports = APIRequest.ws(schema, true, async (ws, req) => {
                 const fields: Record<string, unknown> = data.fields as Record<string, unknown>;
                 const args: { ts: { "$date": Date } | Date }[] = fields.args as { ts: { "$date": Date } }[];
                 // FIXME: Types
+                console.log(fields);
                 for (let rawMessage of args) {
                     rawMessage.ts = rawMessage.ts["$date"];
                     messages.push(Message.fromFullMessage(rawMessage as RawMessage, data.currentUserId as string));
