@@ -1,17 +1,8 @@
 /**
- * Statut de connexion
- */
-enum UserStatus {
-    AWAY = "away",
-    BUSY = "busy",
-    OFFLINE = "offline",
-    ONLINE = "online",
-    UNKNOWN = "unknown",
-}
-
-/**
  * Utilisateur
  */
+import {Presence} from "model/presence";
+
 class User {
     /**
      * ID
@@ -35,7 +26,7 @@ class User {
      * Statut
      * @private
      */
-    private readonly _status: UserStatus | undefined;
+    private readonly _status: Presence | undefined;
 
     /**
      * Nom d'utilisateur
@@ -47,7 +38,7 @@ class User {
                         username: string,
                         name: string,
                         isMe: boolean,
-                        status: UserStatus | undefined = undefined,
+                        status: Presence | undefined = undefined,
     ) {
         this._id = id;
         this._username = username;
@@ -68,7 +59,7 @@ class User {
         return this._name;
     }
 
-    public get status(): UserStatus | undefined {
+    public get status(): Presence | undefined {
         return this._status;
     }
 
@@ -80,9 +71,9 @@ class User {
                                username: string,
                                name: string,
                                isMe: boolean,
-                               status: string | UserStatus,
+                               status: string | Presence,
     ): User {
-        return new this(id, username, name, isMe, status as UserStatus);
+        return new this(id, username, name, isMe, status as Presence);
     }
 
     public static fromPartialUser(id: string, username: string, name: string | undefined, isMe: boolean): User {
@@ -109,5 +100,4 @@ class User {
 
 export {
     User,
-    UserStatus,
 };
