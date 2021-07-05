@@ -215,16 +215,18 @@ class RocketChatWebSocket {
             } else if (this._state !== RocketChatWebSocketState.SUBSCRIBED && message.msg === "ready") {
                 this._state = RocketChatWebSocketState.SUBSCRIBED;
             } else if (this._state === RocketChatWebSocketState.SUBSCRIBED) {
-                const messageWithUserId: RocketChatWebSocketCallbackData = message;
-                messageWithUserId.currentUserId = null;
+                const response: RocketChatWebSocketCallbackData = message;
+                response.currentUserId = null;
                 if (jwt !== null) {
-                    messageWithUserId.currentUserId = jwt.data.userId;
+                    response.currentUserId = jwt.data.userId;
                 }
 
-                if (messageWithUserId.msg === "error") {
-                    console.warn("WebSocket client error:", messageWithUserId.reason);
+                if (response.msg === undefined || response.msg === "error") {
+                    console.warn("WebSocket client error:", response.reason);
+                } else if (response.msg === "changed" && response.collection === this._subscribeRequestName) {
+                    this._responseCallback(response);
                 } else {
-                    this._responseCallback(messageWithUserId);
+                    console.warn("Invalid WebSocket state:", response);
                 }
             } else {
                 // Garbage, messages non utilisés, informations de connexion
