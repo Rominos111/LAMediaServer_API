@@ -45,11 +45,14 @@ enum RocketChatWebSocketState {
     SUBSCRIBED,
 }
 
-// type RocketChatWebSocketCallbackData = Record<string, unknown> & { currentUserId: string | null };
 // TODO: Typage
-type RocketChatWebSocketCallbackData = Record<string, unknown>;
+type RocketChatWebSocketCallbackData =
+    Record<string, unknown>
+    & { fields: { args: any }, currentUserId: string | null };
 
-type RocketChatWebSocketCallback = (data: RocketChatWebSocketCallbackData) => void;
+type RocketChatWebSocketCallback = (elts: unknown[],
+                                    currentUserId: string | null,
+                                    data: RocketChatWebSocketCallbackData) => void;
 
 class RocketChatWebSocket {
     /**
@@ -148,7 +151,7 @@ class RocketChatWebSocket {
     /**
      * Ouvre la socket
      */
-    public open(): void {
+    public open(ws: WebSocket): void {
         this._rocketChatSocket = new WebSocket(RocketChat.getWebSocketEndpoint());
         this._state = RocketChatWebSocketState.INIT;
         const rcws = this._rocketChatSocket;
@@ -166,6 +169,15 @@ class RocketChatWebSocket {
         this._rocketChatSocket.addEventListener("open", () => this._onWebSocketOpen(rcws, authToken));
         this._rocketChatSocket.addEventListener("close", () => this._onWebSocketClose());
         this._rocketChatSocket.addEventListener("error", (err) => this._onWebSocketError(err));
+
+        ws.on("close", () => {
+            rcws.close();
+        });
+
+        ws.on("message", (msg: WebSocket.Data) => {
+            console.debug("Message envoyé à Rocket.chat:", msg);
+            // rcws.send(msg.toString());
+        });
     }
 
     public send(msg: string): void {
@@ -194,7 +206,7 @@ class RocketChatWebSocket {
     }
 
     private _onWebSocketMessage(evt: { data: string }, rcws: WebSocket, jwt: Token | null) {
-        let message: Record<string, unknown>;
+        let message: RocketChatWebSocketCallbackData;
         try {
             message = JSON.parse(evt.data);
         } catch (e) {
@@ -224,7 +236,9 @@ class RocketChatWebSocket {
                 if (response.msg === undefined || response.msg === "error") {
                     console.warn("WebSocket client error:", response.reason);
                 } else if (response.msg === "changed" && response.collection === this._subscribeRequestName) {
-                    this._responseCallback(response);
+                    this._responseCallback(response.fields.args, response.currentUserId, response);
+                } else if (response.msg === "updated") {
+                    // FIXME: À quoi correspond ce message ?
                 } else {
                     console.warn("Invalid WebSocket state:", response);
                 }
