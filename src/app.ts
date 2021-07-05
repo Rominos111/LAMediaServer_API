@@ -8,7 +8,7 @@ import walk from "fs-walk";
 import {APIResponse} from "helper/APIResponse";
 import {envConfig} from "helper/envConfig";
 import createError from "http-errors";
-import logger from "morgan";
+import morgan from "morgan";
 import path from "path";
 
 const expressWsInstance = expressWs(express());
@@ -43,10 +43,10 @@ app.use(cors(corsOptions));
 
 // Logs
 if (process.env.RELEASE_ENVIRONMENT === "dev") {
-    app.use(logger("dev"));
+    app.use(morgan("dev"));
 } else {
     console.debug = () => void null;
-    app.use(logger("short"));
+    app.use(morgan("short"));
 }
 
 // Requêtes en JSON
@@ -103,7 +103,8 @@ walk.filesSync(routesPath, (basedir, rawFilename) => {
     }
 
     filename = filename.replace(/\.[jt]s$/, "");
-    const route = "/" + path.relative(routesPath, path.join(basedir, filename)).replace(/\\/g, "/");
+    let endpoint = filename.replace(/(\.rest|\.ws)?$/, "");
+    const route = "/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
     importedRoutes.push({
         path: path.join(basedir, filename),
         route,
