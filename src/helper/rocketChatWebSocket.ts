@@ -127,7 +127,7 @@ class RocketChatWebSocket {
 
     /**
      * Set l'abonnement, i.e. le flux suivi (messages, etc)
-     * @param name Nom du flix
+     * @param name Nom du flux
      * @param params Paramètres
      */
     public subscribedTo(name: string, params: (string | boolean)[]): RocketChatWebSocket {
