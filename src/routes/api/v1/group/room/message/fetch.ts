@@ -27,13 +27,10 @@ module.exports = APIRequest.ws(schema, true, async (ws, req) => {
             false,
         ])
         .onResponse((data) => {
-            if (data.msg === "error") {
-                console.debug("WebSocket client error:", data.reason);
-                ws.send(JSON.stringify(data));
-            } else if (data.msg === "changed" && data.collection === subscription) {
+            if (data.msg === "changed" && data.collection === subscription) {
                 let messages: Message[] = [];
                 const fields: Record<string, unknown> = data.fields as Record<string, unknown>;
-                const args: {ts: {"$date": Date} | Date}[] = fields.args as {ts: {"$date": Date}}[];
+                const args: { ts: { "$date": Date } | Date }[] = fields.args as { ts: { "$date": Date } }[];
                 // FIXME: Types
                 for (let rawMessage of args) {
                     rawMessage.ts = rawMessage.ts["$date"];

@@ -104,3 +104,4 @@ abstract class JWT {
 }
 
 export {JWT};
+export type {Token};

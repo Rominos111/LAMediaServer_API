@@ -1,4 +1,7 @@
-import {JWT} from "helper/JWT";
+import {
+    JWT,
+    Token,
+} from "helper/JWT";
 import {RocketChat} from "helper/rocketChat";
 import WebSocket from "ws";
 
@@ -159,85 +162,10 @@ class RocketChatWebSocket {
             authToken = jwt.data.authToken;
         }
 
-        this._rocketChatSocket.addEventListener("message", (evt) => {
-            let message: Record<string, unknown>;
-            try {
-                message = JSON.parse(evt.data);
-            } catch (e) {
-                console.warn("RC message is not an object:", evt.data);
-                return;
-            }
-
-            if (message.msg === "ping") {
-                // Keep-alive
-                rcws.send(JSON.stringify({
-                    msg: "pong",
-                }));
-            } else {
-                if (this._state === RocketChatWebSocketState.OPEN && message.server_id !== undefined) {
-                    this._state = RocketChatWebSocketState.LINKED;
-                } else if (this._state === RocketChatWebSocketState.LINKED && message.msg === "connected") {
-                    this._state = RocketChatWebSocketState.CONNECTED;
-                } else {
-                    if (this._state === RocketChatWebSocketState.SUBSCRIBED) {
-                        const messageWithUserId: RocketChatWebSocketCallbackData = message;
-                        messageWithUserId.currentUserId = null;
-                        if (jwt !== null) {
-                            messageWithUserId.currentUserId = jwt.data.userId;
-                        }
-                        this._responseCallback(messageWithUserId);
-                    } else if (message.msg === "ready") {
-                        this._state = RocketChatWebSocketState.SUBSCRIBED;
-                    }
-                }
-            }
-        });
-
-        this._rocketChatSocket.addEventListener("open", () => {
-            this._state = RocketChatWebSocketState.OPEN;
-
-            // Connexion WebSocket Rocket.chat
-            const connectRequest = {
-                msg: "connect",
-                version: "1",
-                support: ["1"],
-            };
-            rcws.send(JSON.stringify(connectRequest));
-
-            // Login
-            const loginRequest = {
-                msg: "method",
-                method: "login",
-                id: this._uid,
-                params: [{
-                    resume: authToken,
-                }],
-            };
-            rcws.send(JSON.stringify(loginRequest));
-
-            // Souscription
-            const subscribeRequest = {
-                msg: "sub",
-                id: this._uid,
-                name: this._subscribeRequestName,
-                params: this._subscribeRequestParams,
-            };
-
-            rcws.send(JSON.stringify(subscribeRequest));
-        });
-
-        this._rocketChatSocket.addEventListener("close", () => {
-            console.debug("RocketChat WebSocket closed");
-        });
-
-        this._rocketChatSocket.addEventListener("error", (err) => {
-            if (err.type === "error" && err.target.readyState === WebSocket.CLOSING) {
-                // WebSocket fermée avant que la connexion soit établie, pas un problème en soi
-                console.debug("Socket fermée avant qu'une connexion soit établie:", err.message);
-            } else {
-                console.warn("error RC:", err);
-            }
-        });
+        this._rocketChatSocket.addEventListener("message", (evt) => this._onWebSocketMessage(evt, rcws, jwt));
+        this._rocketChatSocket.addEventListener("open", () => this._onWebSocketOpen(rcws, authToken));
+        this._rocketChatSocket.addEventListener("close", () => this._onWebSocketClose());
+        this._rocketChatSocket.addEventListener("error", (err) => this._onWebSocketError(err));
     }
 
     public send(msg: string): void {
@@ -262,6 +190,91 @@ class RocketChatWebSocket {
             }
 
             this._state = RocketChatWebSocketState.CLOSED;
+        }
+    }
+
+    private _onWebSocketMessage(evt: { data: string }, rcws: WebSocket, jwt: Token | null) {
+        let message: Record<string, unknown>;
+        try {
+            message = JSON.parse(evt.data);
+        } catch (e) {
+            console.warn("RC message is not an object:", evt.data);
+            return;
+        }
+
+        if (message.msg === "ping") {
+            // Keep-alive
+            rcws.send(JSON.stringify({
+                msg: "pong",
+            }));
+        } else {
+            if (this._state === RocketChatWebSocketState.OPEN && message.server_id !== undefined) {
+                this._state = RocketChatWebSocketState.LINKED;
+            } else if (this._state === RocketChatWebSocketState.LINKED && message.msg === "connected") {
+                this._state = RocketChatWebSocketState.CONNECTED;
+            } else if (this._state !== RocketChatWebSocketState.SUBSCRIBED && message.msg === "ready") {
+                this._state = RocketChatWebSocketState.SUBSCRIBED;
+            } else if (this._state === RocketChatWebSocketState.SUBSCRIBED) {
+                const messageWithUserId: RocketChatWebSocketCallbackData = message;
+                messageWithUserId.currentUserId = null;
+                if (jwt !== null) {
+                    messageWithUserId.currentUserId = jwt.data.userId;
+                }
+
+                if (messageWithUserId.msg === "error") {
+                    console.warn("WebSocket client error:", messageWithUserId.reason);
+                } else {
+                    this._responseCallback(messageWithUserId);
+                }
+            } else {
+                // Garbage, messages non utilisés, informations de connexion
+            }
+        }
+    }
+
+    private _onWebSocketOpen(rcws: WebSocket, authToken: string): void {
+        this._state = RocketChatWebSocketState.OPEN;
+
+        // Connexion WebSocket Rocket.chat
+        const connectRequest = {
+            msg: "connect",
+            version: "1",
+            support: ["1"],
+        };
+        rcws.send(JSON.stringify(connectRequest));
+
+        // Login
+        const loginRequest = {
+            msg: "method",
+            method: "login",
+            id: this._uid,
+            params: [{
+                resume: authToken,
+            }],
+        };
+        rcws.send(JSON.stringify(loginRequest));
+
+        // Souscription
+        const subscribeRequest = {
+            msg: "sub",
+            id: this._uid,
+            name: this._subscribeRequestName,
+            params: this._subscribeRequestParams,
+        };
+
+        rcws.send(JSON.stringify(subscribeRequest));
+    }
+
+    private _onWebSocketClose(): void {
+        console.debug("RocketChat WebSocket closed");
+    }
+
+    private _onWebSocketError(err: { error: Error, message: string, type: string, target: WebSocket }): void {
+        if (err.type === "error" && err.target.readyState === WebSocket.CLOSING) {
+            // WebSocket fermée avant que la connexion soit établie, pas un problème en soi
+            console.debug("Socket fermée avant qu'une connexion soit établie:", err.message);
+        } else {
+            console.warn("error RC:", err);
         }
     }
 }
