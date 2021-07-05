@@ -24,10 +24,14 @@ module.exports = APIRequest.ws(schema, true, async (ws, req) => {
         ])
         .onResponse((data) => {
             const fields: Record<string, unknown> = data.fields as Record<string, unknown>;
-            const args: { _id: string } = fields.args as { _id: string };
-            ws.send(JSON.stringify({
-                id: args._id,
-            }));
+            const args: { _id: string }[] = fields.args as { _id: string }[];
+            const ids: { id: string }[] = [];
+            for (const arg of args) {
+                ids.push({
+                    id: arg._id,
+                });
+            }
+            ws.send(JSON.stringify(ids));
         });
 
     rcws.open();
