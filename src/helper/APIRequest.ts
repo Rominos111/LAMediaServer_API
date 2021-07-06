@@ -117,14 +117,14 @@ class APIRequest {
         // La validation n'est appelée que lors de la demande d'ouverture de la WebSocket
         const validation = (ws: WebSocket, req: express.Request, next: express.NextFunction) => {
             let canContinue = true;
-            if (validationSchema !== null) {
-                const valid = validationSchema.validate(req.query);
 
-                if (valid.error) {
-                    // Validation échouée
-                    console.debug("WebSocket validation error:", valid.error.message);
-                    canContinue = false;
-                }
+            let schema = this._getValidationSchema(validationSchema, authenticationRequired);
+            const valid = schema.validate(req.query);
+
+            if (valid.error) {
+                // Validation échouée
+                console.debug("WebSocket validation error:", valid.error.message);
+                canContinue = false;
             }
 
             if (canContinue && authenticationRequired) {
@@ -151,6 +151,22 @@ class APIRequest {
         return router;
     }
 
+    private static _getValidationSchema(validationSchema: ObjectSchema | null,
+                                        authenticationRequired: boolean): ObjectSchema {
+        let schema = validationSchema;
+        if (schema === null) {
+            schema = Validation.object({});
+        }
+
+        if (authenticationRequired) {
+            schema = schema.append({
+                _token: Validation.jwt(),
+            });
+        }
+
+        return schema;
+    }
+
     /**
      * Routine exécutée en amont de chaque requête
      * @param validationSchema Schéma de validation
@@ -165,16 +181,7 @@ class APIRequest {
         router: express.Router,
         schema: ObjectSchema,
     } {
-        let schema = validationSchema;
-        if (schema === null) {
-            schema = Validation.object({});
-        }
-
-        // FIXME: N'ajouter cette clé que si `authenticationRequired` est true ?
-        schema = schema.append({
-            _token: Validation.jwt(),
-        });
-
+        let schema = this._getValidationSchema(validationSchema, authenticationRequired);
         const expressCallback = (req, res) => {
             if (authenticationRequired) {
                 const auth = this._getAuthenticationData(req);
