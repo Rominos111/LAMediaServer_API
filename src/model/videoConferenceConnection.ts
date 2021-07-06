@@ -81,8 +81,8 @@ class VideoConferenceConnection {
         return new this(
             new Date(obj.createdAt),
             obj.id,
-            obj.serverData,
             obj.sessionId,
+            obj.serverData,
             obj.status as VideoConferenceConnectionStatus,
             obj.token,
             token,
