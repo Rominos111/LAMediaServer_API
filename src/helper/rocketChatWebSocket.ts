@@ -154,7 +154,6 @@ class RocketChatWebSocket {
     public open(ws: WebSocket): void {
         this._rocketChatSocket = new WebSocket(RocketChat.getWebSocketEndpoint());
         this._state = RocketChatWebSocketState.INIT;
-        const rcws = this._rocketChatSocket;
 
         const jwt = JWT.decodeToken(this._token);
         let authToken = "";
@@ -165,13 +164,28 @@ class RocketChatWebSocket {
             authToken = jwt.data.authToken;
         }
 
-        this._rocketChatSocket.addEventListener("message", (evt) => this._onWebSocketMessage(evt, rcws, jwt));
-        this._rocketChatSocket.addEventListener("open", () => this._onWebSocketOpen(rcws, authToken));
-        this._rocketChatSocket.addEventListener("close", () => this._onWebSocketClose());
-        this._rocketChatSocket.addEventListener("error", (err) => this._onWebSocketError(err));
+        this._rocketChatSocket.on("message", (evt) => {
+            this._onWebSocketMessage(evt as string, this._rocketChatSocket as WebSocket, jwt);
+        });
+
+        this._rocketChatSocket.on("open", () => {
+            this._onWebSocketOpen(this._rocketChatSocket as WebSocket, authToken);
+        });
+
+        this._rocketChatSocket.on("close", () => {
+            this._onWebSocketClose();
+        });
+
+        this._rocketChatSocket.on("error", (err) => {
+            this._onWebSocketError(err);
+        });
+
+        ws.on("error", (err) => {
+            console.warn("client WS error:", err.message);
+        });
 
         ws.on("close", () => {
-            rcws.close();
+            this.close();
         });
 
         ws.on("message", (msg: WebSocket.Data) => {
@@ -205,12 +219,12 @@ class RocketChatWebSocket {
         }
     }
 
-    private _onWebSocketMessage(evt: { data: string }, rcws: WebSocket, jwt: Token | null) {
+    private _onWebSocketMessage(data: string, rcws: WebSocket, jwt: Token | null) {
         let message: RocketChatWebSocketCallbackData;
         try {
-            message = JSON.parse(evt.data);
+            message = JSON.parse(data);
         } catch (e) {
-            console.warn("RC message is not an object:", evt.data);
+            console.warn("RC message is not an object:", data);
             return;
         }
 
@@ -285,12 +299,11 @@ class RocketChatWebSocket {
         console.debug("RocketChat WebSocket closed");
     }
 
-    private _onWebSocketError(err: { error: Error, message: string, type: string, target: WebSocket }): void {
-        if (err.type === "error" && err.target.readyState === WebSocket.CLOSING) {
-            // WebSocket fermée avant que la connexion soit établie, pas un problème en soi
-            console.debug("Socket fermée avant qu'une connexion soit établie:", err.message);
+    private _onWebSocketError(err: Error): void {
+        if (this._state === RocketChatWebSocketState.INIT && this._rocketChatSocket?.readyState === WebSocket.CLOSING) {
+            // WebSocket fermée avant que la connexion soit établie, pas une erreur en soi
         } else {
-            console.warn("error RC:", err);
+            console.warn("error RC:", err, this._state, this._rocketChatSocket?.readyState);
         }
     }
 }
