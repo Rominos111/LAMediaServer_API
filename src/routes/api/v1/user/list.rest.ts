@@ -1,22 +1,21 @@
+/**
+ * Liste tous les utilisateurs
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {RocketChatRequest} from "helper/rocketChatRequest";
-import {User} from "model/user";
+import {
+    RawFullUser,
+    User,
+} from "model/user";
 
 module.exports = APIRequest.get(null, true, async (req, res, auth) => {
     await RocketChatRequest.request("GET", "/users.list", auth, res, null, (r, data) => {
-        const currentUserID = r.config.headers["X-User-Id"];
         const users: User[] = [];
 
-        for (const elt of data.users) {
-            users.push(User.fromFullUser(
-                elt._id,
-                elt.username,
-                elt.name,
-                elt._id === currentUserID,
-                elt.status,
-            ));
-            // FIXME: Pas de `last seen` ?
+        for (const elt of data.users as RawFullUser[]) {
+            users.push(User.fromFullUser(elt, auth?.userId as string));
         }
 
         return APIResponse.fromSuccess(users);

@@ -3,7 +3,7 @@
  */
 import {
     Message,
-    RawMessage,
+    RawFullMessage,
 } from "model/message";
 
 type RawFullRoom = {
@@ -16,7 +16,7 @@ type RawFullRoom = {
     u: unknown,
     ts: Date,
     default: boolean,
-    lastMessage: RawMessage,
+    lastMessage?: RawFullMessage,
     lm: Date,
 }
 
@@ -40,7 +40,7 @@ class Room {
      * Dernier message
      * @private
      */
-    private readonly _lastMessage: Message | undefined;
+    private readonly _lastMessage: Message | null;
 
     private readonly _messagesCount: number;
 
@@ -59,18 +59,18 @@ class Room {
      * @param id ID
      * @param name Nom
      * @param defaultRoom Canal par défaut ou non
-     * @param lastMessage Dernier message
      * @param parentRoomId ID de la room parente
      * @param usersCount Nombre d'utilisateurs
      * @param messagesCount Nombre de messages
+     * @param lastMessage Dernier message
      */
     public constructor(id: string,
                        name: string,
                        defaultRoom: boolean,
-                       lastMessage: Message | undefined,
                        parentRoomId: string,
                        usersCount: number,
                        messagesCount: number,
+                       lastMessage: Message | null,
     ) {
         this._id = id;
         this._name = name;
@@ -89,7 +89,7 @@ class Room {
         return this._isDefault;
     }
 
-    public get lastMessage(): Message | undefined {
+    public get lastMessage(): Message | null {
         return this._lastMessage;
     }
 
@@ -114,10 +114,10 @@ class Room {
             obj._id,
             obj.fname,
             obj.default,
-            Message.fromFullMessage(obj.lastMessage, currentUserId),
             obj.prid,
             obj.usersCount,
             obj.msgs,
+            obj.lastMessage ? Message.fromFullMessage(obj.lastMessage, currentUserId) : null,
         );
     }
 
@@ -138,3 +138,4 @@ class Room {
 }
 
 export {Room};
+export type {RawFullRoom};

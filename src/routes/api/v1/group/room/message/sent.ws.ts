@@ -1,10 +1,14 @@
+/**
+ * Message envoyé
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
 import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
 import {
     Message,
-    RawMessage,
+    RawFullMessage,
 } from "model/message";
 
 const schema = Validation.object({
@@ -13,12 +17,12 @@ const schema = Validation.object({
     }),
 });
 
-interface WebSocketData extends RawMessage {
+interface WebSocketData extends RawFullMessage {
     $date: number | Date,
-    editedAt: undefined | {
+    editedAt?: {
         $date: number | Date,
     },
-    editedBy: undefined | {
+    editedBy?: {
         _id: string,
         username: string,
     }
@@ -37,7 +41,7 @@ module.exports = APIRequest.ws(schema, true, async (ws, req) => {
             for (let elt of elts) {
                 const rawMessage = elt as WebSocketData;
                 rawMessage.ts = rawMessage.ts["$date"];
-                if (rawMessage.editedAt === undefined && rawMessage.editedBy === undefined) {
+                if (!rawMessage.hasOwnProperty("editedAt") && !rawMessage.hasOwnProperty("editedBy")) {
                     // Évite de compter les messages modifiés comme de nouveaux messages
                     messages.push(Message.fromFullMessage(rawMessage, currentUserId as string));
                 }

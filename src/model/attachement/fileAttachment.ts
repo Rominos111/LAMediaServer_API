@@ -3,7 +3,7 @@ import {
     AttachmentType,
 } from ".";
 
-interface FileAttachmentSpecs {
+interface RawFileAttachment {
     title_link: string,
     title_link_download: boolean,
 }
@@ -48,4 +48,4 @@ class FileAttachment extends Attachment {
 }
 
 export {FileAttachment};
-export type {FileAttachmentSpecs};
+export type {RawFileAttachment};

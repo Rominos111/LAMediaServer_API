@@ -1,9 +1,16 @@
+/**
+ * Liste les utilisateurs d'un groupe
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
-import {User} from "model/user";
+import {
+    RawFullUser,
+    User,
+} from "model/user";
 
 const schema = Validation.object({
     groupId: Validation.string().required().messages({
@@ -18,14 +25,8 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
     }, (r, data) => {
         const users: User[] = [];
 
-        for (const elt of data.members) {
-            users.push(User.fromFullUser(
-                elt.user._id,
-                elt.user.username,
-                elt.user.name,
-                elt.user._id === r.currentUserId,
-                elt.user.status,
-            ));
+        for (const elt of data.members as { user: RawFullUser }[]) {
+            users.push(User.fromFullUser(elt.user, auth?.userId as string));
         }
 
         return APIResponse.fromSuccess(users);

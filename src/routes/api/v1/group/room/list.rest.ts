@@ -1,10 +1,17 @@
+/**
+ * Liste les salons
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
 import {RequestMethod} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
-import {Room} from "model/room";
+import {
+    RawFullRoom,
+    Room,
+} from "model/room";
 
 const schema = Validation.object({
     groupRoomId: Validation.string().required().messages({
@@ -19,7 +26,7 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
     }, (r, data) => {
         const rooms: Room[] = [];
 
-        for (const discussion of data.discussions) {
+        for (const discussion of data.discussions as RawFullRoom[]) {
             rooms.push(Room.fromFullObject(discussion, r.currentUserId as string));
         }
 

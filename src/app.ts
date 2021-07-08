@@ -21,7 +21,8 @@ envConfig.config();
 //======================================================================================================================
 
 // Proxy renversé
-if (process.env.REVERSE_PROXY !== undefined && ["1", "true"].includes(process.env.REVERSE_PROXY.toLowerCase())) {
+if (process.env.hasOwnProperty("REVERSE_PROXY")
+    && ["1", "true"].includes((process.env.REVERSE_PROXY as string).toLowerCase())) {
     app.enable("trust proxy");
 }
 
@@ -164,7 +165,7 @@ app.use((err, _req, res, _next) => {
         for (const validationError of err.error.details) {
             console.debug("Validation error. type:", validationError.type, "key:", validationError.context.key);
             error = {
-                key: validationError.context.key,  // TODO: Gérer le champ erroné ?
+                key: validationError.context.key,
                 message: validationError.message,
             };
         }

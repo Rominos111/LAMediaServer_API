@@ -1,3 +1,8 @@
+/**
+ * Requête effectuée par le client à l'API. Permet de définir les endpoint
+ */
+
+import {strict} from "assert";
 import express, {Request} from "express";
 import expressWs from "express-ws";
 import {APIResponse} from "helper/APIResponse";
@@ -15,7 +20,7 @@ import * as WebSocket from "ws";
 type RequestCallback = (req: express.Request, res: express.Response, auth: Authentication | null) => void;
 
 /**
- * Requête effectuée par le client à l'API. Permet de définir l'endpoint
+ * Requête effectuée par le client à l'API. Permet de définir les endpoint
  */
 class APIRequest {
     /**
@@ -151,6 +156,12 @@ class APIRequest {
         return router;
     }
 
+    /**
+     * Récupère un schéma de validation valide, en ajoutant possiblement le token
+     * @param validationSchema Schéma de validation de base
+     * @param authenticationRequired Authentification requise ou non
+     * @private
+     */
     private static _getValidationSchema(validationSchema: ObjectSchema | null,
                                         authenticationRequired: boolean): ObjectSchema {
         let schema = validationSchema;
@@ -221,15 +232,15 @@ class APIRequest {
     private static _getAuthenticationData(req: Request): Authentication | null {
         let token: string | null = null;
 
-        if (req.body._token !== undefined) {
+        if (req.body.hasOwnProperty("_token")) {
             // Token dans le body
             token = req.body._token;
-        } else if (req.query._token !== undefined) {
+        } else if (req.query.hasOwnProperty("_token")) {
             // Token dans la query
             token = req.query._token as string;
-        } else if (req.headers.authorization !== undefined) {
+        } else if (req.headers.hasOwnProperty("authorization")) {
             // Token dans le header
-            token = req.headers.authorization.split(" ")[1];
+            token = (req.headers.authorization as string).split(" ")[1];
         }
 
         if (token === null) {

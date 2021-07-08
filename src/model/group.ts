@@ -2,7 +2,6 @@ type RawFullGroup = {
     _id: string,
     name: string,
     createdAt: Date,
-    _updatedAt: Date, // FIXME: Est-ce que c'est bien ce que l'on pense ?
     roomId: string,
     rooms: number,
     numberOfUsers: number,
@@ -14,13 +13,11 @@ class Group {
     private readonly _name: string;
     private readonly _roomId: string;
     private readonly _roomsCount: number;
-    private readonly _updatedAt: Date;
     private readonly _usersCount: number;
 
     private constructor(id: string,
                         name: string,
                         createdAt: Date,
-                        updatedAt: Date,
                         roomId: string,
                         roomsCount: number,
                         usersCount: number,
@@ -28,7 +25,6 @@ class Group {
         this._id = id;
         this._name = name;
         this._createdAt = createdAt;
-        this._updatedAt = updatedAt;
         this._roomId = roomId;
         this._roomsCount = roomsCount;
         this._usersCount = usersCount;
@@ -54,10 +50,6 @@ class Group {
         return this._roomsCount;
     }
 
-    public get updatedAt(): Date {
-        return this._updatedAt;
-    }
-
     public get usersCount(): number {
         return this._usersCount;
     }
@@ -67,7 +59,6 @@ class Group {
             obj._id,
             obj.name,
             obj.createdAt,
-            obj._updatedAt,
             obj.roomId,
             obj.rooms,
             obj.numberOfUsers,
@@ -81,10 +72,10 @@ class Group {
             name: this.name,
             roomId: this.roomId,
             roomsCount: this.roomsCount,
-            updatedAt: this.updatedAt,
             usersCount: this.usersCount,
         };
     }
 }
 
 export {Group};
+export type {RawFullGroup};

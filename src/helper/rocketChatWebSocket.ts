@@ -1,3 +1,7 @@
+/**
+ * Requête à l'API WebSocket de Rocket.chat
+ */
+
 import {
     JWT,
     Token,
@@ -45,15 +49,20 @@ enum RocketChatWebSocketState {
     SUBSCRIBED,
 }
 
-// TODO: Typage
-type RocketChatWebSocketCallbackData =
-    Record<string, unknown>
-    & { fields: { args: any }, currentUserId: string | null };
+type RocketChatWebSocketCallbackData = Record<string, unknown> & {
+    fields: {
+        args: unknown[],
+    },
+    currentUserId: string | null,
+};
 
 type RocketChatWebSocketCallback = (elts: unknown[],
                                     currentUserId: string | null,
                                     data: RocketChatWebSocketCallbackData) => void;
 
+/**
+ * Requête à l'API WebSocket de Rocket.chat
+ */
 class RocketChatWebSocket {
     /**
      * Callback de réponse
@@ -119,12 +128,8 @@ class RocketChatWebSocket {
      * Set le token
      * @param token Token
      */
-    public withToken(token: string | undefined): RocketChatWebSocket {
-        let tokenSanitized: string = "";
-        if (token !== undefined) {
-            tokenSanitized = token;
-        }
-        this._token = tokenSanitized;
+    public withToken(token: string): RocketChatWebSocket {
+        this._token = token;
         return this;
     }
 
@@ -156,12 +161,12 @@ class RocketChatWebSocket {
         this._state = RocketChatWebSocketState.INIT;
 
         const jwt = JWT.decodeToken(this._token);
-        let authToken = "";
 
         if (jwt === null) {
             console.debug("Wrong JWT");
-        } else {
-            authToken = jwt.data.authToken;
+            this._rocketChatSocket.close();
+            ws.close();
+            return;
         }
 
         this._rocketChatSocket.on("message", (evt) => {
@@ -169,7 +174,7 @@ class RocketChatWebSocket {
         });
 
         this._rocketChatSocket.on("open", () => {
-            this._onWebSocketOpen(this._rocketChatSocket as WebSocket, authToken);
+            this._onWebSocketOpen(this._rocketChatSocket as WebSocket, jwt);
         });
 
         this._rocketChatSocket.on("close", () => {
@@ -194,12 +199,19 @@ class RocketChatWebSocket {
         });
     }
 
+    /**
+     * Envoie un message à la WebSocket Rocket.chat
+     * @param msg Message
+     */
     public send(msg: string): void {
         if (this._rocketChatSocket !== null && this._state >= RocketChatWebSocketState.CONNECTED) {
             this._rocketChatSocket.send(msg);
         }
     }
 
+    /**
+     * Ferme la WebSocket API <-> Rocket.chat
+     */
     public close(): void {
         if (this._rocketChatSocket !== null) {
             if (this._state === RocketChatWebSocketState.SUBSCRIBED) {
@@ -219,7 +231,14 @@ class RocketChatWebSocket {
         }
     }
 
-    private _onWebSocketMessage(data: string, rcws: WebSocket, jwt: Token | null) {
+    /**
+     * Callback lors d'un message de la WebSocket Rocket.chat
+     * @param data Data
+     * @param rcws WebSocket Rocket.chat
+     * @param jwt Token
+     * @private
+     */
+    private _onWebSocketMessage(data: string, rcws: WebSocket, jwt: Token | null): void {
         let message: RocketChatWebSocketCallbackData;
         try {
             message = JSON.parse(data);
@@ -234,7 +253,7 @@ class RocketChatWebSocket {
                 msg: "pong",
             }));
         } else {
-            if (this._state === RocketChatWebSocketState.OPEN && message.server_id !== undefined) {
+            if (this._state === RocketChatWebSocketState.OPEN && message.hasOwnProperty("server_id")) {
                 this._state = RocketChatWebSocketState.LINKED;
             } else if (this._state === RocketChatWebSocketState.LINKED && message.msg === "connected") {
                 this._state = RocketChatWebSocketState.CONNECTED;
@@ -247,7 +266,7 @@ class RocketChatWebSocket {
                     response.currentUserId = jwt.data.userId;
                 }
 
-                if (response.msg === undefined || response.msg === "error") {
+                if (!response.hasOwnProperty("msg") || response.msg === "error") {
                     console.warn("WebSocket client error:", response.reason);
                 } else if (response.msg === "changed" && response.collection === this._subscribeRequestName) {
                     this._responseCallback(response.fields.args, response.currentUserId, response);
@@ -257,12 +276,18 @@ class RocketChatWebSocket {
                     console.warn("Invalid WebSocket state:", response);
                 }
             } else {
-                // Garbage, messages non utilisés, informations de connexion
+                // Garbage : messages non utilisés, informations de connexion, etc.
             }
         }
     }
 
-    private _onWebSocketOpen(rcws: WebSocket, authToken: string): void {
+    /**
+     * Callback lors de l'ouverture de la WebSocket
+     * @param rcws WebSocket Rocket.chat
+     * @param token Token de l'API
+     * @private
+     */
+    private _onWebSocketOpen(rcws: WebSocket, token: Token): void {
         this._state = RocketChatWebSocketState.OPEN;
 
         // Connexion WebSocket Rocket.chat
@@ -279,7 +304,7 @@ class RocketChatWebSocket {
             method: "login",
             id: this._uid,
             params: [{
-                resume: authToken,
+                resume: token.data.authToken,
             }],
         };
         rcws.send(JSON.stringify(loginRequest));
@@ -295,10 +320,19 @@ class RocketChatWebSocket {
         rcws.send(JSON.stringify(subscribeRequest));
     }
 
+    /**
+     * Callback lors de la fermeture d'une WebSocket
+     * @private
+     */
     private _onWebSocketClose(): void {
         console.debug("RocketChat WebSocket closed");
     }
 
+    /**
+     * Callback lors d'une erreur dans la WebSocket
+     * @param err Erreur
+     * @private
+     */
     private _onWebSocketError(err: Error): void {
         if (this._state === RocketChatWebSocketState.INIT && this._rocketChatSocket?.readyState === WebSocket.CLOSING) {
             // WebSocket fermée avant que la connexion soit établie, pas une erreur en soi

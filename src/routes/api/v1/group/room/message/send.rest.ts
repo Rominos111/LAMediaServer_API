@@ -1,9 +1,16 @@
+/**
+ * Envoie un message
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
-import {Message} from "model/message";
+import {
+    Message,
+    RawFullMessage,
+} from "model/message";
 
 const schema = Validation.object({
     // FIXME: Set la limite en variable d'environnement ?
@@ -26,6 +33,6 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
             rid: req.body.roomId,
         },
     }, (r, data) => {
-        return APIResponse.fromSuccess(Message.fromFullMessage(data.message, r.currentUserId as string));
+        return APIResponse.fromSuccess(Message.fromFullMessage(data.message as RawFullMessage, r.currentUserId as string));
     });
 });

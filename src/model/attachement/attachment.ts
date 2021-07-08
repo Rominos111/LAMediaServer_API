@@ -2,8 +2,8 @@ import {
     FileAttachment,
     ImageAttachment,
 } from ".";
-import {FileAttachmentSpecs} from "./fileAttachment";
-import {ImageAttachmentSpecs} from "./imageAttachment";
+import {RawFileAttachment} from "./fileAttachment";
+import {RawImageAttachment} from "./imageAttachment";
 
 /**
  * Type de pièce-jointe
@@ -31,24 +31,20 @@ abstract class Attachment {
         return this._type;
     }
 
-    public static fromArray(rawAttachments: (ImageAttachmentSpecs | FileAttachmentSpecs)[] | undefined): Attachment[] | undefined {
-        if (rawAttachments === undefined) {
-            return undefined;
-        } else {
-            const attachments: Attachment[] = [];
+    public static fromArray(rawAttachments: (RawImageAttachment | RawFileAttachment)[]): Attachment[] {
+        const attachments: Attachment[] = [];
 
-            for (const rawAttachment of rawAttachments) {
-                if (rawAttachment.hasOwnProperty("image_url")) {
-                    const imageAttachment = rawAttachment as ImageAttachmentSpecs;
-                    attachments.push(new ImageAttachment(imageAttachment.author_icon, imageAttachment.image_url));
-                } else {
-                    const fileAttachment = rawAttachment as FileAttachmentSpecs;
-                    attachments.push(new FileAttachment(fileAttachment.title_link, fileAttachment.title_link_download));
-                }
+        for (const rawAttachment of rawAttachments) {
+            if (rawAttachment.hasOwnProperty("image_url")) {
+                const imageAttachment = rawAttachment as RawImageAttachment;
+                attachments.push(new ImageAttachment(imageAttachment.author_icon, imageAttachment.image_url));
+            } else {
+                const fileAttachment = rawAttachment as RawFileAttachment;
+                attachments.push(new FileAttachment(fileAttachment.title_link, fileAttachment.title_link_download));
             }
-
-            return attachments;
         }
+
+        return attachments;
     }
 
     public toJSON(): Record<string, unknown> {

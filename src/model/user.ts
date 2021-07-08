@@ -3,6 +3,16 @@
  */
 import {Presence} from "model/presence";
 
+interface RawPartialUser {
+    _id: string,
+    username: string,
+    name?: string,
+}
+
+interface RawFullUser extends RawPartialUser {
+    status: string | Presence,
+}
+
 class User {
     /**
      * ID
@@ -26,7 +36,7 @@ class User {
      * Statut
      * @private
      */
-    private readonly _status: Presence | undefined;
+    private readonly _status: Presence;
 
     /**
      * Nom d'utilisateur
@@ -38,7 +48,7 @@ class User {
                         username: string,
                         name: string,
                         isMe: boolean,
-                        status: Presence | undefined = undefined,
+                        status: Presence,
     ) {
         this._id = id;
         this._username = username;
@@ -59,7 +69,7 @@ class User {
         return this._name;
     }
 
-    public get status(): Presence | undefined {
+    public get status(): Presence {
         return this._status;
     }
 
@@ -67,21 +77,24 @@ class User {
         return this._username;
     }
 
-    public static fromFullUser(id: string,
-                               username: string,
-                               name: string,
-                               isMe: boolean,
-                               status: string | Presence,
-    ): User {
-        return new this(id, username, name, isMe, status as Presence);
+    public static fromFullUser(rawUser: RawFullUser, currentUserId: string): User {
+        return new this(
+            rawUser._id,
+            rawUser.username,
+            rawUser.name ? rawUser.name : rawUser.username,
+            rawUser._id === currentUserId,
+            rawUser.status as Presence,
+        );
     }
 
-    public static fromPartialUser(id: string, username: string, name: string | undefined, isMe: boolean): User {
-        if (name === undefined) {
-            return new this(id, username, username, isMe);
-        } else {
-            return new this(id, username, name, isMe);
-        }
+    public static fromPartialUser(rawUser: RawPartialUser, currentUserId: string): User {
+        return new this(
+            rawUser._id,
+            rawUser.username,
+            rawUser.name ? rawUser.name : rawUser.username,
+            rawUser._id === currentUserId,
+            Presence.UNKNOWN,
+        );
     }
 
     /**
@@ -98,6 +111,8 @@ class User {
     }
 }
 
-export {
-    User,
+export {User};
+export type {
+    RawFullUser,
+    RawPartialUser,
 };

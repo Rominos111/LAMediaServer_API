@@ -1,9 +1,16 @@
+/**
+ * Liste les messages
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
-import {Message} from "model/message";
+import {
+    Message,
+    RawFullMessage,
+} from "model/message";
 
 const schema = Validation.object({
     roomId: Validation.string().required().messages({
@@ -18,8 +25,8 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
     }, (r, data) => {
         const messages: Message[] = [];
 
-        for (const rawMessage of data.messages) {
-            if (rawMessage.t === undefined) {
+        for (const rawMessage of data.messages as (RawFullMessage & { t?: unknown })[]) {
+            if (!rawMessage.hasOwnProperty("t")) {
                 // FIXME: Gérer ces messages spéciaux, comme les invitations
                 messages.push(Message.fromFullMessage(rawMessage, r.currentUserId as string));
             }

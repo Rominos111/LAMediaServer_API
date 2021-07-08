@@ -1,7 +1,14 @@
+/**
+ * Liste les groupes
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {RocketChatRequest} from "helper/rocketChatRequest";
-import {Group} from "model/group";
+import {
+    Group,
+    RawFullGroup,
+} from "model/group";
 
 module.exports = APIRequest.get(null, true, async (req, res, auth) => {
     await RocketChatRequest.request("GET", "/teams.list", auth, res, {
@@ -10,8 +17,10 @@ module.exports = APIRequest.get(null, true, async (req, res, auth) => {
         const groups: (Group | null)[] = [];
         const promises: Promise<void>[] = [];
 
-        for (let i = 0; i < data.teams.length; ++i) {
-            const team = data.teams[i];
+        const teams = data.teams as RawFullGroup[];
+
+        for (let i = 0; i < teams.length; ++i) {
+            const team: RawFullGroup = teams[i];
             const group = Group.fromFullObject(team);
             groups.push(null);
 

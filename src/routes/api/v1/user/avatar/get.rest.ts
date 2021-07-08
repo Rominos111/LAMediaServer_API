@@ -1,3 +1,7 @@
+/**
+ * Récupère l'avatar de l'utilisateur
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {
     APIResponse,
@@ -20,5 +24,5 @@ module.exports = APIRequest.get(schema, false, async (req, res) => {
 
     await RocketChatRequest.request("GET", route, null, res, null, (r, data) => {
         return APIResponse.fromRaw(data, 200, ResponseType.SVG);
-    }, undefined, false);
+    }, null, false);
 });

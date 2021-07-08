@@ -1,3 +1,7 @@
+/**
+ * Requête à l'API REST de Rocket.chat
+ */
+
 import axios, {
     AxiosRequestConfig,
     AxiosResponse,
@@ -21,15 +25,15 @@ interface CustomAxiosResponse extends AxiosResponse {
 /**
  * Callback de succès
  */
-type SuccessCallback = (r: CustomAxiosResponse, data: any) => APIResponse | Promise<APIResponse> | null;
+type SuccessCallback = (r: CustomAxiosResponse, data: Record<string, unknown>) => APIResponse | Promise<APIResponse> | null;
 
 /**
  * Callback d'échec
  */
-type FailureCallback = (r: AxiosResponse, data: any) => APIResponse | Promise<APIResponse> | null;
+type FailureCallback = (r: AxiosResponse, data: Record<string, unknown>) => APIResponse | Promise<APIResponse> | null;
 
 /**
- * Requête à l'API de Rocket.chat
+ * Requête à l'API REST de Rocket.chat
  */
 class RocketChatRequest {
     /**
@@ -172,13 +176,13 @@ class RocketChatRequest {
             if (isValidStatusCode(r.status)) {
                 // Réponse valide
 
-                if (r.data.success !== true && r.data.success !== undefined) {
+                if (r.data.hasOwnProperty("success") && r.data.success !== true) {
                     console.debug("`r.data.success` is not true. Value:", r.data.success);
                 }
 
                 // ID de l'utilisateur, si présent
                 let uid: string | null = null;
-                if (r.config.headers["X-User-Id"] !== undefined) {
+                if (r.config.headers.hasOwnProperty("X-User-Id")) {
                     uid = r.config.headers["X-User-Id"];
                 }
 
@@ -199,7 +203,6 @@ class RocketChatRequest {
                 console.error("Connection refusée avec Rocket.chat");
                 promiseOrRes = APIResponse.fromFailure("Connection refused", 500);
             } else if (err.code === "ECONNRESET") {
-                // FIXME: Utile ou non ?
                 console.info("Socket hang up");
                 promiseOrRes = null;
             } else if (err.response) {
@@ -241,6 +244,4 @@ class RocketChatRequest {
     }
 }
 
-export {
-    RocketChatRequest,
-};
+export {RocketChatRequest};
