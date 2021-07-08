@@ -31,15 +31,15 @@ module.exports = APIRequest.get(schema, true, async (req, res, _auth) => {
             } else if (isValidStatusCode(r.statusCode as number)) {
                 APIResponse.fromSuccess(VideoConference.fromObject(JSON.parse(data)), r.statusCode).send(res);
             } else {
-                console.debug(r.statusMessage);
+                console.warn("OpenVidu get error code", r.statusMessage);
                 APIResponse.fromFailure(r.statusMessage, r.statusCode).send(res);
             }
         });
     });
 
-    request.on("error", (e) => {
-        console.debug(e.message);
-        APIResponse.fromFailure(e.message, 400).send(res);
+    request.on("error", (err) => {
+        console.warn("OpenVidu get error", err);
+        APIResponse.fromFailure(err.message, 400).send(res);
     });
 
     request.end();

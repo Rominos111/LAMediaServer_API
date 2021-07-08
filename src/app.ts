@@ -112,7 +112,7 @@ walk.filesSync(routesPath, (basedir, rawFilename) => {
     });
 }, (err) => {
     if (err) {
-        console.error(err);
+        console.error("File import error:", err);
     }
 });
 
@@ -172,7 +172,7 @@ app.use((err, _req, res, _next) => {
 
         response = APIResponse.fromFailure(error.message, 400, null, "validation");
     } else {
-        console.debug(err);
+        console.error("Unknown Express error", err);
         response = APIResponse.fromFailure("?", 500, null, "unknown");
     }
 

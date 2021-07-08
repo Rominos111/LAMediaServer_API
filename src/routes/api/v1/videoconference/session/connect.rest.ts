@@ -38,15 +38,15 @@ function createSession(sessionId: string, res: express.Response): void {
                 const obj = JSON.parse(data);
                 connectSession(obj.id, res, false);
             } else {
-                console.debug(r.statusCode, r.statusMessage);
+                console.warn("OpenVidu create error code", r.statusMessage);
                 APIResponse.fromFailure(r.statusMessage, r.statusCode).send(res);
             }
         });
     });
 
-    request.on("error", (e) => {
-        console.log(e.message);
-        APIResponse.fromFailure(e.message, 400).send(res);
+    request.on("error", (err) => {
+        console.warn("OpenVidu create error", err);
+        APIResponse.fromFailure(err.message, 400).send(res);
     });
 
     request.write(JSON.stringify({
@@ -81,15 +81,15 @@ function connectSession(sessionId: string, res: express.Response, allowCreation:
             } else if (isValidStatusCode(r.statusCode as number)) {
                 APIResponse.fromSuccess(VideoConferenceConnection.fromObject(JSON.parse(data)), r.statusCode).send(res);
             } else {
-                console.debug(r.statusMessage);
+                console.warn("OpenVidu connect error code", r.statusMessage);
                 APIResponse.fromFailure(r.statusMessage, r.statusCode).send(res);
             }
         });
     });
 
-    request.on("error", (e) => {
-        console.debug(e.message);
-        APIResponse.fromFailure(e.message, 400).send(res);
+    request.on("error", (err) => {
+        console.warn("OpenVidu connect error", err);
+        APIResponse.fromFailure(err.message, 400).send(res);
     });
 
     request.write(JSON.stringify({

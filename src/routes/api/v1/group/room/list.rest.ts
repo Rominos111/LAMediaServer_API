@@ -35,7 +35,6 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
         if (r.status === 400 && data.errorType === "error-room-not-found") {
             return APIResponse.fromFailure("Room not found", 404);
         } else {
-            console.debug(data);
             return APIResponse.fromFailure(r.statusText, r.status);
         }
     });

@@ -147,7 +147,6 @@ class RocketChatRequest {
         if (onSuccess === null) {
             // Fonction de succès par défaut
             onSuccess = (r, data) => {
-                console.debug(data);
                 return APIResponse.fromSuccess(null, r.status);
             };
         }
@@ -156,8 +155,11 @@ class RocketChatRequest {
         if (onFailure === null) {
             // Fonction d'échec par défaut
             onFailure = (r, data) => {
-                console.debug(data);
-                return APIResponse.fromFailure(r.statusText, r.status);
+                let text = r.statusText;
+                if (data.hasOwnProperty("error")) {
+                    text = data.error as string;
+                }
+                return APIResponse.fromFailure(text, r.status);
             };
         }
 
@@ -209,7 +211,7 @@ class RocketChatRequest {
                 promiseOrRes = (onFailure as Function)(err.response, err.response.data);
             } else {
                 // Erreur inconnue
-                console.debug(err);
+                console.warn("Error with Rocket.chat REST API", err);
                 promiseOrRes = APIResponse.fromFailure("Unknown error", 500);
             }
         });

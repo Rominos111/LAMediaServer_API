@@ -10,7 +10,8 @@ module.exports = APIRequest.ws(null, true, async (ws, req) => {
             false,
         ])
         .onResponse((data) => {
-            console.log(data);
+            // TODO: Ne fonctionne pas ?
+            console.log("user updated", data);
         });
 
     rcws.open(ws);

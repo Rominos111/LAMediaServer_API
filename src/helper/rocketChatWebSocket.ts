@@ -186,7 +186,7 @@ class RocketChatWebSocket {
         });
 
         ws.on("error", (err) => {
-            console.warn("client WS error:", err.message);
+            console.warn("client WS error:", err);
         });
 
         ws.on("close", () => {
@@ -242,7 +242,7 @@ class RocketChatWebSocket {
         let message: RocketChatWebSocketCallbackData;
         try {
             message = JSON.parse(data);
-        } catch (e) {
+        } catch (err) {
             console.warn("RC message is not an object:", data);
             return;
         }

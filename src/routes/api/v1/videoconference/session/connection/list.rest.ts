@@ -36,15 +36,15 @@ module.exports = APIRequest.get(schema, true, async (req, res, _auth) => {
                 const obj = JSON.parse(data);
                 APIResponse.fromSuccess(VideoConferenceConnection.fromArray(obj.content), r.statusCode).send(res);
             } else {
-                console.debug(r.statusMessage);
+                console.warn("OpenVidu list error code", r.statusMessage);
                 APIResponse.fromFailure(r.statusMessage, r.statusCode).send(res);
             }
         });
     });
 
-    request.on("error", (e) => {
-        console.debug(e.message);
-        APIResponse.fromFailure(e.message, 400).send(res);
+    request.on("error", (err) => {
+        console.warn("OpenVidu list error", err);
+        APIResponse.fromFailure(err.message, 400).send(res);
     });
 
     request.write(JSON.stringify({
