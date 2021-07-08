@@ -1,3 +1,7 @@
+/**
+ * Connecte un utilisateur à une vidéoconférence
+ */
+
 import express from "express";
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";

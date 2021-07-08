@@ -1,6 +1,10 @@
 /**
  * Méthodes de requête
  */
+
+/**
+ * Méthodes de requête
+ */
 enum RequestMethod {
     /**
      * Supprime

@@ -1,3 +1,7 @@
+/**
+ * Suppression d'un message
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";

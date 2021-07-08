@@ -1,3 +1,7 @@
+/**
+ * Validation des entrées
+ */
+
 import express from "express";
 
 import JoiValidator, {ExpressJoiInstance} from "express-joi-validation";

@@ -1,3 +1,7 @@
+/**
+ * Modifie un message
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
 import {RequestMethod} from "helper/requestMethod";

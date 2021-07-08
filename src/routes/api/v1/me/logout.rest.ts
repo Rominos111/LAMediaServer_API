@@ -1,3 +1,7 @@
+/**
+ * Déconnecte l'utilisateur courant
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 

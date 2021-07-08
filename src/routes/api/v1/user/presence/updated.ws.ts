@@ -1,3 +1,7 @@
+/**
+ * Présence (statut) mis à jour
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
 import {

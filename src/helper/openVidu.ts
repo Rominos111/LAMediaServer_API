@@ -1,3 +1,7 @@
+/**
+ * Informations relatives à OpenVidu
+ */
+
 import {RequestMethod} from "helper/requestMethod";
 import {RequestOptions} from "https";
 

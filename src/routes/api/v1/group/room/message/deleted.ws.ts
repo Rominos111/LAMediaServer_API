@@ -1,3 +1,7 @@
+/**
+ * Message supprimé
+ */
+
 import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
 import {RocketChatWebSocket} from "helper/rocketChatWebSocket";

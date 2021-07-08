@@ -1,3 +1,7 @@
+/**
+ * Authentification de l'API
+ */
+
 import {JWT} from "helper/JWT";
 
 /**

@@ -1,3 +1,7 @@
+/**
+ * Réponse API générique
+ */
+
 import {Response} from "express";
 
 /**
