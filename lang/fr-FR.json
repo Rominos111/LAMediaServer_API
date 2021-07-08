@@ -17,7 +17,9 @@
             "short": "Le message à envoyer ne peut être vide"
         },
         "name": {
-            "required": "Un nom est nécessaire"
+            "long": "Ce nom est trop long",
+            "required": "Un nom est nécessaire",
+            "short": "Ce nom est trop court"
         },
         "password": {
             "empty": "Votre mot de passe ne peut pas être vide",
