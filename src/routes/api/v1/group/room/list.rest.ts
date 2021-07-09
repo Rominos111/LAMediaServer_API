@@ -5,7 +5,10 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
-import {RequestMethod} from "helper/requestMethod";
+import {
+    HTTPStatus,
+    RequestMethod,
+} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {
@@ -32,8 +35,8 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
 
         return APIResponse.fromSuccess(rooms);
     }, (r, data) => {
-        if (r.status === 400 && data.errorType === "error-room-not-found") {
-            return APIResponse.fromFailure("Room not found", 404);
+        if (r.status === HTTPStatus.BAD_REQUEST && data.errorType === "error-room-not-found") {
+            return APIResponse.fromFailure("Room not found", HTTPStatus.NOT_FOUND);
         } else {
             return APIResponse.fromFailure(r.statusText, r.status);
         }

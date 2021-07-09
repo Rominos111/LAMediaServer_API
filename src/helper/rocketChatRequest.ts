@@ -10,6 +10,7 @@ import {Response} from "express";
 import {APIResponse} from "helper/APIResponse";
 import {Authentication} from "helper/authentication";
 import {
+    HTTPStatus,
     isValidStatusCode,
     RequestMethod,
 } from "helper/requestMethod";
@@ -25,12 +26,14 @@ interface CustomAxiosResponse extends AxiosResponse {
 /**
  * Callback de succès
  */
-type SuccessCallback = (r: CustomAxiosResponse, data: Record<string, unknown>) => APIResponse | Promise<APIResponse> | null;
+type SuccessCallback = (r: CustomAxiosResponse, data: Record<string, unknown>)
+    => APIResponse | Promise<APIResponse> | null;
 
 /**
  * Callback d'échec
  */
-type FailureCallback = (r: AxiosResponse, data: Record<string, unknown>) => APIResponse | Promise<APIResponse> | null;
+type FailureCallback = (r: AxiosResponse, data: { success: boolean, error: string, errorType: string })
+    => APIResponse | Promise<APIResponse> | null;
 
 /**
  * Requête à l'API REST de Rocket.chat
@@ -203,7 +206,7 @@ class RocketChatRequest {
             if (err.code === "ECONNREFUSED") {
                 // Rocket.chat n'est pas lancé
                 console.error("Connection refusée avec Rocket.chat");
-                promiseOrRes = APIResponse.fromFailure("Connection refused", 500);
+                promiseOrRes = APIResponse.fromFailure("Connection refused", HTTPStatus.INTERNAL_SERVER_ERROR);
             } else if (err.code === "ECONNRESET") {
                 console.info("Socket hang up");
                 promiseOrRes = null;
@@ -212,7 +215,7 @@ class RocketChatRequest {
             } else {
                 // Erreur inconnue
                 console.warn("Error with Rocket.chat REST API", err);
-                promiseOrRes = APIResponse.fromFailure("Unknown error", 500);
+                promiseOrRes = APIResponse.fromFailure("Unknown error", HTTPStatus.INTERNAL_SERVER_ERROR);
             }
         });
 

@@ -8,6 +8,7 @@ import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
 import {OpenVidu} from "helper/openVidu";
 import {
+    HTTPStatus,
     isValidStatusCode,
     RequestMethod,
 } from "helper/requestMethod";
@@ -39,14 +40,14 @@ function createSession(sessionId: string, res: express.Response): void {
                 connectSession(obj.id, res, false);
             } else {
                 console.warn("OpenVidu create error code", r.statusMessage);
-                APIResponse.fromFailure(r.statusMessage, r.statusCode).send(res);
+                APIResponse.fromFailure(r.statusMessage as string, r.statusCode as number).send(res);
             }
         });
     });
 
     request.on("error", (err) => {
         console.warn("OpenVidu create error", err);
-        APIResponse.fromFailure(err.message, 400).send(res);
+        APIResponse.fromFailure(err.message, HTTPStatus.BAD_REQUEST).send(res);
     });
 
     request.write(JSON.stringify({
@@ -72,24 +73,24 @@ function connectSession(sessionId: string, res: express.Response, allowCreation:
         });
 
         r.on("end", () => {
-            if (r.statusCode === 404) {
+            if (r.statusCode === HTTPStatus.NOT_FOUND) {
                 if (allowCreation) {
                     createSession(sessionId, res);
                 } else {
-                    APIResponse.fromFailure(Language.get("videoconference.not-found"), 404).send(res);
+                    APIResponse.fromFailure(Language.get("videoconference.not-found"), HTTPStatus.NOT_FOUND).send(res);
                 }
             } else if (isValidStatusCode(r.statusCode as number)) {
                 APIResponse.fromSuccess(VideoConferenceConnection.fromObject(JSON.parse(data)), r.statusCode).send(res);
             } else {
                 console.warn("OpenVidu connect error code", r.statusMessage);
-                APIResponse.fromFailure(r.statusMessage, r.statusCode).send(res);
+                APIResponse.fromFailure(r.statusMessage as string, r.statusCode as number).send(res);
             }
         });
     });
 
     request.on("error", (err) => {
         console.warn("OpenVidu connect error", err);
-        APIResponse.fromFailure(err.message, 400).send(res);
+        APIResponse.fromFailure(err.message, HTTPStatus.BAD_REQUEST).send(res);
     });
 
     request.write(JSON.stringify({

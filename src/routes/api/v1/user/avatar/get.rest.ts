@@ -8,6 +8,7 @@ import {
     ResponseType,
 } from "helper/APIResponse";
 import {Language} from "helper/language";
+import {HTTPStatus} from "helper/requestMethod";
 import {RocketChat} from "helper/rocketChat";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
@@ -23,6 +24,6 @@ module.exports = APIRequest.get(schema, false, async (req, res) => {
     const route = RocketChat.getWebEndpoint("/avatar/" + req.body.username);
 
     await RocketChatRequest.request("GET", route, null, res, null, (r, data) => {
-        return APIResponse.fromRaw(data, 200, ResponseType.SVG);
+        return APIResponse.fromRaw(data, HTTPStatus.OK, ResponseType.SVG);
     }, null, false);
 });

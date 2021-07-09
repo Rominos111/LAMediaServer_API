@@ -3,6 +3,7 @@
  */
 
 import {Response} from "express";
+import {HTTPStatus} from "helper/requestMethod";
 
 /**
  * Type d'erreur
@@ -74,7 +75,7 @@ class APIResponse {
      * @private
      */
     private constructor(data: Record<string, unknown> = {},
-                        statusCode = 200,
+                        statusCode: HTTPStatus = HTTPStatus.OK,
                         headers: Record<string, string> = {},
                         responseType: ResponseType = ResponseType.JSON,
     ) {
@@ -91,13 +92,13 @@ class APIResponse {
      * @param payload Payload
      * @param errorType Type d'erreur
      */
-    public static fromFailure(errorMessage,
-                              statusCode,
+    public static fromFailure(errorMessage: string,
+                              statusCode: HTTPStatus | number,
                               payload: object | object[] | null = null,
                               errorType: APIRErrorType | string = "request",
     ): APIResponse {
         const headers = {};
-        if (statusCode === 401 || statusCode === 403) {
+        if (statusCode === HTTPStatus.UNAUTHORIZED || statusCode === HTTPStatus.FORBIDDEN) {
             headers["WWW-Authenticate"] = "Basic realm=\"Token pour LAMediaServer\", charset=\"UTF-8\"";
         }
 
@@ -117,7 +118,7 @@ class APIResponse {
      * @param message Message
      */
     public static fromSuccess(payload: object | object[] | null = null,
-                              statusCode = 200,
+                              statusCode = HTTPStatus.OK,
                               message = "OK",
     ): APIResponse {
         return new APIResponse({
@@ -133,7 +134,7 @@ class APIResponse {
      * @param responseType Type de réponse
      */
     public static fromRaw(rawObject: Record<string, unknown>,
-                          statusCode = 200,
+                          statusCode = HTTPStatus.OK,
                           responseType: ResponseType = ResponseType.JSON,
     ): APIResponse {
         return new APIResponse(rawObject, statusCode, {}, responseType);

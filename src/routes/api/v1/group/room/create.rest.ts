@@ -1,6 +1,7 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
+import {HTTPStatus} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 
@@ -19,7 +20,7 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
         void _r;
         console.debug(data);
         // TODO: S'occuper du message de réponse
-        return APIResponse.fromSuccess(null, 200, "TODO");
+        return APIResponse.fromSuccess(null, HTTPStatus.OK, "TODO");
         // return APIResponse.fromSuccess(new Room(data.channel._id, data.channel.name));
     });
 });

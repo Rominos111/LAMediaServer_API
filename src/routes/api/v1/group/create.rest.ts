@@ -1,7 +1,10 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
-import {RequestMethod} from "helper/requestMethod";
+import {
+    HTTPStatus,
+    RequestMethod,
+} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {
@@ -26,6 +29,14 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
         type: GroupType.PUBLIC,
         // TODO: `members`, par défaut seul l'utilisateur courant fait partie du groupe
     }, (r, data) => {
+        console.log(data);
         return APIResponse.fromSuccess(Group.fromPartialObject(data.team as RawPartialGroup));
+    }, (r, data) => {
+        let code = r.status;
+        if (data.error === "team-name-already-exists") {
+            code = HTTPStatus.CONFLICT;
+        }
+
+        return APIResponse.fromFailure(data.error, code);
     });
 });

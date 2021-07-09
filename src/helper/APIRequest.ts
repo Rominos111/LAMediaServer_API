@@ -2,11 +2,11 @@
  * Requête effectuée par le client à l'API. Permet de définir les endpoint
  */
 
-import {strict} from "assert";
 import express, {Request} from "express";
 import expressWs from "express-ws";
 import {APIResponse} from "helper/APIResponse";
 import {Authentication} from "helper/authentication";
+import {HTTPStatus} from "helper/requestMethod";
 import {
     ObjectSchema,
     Validation,
@@ -102,7 +102,7 @@ class APIRequest {
         const router = express.Router();
         router.all("/", (_req, res) => {
             void _req;
-            APIResponse.fromFailure("Not Implemented", 501, null, "access").send(res);
+            APIResponse.fromFailure("Not Implemented", HTTPStatus.NOT_IMPLEMENTED, null, "access").send(res);
         });
         return router;
     }
@@ -197,7 +197,7 @@ class APIRequest {
             if (authenticationRequired) {
                 const auth = this._getAuthenticationData(req);
                 if (auth === null) {
-                    APIResponse.fromFailure("Invalid token", 401).send(res);
+                    APIResponse.fromFailure("Invalid token", HTTPStatus.UNAUTHORIZED).send(res);
                 } else {
                     callback(req, res, auth);
                 }
@@ -261,7 +261,7 @@ class APIRequest {
      */
     private static _methodNotAllowed(_req: express.Request, res: express.Response): void {
         void _req;
-        APIResponse.fromFailure("Method Not Allowed", 405, null, "access").send(res);
+        APIResponse.fromFailure("Method Not Allowed", HTTPStatus.METHOD_NOT_ALLOWED, null, "access").send(res);
     }
 }
 

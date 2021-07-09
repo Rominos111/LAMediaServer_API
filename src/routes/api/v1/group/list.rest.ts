@@ -4,6 +4,7 @@
 
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
+import {HTTPStatus} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {
     Group,
@@ -31,7 +32,7 @@ module.exports = APIRequest.get(null, true, async (req, res, auth) => {
                 groups[i] = group;
                 return null;
             }, (r, data) => {
-                if (r.status !== 400 || data.errorType !== "error-room-not-found") {
+                if (r.status !== HTTPStatus.BAD_REQUEST || data.errorType !== "error-room-not-found") {
                     console.debug("/group/list:", r.status, r.statusText, data);
                 }
 

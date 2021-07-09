@@ -6,6 +6,7 @@ import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {JWT} from "helper/JWT";
 import {Language} from "helper/language";
+import {HTTPStatus} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {RawFullUser} from "model/user";
@@ -35,7 +36,7 @@ module.exports = APIRequest.post(schema, false, async (req, res) => {
             token,
         });
     }, (r, data) => {
-        if (r.status === 401) {
+        if (r.status === HTTPStatus.UNAUTHORIZED) {
             // Ne devrait plus se produire maintenant que OAuth est utilisé
             console.debug("Erreur 401 lors de la connexion");
             return APIResponse.fromFailure(Language.get("login.unauthorized"), r.status, data);

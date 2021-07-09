@@ -7,6 +7,7 @@ import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
 import {OpenVidu} from "helper/openVidu";
 import {
+    HTTPStatus,
     isValidStatusCode,
     RequestMethod,
 } from "helper/requestMethod";
@@ -30,21 +31,21 @@ module.exports = APIRequest.get(schema, true, async (req, res, _auth) => {
         });
 
         r.on("end", () => {
-            if (r.statusCode === 404) {
-                APIResponse.fromFailure(Language.get("videoconference.not-found"), 400).send(res);
+            if (r.statusCode === HTTPStatus.NOT_FOUND) {
+                APIResponse.fromFailure(Language.get("videoconference.not-found"), HTTPStatus.NOT_FOUND).send(res);
             } else if (isValidStatusCode(r.statusCode as number)) {
                 const obj = JSON.parse(data);
                 APIResponse.fromSuccess(VideoConferenceConnection.fromArray(obj.content), r.statusCode).send(res);
             } else {
                 console.warn("OpenVidu list error code", r.statusMessage);
-                APIResponse.fromFailure(r.statusMessage, r.statusCode).send(res);
+                APIResponse.fromFailure(r.statusMessage as string, r.statusCode as number).send(res);
             }
         });
     });
 
     request.on("error", (err) => {
         console.warn("OpenVidu list error", err);
-        APIResponse.fromFailure(err.message, 400).send(res);
+        APIResponse.fromFailure(err.message, HTTPStatus.BAD_REQUEST).send(res);
     });
 
     request.write(JSON.stringify({

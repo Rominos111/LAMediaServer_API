@@ -5,6 +5,7 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
+import {HTTPStatus} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {
@@ -31,8 +32,8 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
 
         return APIResponse.fromSuccess(users);
     }, (r, data) => {
-        if (r.status === 400 && data.error === "team-does-not-exist") {
-            return APIResponse.fromFailure("Group does not exist", 404);
+        if (r.status === HTTPStatus.BAD_REQUEST && data.error === "team-does-not-exist") {
+            return APIResponse.fromFailure("Group does not exist", HTTPStatus.NOT_FOUND);
         } else {
             return APIResponse.fromFailure(r.statusText, r.status);
         }
