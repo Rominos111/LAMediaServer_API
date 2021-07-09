@@ -33,7 +33,8 @@ module.exports = APIRequest.get(null, true, async (req, res, auth) => {
                 return null;
             }, (r, data) => {
                 if (r.status !== HTTPStatus.BAD_REQUEST || data.errorType !== "error-room-not-found") {
-                    console.debug("/group/list:", r.status, r.statusText, data);
+                    // Groupes fantômes
+                    // FIXME: Essayer de supprimer ces groupes
                 }
 
                 return null;

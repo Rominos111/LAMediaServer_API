@@ -73,7 +73,7 @@ class Room {
                        lastMessage: Message | null,
     ) {
         this._id = id;
-        this._name = name;
+        this._name = name.replace(/^(.*)-.*$/, "$1");
         this._isDefault = defaultRoom;
         this._lastMessage = lastMessage;
         this._parentRoomId = parentRoomId;

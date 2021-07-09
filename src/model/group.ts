@@ -38,7 +38,7 @@ class Group {
                         usersCount: number | null,
     ) {
         this._id = id;
-        this._name = name;
+        this._name = name.replace(/^(.*)-.*$/, "$1");
         this._createdAt = createdAt;
         this._createdBy = createdBy;
         this._roomId = roomId;

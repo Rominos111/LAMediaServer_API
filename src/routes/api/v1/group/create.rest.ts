@@ -6,6 +6,7 @@ import {
     RequestMethod,
 } from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
+import {randomString} from "helper/utils";
 import {Validation} from "helper/validation";
 import {
     Group,
@@ -25,18 +26,17 @@ const schema = Validation.object({
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
     await RocketChatRequest.request(RequestMethod.POST, "/teams.create", auth, res, {
-        name: req.body.name,
+        name: req.body.name + "-" + randomString(),
         type: GroupType.PUBLIC,
         // TODO: `members`, par défaut seul l'utilisateur courant fait partie du groupe
     }, (r, data) => {
         console.log(data);
         return APIResponse.fromSuccess(Group.fromPartialObject(data.team as RawPartialGroup));
     }, (r, data) => {
-        let code = r.status;
         if (data.error === "team-name-already-exists") {
-            code = HTTPStatus.CONFLICT;
+            return APIResponse.fromFailure(data.error, HTTPStatus.CONFLICT);
+        } else {
+            return APIResponse.fromFailure(data.error, r.status);
         }
-
-        return APIResponse.fromFailure(data.error, code);
     });
 });

@@ -7,6 +7,7 @@ import {
     Token,
 } from "helper/JWT";
 import {RocketChat} from "helper/rocketChat";
+import {randomUID} from "helper/utils";
 import WebSocket from "ws";
 
 /**
@@ -107,14 +108,13 @@ class RocketChatWebSocket {
     private readonly _uid: string;
 
     private constructor() {
-        this._responseCallback = () => {
-        };
+        this._responseCallback = () => void null;
         this._rocketChatSocket = null;
         this._state = RocketChatWebSocketState.NONE;
         this._subscribeRequestName = "";
         this._subscribeRequestParams = [];
         this._token = "";
-        this._uid = (Math.floor(Math.random() * Math.pow(2, 32))).toString();
+        this._uid = randomUID();
     }
 
     /**
