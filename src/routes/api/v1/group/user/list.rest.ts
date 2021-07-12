@@ -27,7 +27,7 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
         const users: User[] = [];
 
         for (const elt of data.members as { user: RawFullUser, roles: string[] }[]) {
-            users.push(User.fromFullUser(elt.user, elt.roles, auth?.userId as string));
+            users.push(User.fromFullUser(elt.user, auth?.userId as string, elt.roles));
         }
 
         return APIResponse.fromSuccess(users);
