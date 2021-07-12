@@ -2,6 +2,10 @@
  * Utilisateur
  */
 import {Presence} from "model/presence";
+import {
+    arrayToRole,
+    Role,
+} from "model/role";
 
 interface RawPartialUser {
     _id: string,
@@ -16,44 +20,48 @@ interface RawFullUser extends RawPartialUser {
 class User {
     /**
      * ID
-     * @private
+     * @protected
      */
-    private readonly _id: string;
+    protected readonly _id: string;
 
     /**
      * Utilisateur courant ou non
-     * @private
+     * @protected
      */
-    private readonly _isMe: boolean;
+    protected readonly _isMe: boolean;
 
     /**
      * Nom complet
-     * @private
+     * @protected
      */
-    private readonly _name: string;
+    protected readonly _name: string;
+
+    protected readonly _roles: Role[] | null;
 
     /**
      * Statut
-     * @private
+     * @protected
      */
-    private readonly _status: Presence;
+    protected readonly _status: Presence;
 
     /**
      * Nom d'utilisateur
-     * @private
+     * @protected
      */
-    private readonly _username: string;
+    protected readonly _username: string;
 
-    private constructor(id: string,
-                        username: string,
-                        name: string,
-                        isMe: boolean,
-                        status: Presence,
+    protected constructor(id: string,
+                          username: string,
+                          name: string,
+                          isMe: boolean,
+                          roles: Role[] | null,
+                          status: Presence,
     ) {
         this._id = id;
         this._username = username;
         this._name = name;
         this._isMe = isMe;
+        this._roles = roles;
         this._status = status;
     }
 
@@ -77,12 +85,13 @@ class User {
         return this._username;
     }
 
-    public static fromFullUser(rawUser: RawFullUser, currentUserId: string): User {
+    public static fromFullUser(rawUser: RawFullUser, roles: string[], currentUserId: string): User {
         return new this(
             rawUser._id,
             rawUser.username,
             rawUser.name ? rawUser.name : rawUser.username,
             rawUser._id === currentUserId,
+            roles ? arrayToRole(roles) : null,
             rawUser.status as Presence,
         );
     }
@@ -93,6 +102,7 @@ class User {
             rawUser.username,
             rawUser.name ? rawUser.name : rawUser.username,
             rawUser._id === currentUserId,
+            null,
             Presence.UNKNOWN,
         );
     }

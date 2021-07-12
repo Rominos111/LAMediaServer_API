@@ -15,7 +15,8 @@ module.exports = APIRequest.get(null, true, async (req, res, auth) => {
         const users: User[] = [];
 
         for (const elt of data.users as RawFullUser[]) {
-            users.push(User.fromFullUser(elt, auth?.userId as string));
+            // TODO: Gérer ces roles
+            users.push(User.fromFullUser(elt, [], auth?.userId as string));
         }
 
         return APIResponse.fromSuccess(users);
