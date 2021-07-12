@@ -31,6 +31,7 @@ class CurrentUser extends User {
                         isMe: boolean,
                         roles: Role[],
                         status: Presence,
+                        statusMessage: string | null,
                         email: string,
                         emails: EMail[],
                         utcTimezoneOffset: number,
@@ -42,6 +43,7 @@ class CurrentUser extends User {
             isMe,
             roles,
             status,
+            statusMessage,
         );
 
         this._email = email;
@@ -68,7 +70,8 @@ class CurrentUser extends User {
             rawUser.name ? rawUser.name : rawUser.username,
             true,
             arrayToRole(rawUser.roles),
-            Presence.UNKNOWN,
+            rawUser.status as Presence,
+            rawUser.statusText ? rawUser.statusText : null,
             rawUser.email,
             rawUser.emails,
             rawUser.utcOffset,

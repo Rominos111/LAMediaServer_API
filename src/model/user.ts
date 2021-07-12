@@ -15,6 +15,8 @@ interface RawPartialUser {
 
 interface RawFullUser extends RawPartialUser {
     status: string | Presence,
+    statusText?: string,
+    type: string, // `user` ou `bot` ?
 }
 
 class User {
@@ -44,6 +46,8 @@ class User {
      */
     protected readonly _status: Presence;
 
+    protected readonly _statusMessage: string | null;
+
     /**
      * Nom d'utilisateur
      * @protected
@@ -56,6 +60,7 @@ class User {
                           isMe: boolean,
                           roles: Role[] | null,
                           status: Presence,
+                          statusMessage: string | null,
     ) {
         this._id = id;
         this._username = username;
@@ -63,6 +68,7 @@ class User {
         this._isMe = isMe;
         this._roles = roles;
         this._status = status;
+        this._statusMessage = statusMessage;
     }
 
     public get id(): string {
@@ -77,15 +83,23 @@ class User {
         return this._name;
     }
 
+    public get roles(): Role[] | null {
+        return this._roles;
+    }
+
     public get status(): Presence {
         return this._status;
+    }
+
+    public get statusMessage(): string | null {
+        return this._statusMessage;
     }
 
     public get username(): string {
         return this._username;
     }
 
-    public static fromFullUser(rawUser: RawFullUser, roles: string[], currentUserId: string): User {
+    public static fromFullUser(rawUser: RawFullUser, currentUserId: string, roles?: string[]): User {
         return new this(
             rawUser._id,
             rawUser.username,
@@ -93,6 +107,7 @@ class User {
             rawUser._id === currentUserId,
             roles ? arrayToRole(roles) : null,
             rawUser.status as Presence,
+            rawUser.statusText ? rawUser.statusText : null,
         );
     }
 
@@ -104,6 +119,7 @@ class User {
             rawUser._id === currentUserId,
             null,
             Presence.UNKNOWN,
+            null,
         );
     }
 
@@ -115,7 +131,9 @@ class User {
             id: this.id,
             isMe: this.isMe,
             name: this.name,
+            roles: this.roles,
             status: this.status,
+            statusMessage: this.statusMessage,
             username: this.username,
         };
     }
