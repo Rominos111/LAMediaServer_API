@@ -1,7 +1,10 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
-import {HTTPStatus} from "helper/requestMethod";
+import {
+    HTTPStatus,
+    RequestMethod,
+} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {randomString} from "helper/utils";
 import {Validation} from "helper/validation";
@@ -18,9 +21,11 @@ const schema = Validation.object({
 });
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
-    await RocketChatRequest.request("POST", "/rooms.createDiscussion", auth, res, {
+    await RocketChatRequest.request(RequestMethod.POST, "/rooms.createDiscussion", auth, res, {
         prid: req.body.groupRoomId,
         t_name: req.body.name + "-" + randomString(),
+        users: [],
+        reply: "",
     }, (r, data) => {
         const room = Room.fromFullObject(data.discussion as RawFullRoom, r.currentUserId as string);
         return APIResponse.fromSuccess(room, HTTPStatus.OK);

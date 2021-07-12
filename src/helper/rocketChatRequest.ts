@@ -146,16 +146,18 @@ class RocketChatRequest {
         // Récupère la fonction Express à utiliser
         const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
 
-        let onSuccess = onSuccessCallback;
-        if (onSuccess === null) {
+        let onSuccess: SuccessCallback;
+        if (onSuccessCallback === null) {
             // Fonction de succès par défaut
-            onSuccess = (r, data) => {
+            onSuccess = (r) => {
                 return APIResponse.fromSuccess(null, r.status);
             };
+        } else {
+            onSuccess = onSuccessCallback;
         }
 
-        let onFailure = onFailureCallback;
-        if (onFailure === null) {
+        let onFailure: FailureCallback;
+        if (onFailureCallback === null) {
             // Fonction d'échec par défaut
             onFailure = (r, data) => {
                 let text = r.statusText;
@@ -164,6 +166,8 @@ class RocketChatRequest {
                 }
                 return APIResponse.fromFailure(text, r.status);
             };
+        } else {
+            onFailure = onFailureCallback;
         }
 
         const APIRoute = useAPIPrefix ? RocketChat.getREST_Endpoint(route) : route;
