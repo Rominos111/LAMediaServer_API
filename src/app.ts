@@ -93,30 +93,6 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
 // Configuration des routes
 //======================================================================================================================
 
-const routesPathRelative = "routes";
-const routesPath = path.join(__dirname, routesPathRelative);
-
-const importedRoutes: { path: string, route: string }[] = [];
-
-walk.filesSync(routesPath, (basedir, rawFilename) => {
-    let filename = rawFilename;
-    if (/^index\.[tj]s$/.test(filename)) {
-        filename = "";
-    }
-
-    filename = filename.replace(/\.[jt]s$/, "");
-    let endpoint = filename.replace(/(\.rest|\.ws)?$/, "");
-    const route = "/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
-    importedRoutes.push({
-        path: path.join(basedir, filename),
-        route,
-    });
-}, (err) => {
-    if (err) {
-        console.error("File import error:", err);
-    }
-});
-
 app.use((req, _res, next) => {
     // HACK: Très peu orthodoxe de remplacer `req.query` et `req.body`
     void _res;
@@ -130,6 +106,34 @@ app.use((req, _res, next) => {
     }
 
     next();
+});
+
+const routesPathRelative = "routes";
+const routesPath = path.join(__dirname, routesPathRelative);
+
+const importedRoutes: { path: string, route: string }[] = [];
+
+walk.filesSync(routesPath, (basedir: string, rawFilename: string) => {
+    let filename = rawFilename;
+    if (/^index\.[tj]s$/i.test(filename)) {
+        filename = "";
+    }
+
+    if (/^.+\.shared\.ts$/i.test(filename)) {
+        return;
+    }
+
+    filename = filename.replace(/\.[jt]s$/i, "");
+    let endpoint = filename.replace(/(\.rest|\.ws)?$/i, "");
+    const route = "/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
+    importedRoutes.push({
+        path: path.join(basedir, filename),
+        route,
+    });
+}, (err) => {
+    if (err) {
+        console.error("File import error:", err);
+    }
 });
 
 for (const importedRoute of importedRoutes) {
