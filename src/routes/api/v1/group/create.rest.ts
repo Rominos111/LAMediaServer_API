@@ -30,7 +30,6 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
         type: GroupType.PUBLIC,
         // TODO: `members`, par défaut seul l'utilisateur courant fait partie du groupe
     }, (r, data) => {
-        console.log(data);
         return APIResponse.fromSuccess(Group.fromPartialObject(data.team as RawPartialGroup));
     }, (r, data) => {
         if (data.error === "team-name-already-exists") {
