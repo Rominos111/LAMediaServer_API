@@ -3,7 +3,10 @@
  */
 
 import {APIRequest} from "helper/APIRequest";
-import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
+import {
+    RocketChatWebSocket,
+    TransmitData,
+} from "helper/rocketChatWebSocket";
 import {
     Presence,
     presenceFromNumber,
@@ -20,34 +23,28 @@ interface WebSocketData {
 
 module.exports = APIRequest.ws(null, true, async (ws, req) => {
     const rcws = RocketChatWebSocket
-        .getSocket()
-        .withToken(req.query._token as string)
+        .getSocket(req)
         .subscribedTo("stream-notify-logged", [
             "user-status",
             false,
         ])
-        .onResponse((elts) => {
-            const presences: WebSocketData[] = [];
-            for (const elt of elts) {
-                const presenceArray = elt as (string | number | null)[];
-                let message: string | null = null;
+        .onServerResponse((transmit: (data: TransmitData) => void, content: unknown) => {
+            const presenceArray = content as (string | number | null)[];
+            let message: string | null = null;
 
-                if (presenceArray[3] !== null && presenceArray[3] !== "") {
-                    message = presenceArray[3] as string;
-                }
-
-                presences.push({
-                    presence: presenceFromNumber(presenceArray[2] as number),
-                    presenceMessage: message,
-                    user: {
-                        id: presenceArray[0] as string,
-                        username: presenceArray[1] as string,
-                    },
-                });
+            if (presenceArray[3] !== null && presenceArray[3] !== "") {
+                message = presenceArray[3] as string;
             }
 
-            ws.send(JSON.stringify(presences));
+            transmit({
+                presence: presenceFromNumber(presenceArray[2] as number),
+                presenceMessage: message,
+                user: {
+                    id: presenceArray[0] as string,
+                    username: presenceArray[1] as string,
+                },
+            });
         });
 
-    rcws.open(ws);
+    await rcws.open(ws, req);
 });

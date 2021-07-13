@@ -4,7 +4,10 @@
 
 import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
-import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
+import {
+    RocketChatWebSocket,
+    TransmitData,
+} from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
 import {
     Message,
@@ -30,24 +33,19 @@ interface WebSocketData extends RawFullMessage {
 
 module.exports = APIRequest.ws(schema, true, async (ws, req) => {
     const rcws = RocketChatWebSocket
-        .getSocket()
-        .withToken(req.query._token as string)
+        .getSocket(req)
         .subscribedTo("stream-room-messages", [
             req.query.roomId as string,
             false,
         ])
-        .onResponse((elts: unknown[], currentUserId) => {
-            let messages: Message[] = [];
-            for (let elt of elts) {
-                const rawMessage = elt as WebSocketData;
+        .onServerResponse((transmit: (data: TransmitData) => void, content: unknown, currentUserId: string | null) => {
+            const rawMessage = content as WebSocketData;
+            if (!rawMessage.hasOwnProperty("editedAt") && !rawMessage.hasOwnProperty("editedBy")) {
+                // Évite de compter les messages modifiés comme de nouveaux messages
                 rawMessage.ts = rawMessage.ts["$date"];
-                if (!rawMessage.hasOwnProperty("editedAt") && !rawMessage.hasOwnProperty("editedBy")) {
-                    // Évite de compter les messages modifiés comme de nouveaux messages
-                    messages.push(Message.fromFullMessage(rawMessage, currentUserId as string));
-                }
+                transmit(Message.fromFullMessage(rawMessage, currentUserId as string).toJSON());
             }
-            ws.send(JSON.stringify(messages));
         });
 
-    rcws.open(ws);
+    await rcws.open(ws, req);
 });
