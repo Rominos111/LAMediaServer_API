@@ -1,3 +1,5 @@
+import {Serializable} from "helper/serializable";
+
 interface RawVideoConferenceConnection {
     id: string,
     object: string,
@@ -18,7 +20,7 @@ enum VideoConferenceConnectionType {
     WEBRTC = "WEBRTC",
 }
 
-class VideoConferenceConnection {
+class VideoConferenceConnection implements Serializable {
     private readonly _createdAt: Date;
     private readonly _id: string;
     private readonly _parentSessionId: string;

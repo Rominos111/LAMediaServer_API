@@ -1,6 +1,7 @@
 /**
  * Utilisateur
  */
+import {Serializable} from "helper/serializable";
 import {Presence} from "model/presence";
 import {
     arrayToRole,
@@ -19,7 +20,7 @@ interface RawFullUser extends RawPartialUser {
     type: string, // `user` ou `bot` ?
 }
 
-class User {
+class User implements Serializable {
     /**
      * ID
      * @protected

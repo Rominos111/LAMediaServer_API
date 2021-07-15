@@ -19,6 +19,8 @@ module.exports = APIRequest.get(null, true, async (req, res, auth) => {
             users.push(User.fromFullUser(elt, auth?.userId as string));
         }
 
-        return APIResponse.fromSuccess(users);
+        return APIResponse.fromSuccess({
+            users,
+        });
     });
 });

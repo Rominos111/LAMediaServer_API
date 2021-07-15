@@ -4,6 +4,7 @@
 
 import {Response} from "express";
 import {HTTPStatus} from "helper/requestMethod";
+import {Serializable} from "helper/serializable";
 
 /**
  * Type d'erreur
@@ -117,7 +118,7 @@ class APIResponse {
      * @param statusCode Code d'erreur
      * @param message Message
      */
-    public static fromSuccess(payload: object | object[] | null = null,
+    public static fromSuccess(payload: Record<string, unknown> | Serializable = {},
                               statusCode = HTTPStatus.OK,
                               message = "OK",
     ): APIResponse {

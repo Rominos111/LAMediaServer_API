@@ -1,3 +1,4 @@
+import {Serializable} from "helper/serializable";
 import {
     FileAttachment,
     ImageAttachment,
@@ -16,7 +17,7 @@ enum AttachmentType {
 /**
  * Pièce-jointe
  */
-abstract class Attachment {
+abstract class Attachment implements Serializable {
     /**
      * Type de pièce-jointe
      * @private

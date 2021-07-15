@@ -30,7 +30,9 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
             users.push(User.fromFullUser(elt.user, auth?.userId as string, elt.roles));
         }
 
-        return APIResponse.fromSuccess(users);
+        return APIResponse.fromSuccess({
+            users,
+        });
     }, (r, data) => {
         if (r.status === HTTPStatus.BAD_REQUEST && data.error === "team-does-not-exist") {
             return APIResponse.fromFailure("Group does not exist", HTTPStatus.NOT_FOUND);

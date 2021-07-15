@@ -33,7 +33,9 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
             }
         }
 
-        return APIResponse.fromSuccess(messages);
+        return APIResponse.fromSuccess({
+            messages,
+        });
     }, (r, data) => {
         if (r.status === HTTPStatus.BAD_REQUEST && data.errorType === "error-room-not-found") {
             return APIResponse.fromFailure("Not Found", HTTPStatus.NOT_FOUND);
