@@ -71,7 +71,7 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
         max: RATE_LIMIT_MAX_REQUESTS + (RATE_LIMIT_MAX_DELAY / RATE_LIMIT_DELAY_INCREMENT),
         message: JSON.stringify(
             APIResponse
-                .fromFailure("Too many requests, try again later.", HTTPStatus.TOO_MANY_REQUESTS, null, "access")
+                .fromFailure("Too many requests, try again later.", HTTPStatus.TOO_MANY_REQUESTS, {}, "access")
                 .getRaw(),
         ),
         windowMs: RATE_LIMIT_WINDOW,
@@ -159,7 +159,7 @@ app.use((err, _req, res, _next) => {
 
     if (err.message) {
         // Erreur express, comme un 404, ou erreur plus générale
-        response = APIResponse.fromFailure(err.message, err.statusCode || HTTPStatus.INTERNAL_SERVER_ERROR, null, "access");
+        response = APIResponse.fromFailure(err.message, err.statusCode || HTTPStatus.INTERNAL_SERVER_ERROR, {}, "access");
     } else if (err.error) {
         // Erreur de validation JOI
         let error: { message: string, key: string } = {
@@ -175,10 +175,10 @@ app.use((err, _req, res, _next) => {
             };
         }
 
-        response = APIResponse.fromFailure(error.message, HTTPStatus.BAD_REQUEST, null, "validation");
+        response = APIResponse.fromFailure(error.message, HTTPStatus.BAD_REQUEST, {}, "validation");
     } else {
         console.error("Unknown Express error", err);
-        response = APIResponse.fromFailure("?", HTTPStatus.INTERNAL_SERVER_ERROR, null, "unknown");
+        response = APIResponse.fromFailure("?", HTTPStatus.INTERNAL_SERVER_ERROR, {}, "unknown");
     }
 
     response.send(res);
