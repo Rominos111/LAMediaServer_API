@@ -1,6 +1,7 @@
 /**
  * Canal
  */
+import {Serializable} from "helper/serializable";
 import {
     Message,
     RawFullMessage,
@@ -23,7 +24,7 @@ type RawFullRoom = {
 /**
  * Canal
  */
-class Room {
+class Room implements Serializable {
     /**
      * ID
      * @private

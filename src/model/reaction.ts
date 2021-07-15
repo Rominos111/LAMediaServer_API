@@ -1,3 +1,5 @@
+import {Serializable} from "helper/serializable";
+
 interface RawReaction {
     [reaction: string]: {
         usernames: string[],
@@ -7,7 +9,7 @@ interface RawReaction {
 /**
  * Réaction
  */
-class Reaction {
+class Reaction implements Serializable {
     /**
      * Réaction
      * @private

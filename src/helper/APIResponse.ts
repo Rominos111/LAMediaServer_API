@@ -4,6 +4,7 @@
 
 import {Response} from "express";
 import {HTTPStatus} from "helper/requestMethod";
+import {Serializable} from "helper/serializable";
 
 /**
  * Type d'erreur
@@ -38,6 +39,14 @@ enum ResponseType {
     SVG = "image/svg+xml",
 }
 
+interface FullData {
+    error?: {
+        type: APIRErrorType,
+    },
+    message: string,
+    payload: Record<string, unknown> | Serializable,
+}
+
 /**
  * Réponse API générique
  */
@@ -46,7 +55,7 @@ class APIResponse {
      * Data
      * @private
      */
-    private readonly _data: Record<string, unknown>;
+    private readonly _data: FullData | Record<string, unknown>;
 
     /**
      * headers supplémentaires
@@ -74,7 +83,7 @@ class APIResponse {
      * @param responseType Type de réponse (JSON, SVG...)
      * @private
      */
-    private constructor(data: Record<string, unknown> = {},
+    private constructor(data: FullData | Record<string, unknown>,
                         statusCode: HTTPStatus = HTTPStatus.OK,
                         headers: Record<string, string> = {},
                         responseType: ResponseType = ResponseType.JSON,
@@ -94,7 +103,7 @@ class APIResponse {
      */
     public static fromFailure(errorMessage: string,
                               statusCode: HTTPStatus | number,
-                              payload: object | object[] | null = null,
+                              payload: Record<string, unknown> = {},
                               errorType: APIRErrorType | string = "request",
     ): APIResponse {
         const headers = {};
@@ -117,7 +126,7 @@ class APIResponse {
      * @param statusCode Code d'erreur
      * @param message Message
      */
-    public static fromSuccess(payload: object | object[] | null = null,
+    public static fromSuccess(payload: Record<string, unknown> | Serializable = {},
                               statusCode = HTTPStatus.OK,
                               message = "OK",
     ): APIResponse {
@@ -158,7 +167,7 @@ class APIResponse {
     /**
      * Data raw
      */
-    public getRaw(): Record<string, unknown> {
+    public getRaw(): FullData | Record<string, unknown> {
         return this._data;
     }
 }

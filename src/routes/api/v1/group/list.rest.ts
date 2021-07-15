@@ -48,6 +48,8 @@ module.exports = APIRequest.get(null, true, async (req, res, auth) => {
         }
 
         const groupsFiltered = groups.filter((group) => group !== null);
-        return APIResponse.fromSuccess(groupsFiltered);
+        return APIResponse.fromSuccess({
+            groups: groupsFiltered,
+        });
     });
 });

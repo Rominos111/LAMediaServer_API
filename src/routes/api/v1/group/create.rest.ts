@@ -15,22 +15,22 @@ import {
 } from "model/group";
 
 const schema = Validation.object({
-    name: Validation.string().trim().min(3).max(30).required().messages({
+    name: Validation.string().trim().required().messages({
         "any.required": Language.get("validation.name.required"),
         "string.empty": Language.get("validation.name.short"),
         "string.max": Language.get("validation.name.long"),
         "string.min": Language.get("validation.name.short"),
         "string.trim": Language.get("validation.name.short"),
     }),
+    memberIds: Validation.array().items(Validation.string().trim()).required(),
 });
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
     await RocketChatRequest.request(RequestMethod.POST, "/teams.create", auth, res, {
         name: req.body.name + "-" + randomString(),
         type: GroupType.PUBLIC,
-        // TODO: `members`, par défaut seul l'utilisateur courant fait partie du groupe
+        members: req.body.memberIds,
     }, (r, data) => {
-        console.log(data);
         return APIResponse.fromSuccess(Group.fromPartialObject(data.team as RawPartialGroup));
     }, (r, data) => {
         if (data.error === "team-name-already-exists") {

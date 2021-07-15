@@ -1,3 +1,5 @@
+import {Serializable} from "helper/serializable";
+
 enum GroupType {
     PUBLIC = 0,
     PRIVATE = 1,
@@ -20,7 +22,7 @@ interface RawFullGroup extends RawPartialGroup {
     rooms: number,
 }
 
-class Group {
+class Group implements Serializable {
     private readonly _createdAt: Date;
     private readonly _createdBy: string;
     private readonly _id: string;

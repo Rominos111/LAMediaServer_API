@@ -33,7 +33,9 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
             rooms.push(Room.fromFullObject(discussion, r.currentUserId as string));
         }
 
-        return APIResponse.fromSuccess(rooms);
+        return APIResponse.fromSuccess({
+            rooms,
+        });
     }, (r, data) => {
         if (r.status === HTTPStatus.BAD_REQUEST && data.errorType === "error-room-not-found") {
             return APIResponse.fromFailure("Room not found", HTTPStatus.NOT_FOUND);

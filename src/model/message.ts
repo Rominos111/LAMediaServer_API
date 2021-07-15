@@ -1,3 +1,4 @@
+import {Serializable} from "helper/serializable";
 import {Attachment} from "model/attachement";
 import {RawFileAttachment} from "model/attachement/fileAttachment";
 import {RawImageAttachment} from "model/attachement/imageAttachment";
@@ -30,7 +31,7 @@ interface RawFullMessage extends RawPartialMessage {
 /**
  * Message
  */
-class Message {
+class Message implements Serializable {
     /**
      * Liste des pièces jointes
      * @private

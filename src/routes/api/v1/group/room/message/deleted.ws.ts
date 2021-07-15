@@ -4,7 +4,10 @@
 
 import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
-import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
+import {
+    RocketChatWebSocket,
+    TransmitData,
+} from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
@@ -15,22 +18,17 @@ const schema = Validation.object({
 
 module.exports = APIRequest.ws(schema, true, async (ws, req) => {
     const rcws = RocketChatWebSocket
-        .getSocket()
-        .withToken(req.query._token as string)
+        .getSocket(req)
         .subscribedTo("stream-notify-room", [
             `${req.query.roomId}/deleteMessage`,
             false,
         ])
-        .onResponse((elts: unknown[]) => {
-            const ids: { id: string }[] = [];
-            for (const elt of elts) {
-                const eltTyped = elt as { _id: string };
-                ids.push({
-                    id: eltTyped._id,
-                });
-            }
-            ws.send(JSON.stringify(ids));
+        .onServerResponse((transmit: (data: TransmitData) => void, content: unknown) => {
+            const eltTyped = content as { _id: string };
+            transmit({
+                id: eltTyped._id,
+            });
         });
 
-    rcws.open(ws);
+    await rcws.open(ws, req);
 });

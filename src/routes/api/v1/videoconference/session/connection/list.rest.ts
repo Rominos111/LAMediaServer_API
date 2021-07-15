@@ -35,7 +35,10 @@ module.exports = APIRequest.get(schema, true, async (req, res, _auth) => {
                 APIResponse.fromFailure(Language.get("videoconference.not-found"), HTTPStatus.NOT_FOUND).send(res);
             } else if (isValidStatusCode(r.statusCode as number)) {
                 const obj = JSON.parse(data);
-                APIResponse.fromSuccess(VideoConferenceConnection.fromArray(obj.content), r.statusCode).send(res);
+                const payload = {
+                    connections: VideoConferenceConnection.fromArray(obj.content),
+                };
+                APIResponse.fromSuccess(payload, r.statusCode).send(res);
             } else {
                 console.warn("OpenVidu list error code", r.statusMessage);
                 APIResponse.fromFailure(r.statusMessage as string, r.statusCode as number).send(res);

@@ -150,7 +150,7 @@ class RocketChatRequest {
         if (onSuccessCallback === null) {
             // Fonction de succès par défaut
             onSuccess = (r) => {
-                return APIResponse.fromSuccess(null, r.status);
+                return APIResponse.fromSuccess({}, r.status);
             };
         } else {
             onSuccess = onSuccessCallback;

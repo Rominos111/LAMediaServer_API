@@ -102,7 +102,7 @@ class APIRequest {
         const router = express.Router();
         router.all("/", (_req, res) => {
             void _req;
-            APIResponse.fromFailure("Not Implemented", HTTPStatus.NOT_IMPLEMENTED, null, "access").send(res);
+            APIResponse.fromFailure("Not Implemented", HTTPStatus.NOT_IMPLEMENTED, {}, "access").send(res);
         });
         return router;
     }
@@ -261,7 +261,7 @@ class APIRequest {
      */
     private static _methodNotAllowed(_req: express.Request, res: express.Response): void {
         void _req;
-        APIResponse.fromFailure("Method Not Allowed", HTTPStatus.METHOD_NOT_ALLOWED, null, "access").send(res);
+        APIResponse.fromFailure("Method Not Allowed", HTTPStatus.METHOD_NOT_ALLOWED, {}, "access").send(res);
     }
 }
 
