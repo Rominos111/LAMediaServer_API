@@ -8,6 +8,7 @@ import {
     Token,
 } from "helper/JWT";
 import {RocketChat} from "helper/rocketChat";
+import {Serializable} from "helper/serializable";
 import {randomUID} from "helper/utils";
 import {Validation} from "helper/validation";
 import {ObjectSchema} from "joi";
@@ -58,6 +59,7 @@ enum RocketChatWebSocketMessage {
     CHANGED = "changed",
     CONNECTED = "connected",
     ERROR = "error",
+    INSERTED = "inserted",
     PING = "ping",
     READY = "ready",
     RESULT = "result",
@@ -72,7 +74,7 @@ type RocketChatWebSocketCallbackData = Record<string, unknown> & {
     msg: RocketChatWebSocketMessage,
 };
 
-type TransmitData = Record<string, unknown> | Record<string, unknown>[] | unknown[];
+type TransmitData = Record<string, unknown> | Serializable;
 
 type ServerResponseCallback = (
     transmit: (data: TransmitData) => void,
@@ -84,6 +86,8 @@ type ServerResponseCallback = (
 type ClientCallCallback = (
     data: Record<string, unknown>,
 ) => void;
+
+type SubscriptionParams = string | boolean | Record<string, string | boolean | unknown[]>;
 
 /**
  * Requête à l'API WebSocket de Rocket.chat
@@ -123,7 +127,7 @@ class RocketChatWebSocket {
      * Nom des paramètres de souscription
      * @private
      */
-    private _subscribeRequestParams: (string | boolean)[] | null;
+    private _subscribeRequestParams: SubscriptionParams[] | null;
 
     /**
      * Token
@@ -165,7 +169,7 @@ class RocketChatWebSocket {
      * @param name Nom du flux
      * @param params Paramètres
      */
-    public subscribedTo(name: string, params: (string | boolean)[]): RocketChatWebSocket {
+    public subscribedTo(name: string, params: SubscriptionParams[]): RocketChatWebSocket {
         this._subscribeRequestName = name;
         this._subscribeRequestParams = params;
         return this;
@@ -309,17 +313,15 @@ class RocketChatWebSocket {
         if (!message.hasOwnProperty("msg") || message.msg === RocketChatWebSocketMessage.ERROR) {
             console.warn("WebSocket client error:", message.reason);
         } else if (message.msg === RocketChatWebSocketMessage.CHANGED && message.collection === this._subscribeRequestName) {
-            if (message.fields.args.length !== 1) {
-                console.debug("Length !== 1:", message);
-            }
-
             for (const content of message.fields.args) {
-                this._serverResponseCallback(
-                    (obj) => this._transmitData(obj),
-                    content,
-                    message.currentUserId,
-                    message,
-                );
+                if (typeof content === "object") {
+                    this._serverResponseCallback(
+                        (obj) => this._transmitData(obj),
+                        content,
+                        message.currentUserId,
+                        message,
+                    );
+                }
             }
         }
     }
@@ -468,5 +470,8 @@ class RocketChatWebSocket {
     }
 }
 
-export {RocketChatWebSocket};
+export {
+    RocketChatWebSocket,
+    RocketChatWebSocketMessage,
+};
 export type {TransmitData};
