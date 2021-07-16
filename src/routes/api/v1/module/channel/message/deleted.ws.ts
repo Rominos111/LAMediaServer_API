@@ -11,7 +11,7 @@ import {
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    roomId: Validation.string().required().messages({
+    channelId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });
@@ -20,13 +20,13 @@ module.exports = APIRequest.ws(schema, true, async (ws, req) => {
     const rcws = RocketChatWebSocket
         .getSocket(req)
         .subscribedTo("stream-notify-room", [
-            `${req.query.roomId}/deleteMessage`,
+            `${req.query.channelId}/deleteMessage`,
             false,
         ])
         .onServerResponse((transmit: (data: TransmitData) => void, content: unknown) => {
-            const eltTyped = content as { _id: string };
+            const message = content as { _id: string };
             transmit({
-                id: eltTyped._id,
+                id: message._id,
             });
         });
 

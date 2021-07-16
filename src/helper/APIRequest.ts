@@ -130,7 +130,7 @@ class APIRequest {
 
             if (valid.error) {
                 // Validation échouée
-                console.debug("WebSocket validation error:", valid.error.message);
+                console.debug("WebSocket validation error:", req.baseUrl, valid.error.message);
                 canContinue = false;
             }
 

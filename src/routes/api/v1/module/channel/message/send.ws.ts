@@ -19,7 +19,7 @@ module.exports = APIRequest.ws(null, true, async (ws, req) => {
         .onClientCall(schema_sendMessage, (data) => {
             rcws.callMethod("sendMessage", {
                 msg: (data.message as string).trim(),
-                rid: data.roomId,
+                rid: data.channelId,
             });
         })
         .onServerResponse((transmit: (data: TransmitData) => void, content: unknown, currentUserId: string | null) => {

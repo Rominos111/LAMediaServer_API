@@ -9,12 +9,12 @@ import {RocketChatRequest} from "helper/rocketChatRequest";
 import {randomString} from "helper/utils";
 import {Validation} from "helper/validation";
 import {
-    RawFullRoom,
-    Room,
-} from "model/room";
+    RawChannel,
+    Channel,
+} from "model/channel";
 
 const schema = Validation.object({
-    groupRoomId: Validation.string().required(),
+    moduleRoomId: Validation.string().required(),
     name: Validation.string().required().messages({
         "any.required": Language.get("validation.name.required"),
     }),
@@ -22,12 +22,12 @@ const schema = Validation.object({
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
     await RocketChatRequest.request(RequestMethod.POST, "/rooms.createDiscussion", auth, res, {
-        prid: req.body.groupRoomId,
+        prid: req.body.moduleRoomId,
         t_name: req.body.name + "-" + randomString(),
         users: [],
         reply: "",
     }, (r, data) => {
-        const room = Room.fromFullObject(data.discussion as RawFullRoom, r.currentUserId as string);
-        return APIResponse.fromSuccess(room, HTTPStatus.OK);
+        const channel = Channel.fromFullObject(data.discussion as RawChannel, r.currentUserId as string);
+        return APIResponse.fromSuccess(channel, HTTPStatus.OK);
     });
 });

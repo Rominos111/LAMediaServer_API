@@ -1,5 +1,6 @@
 import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
+import {RequestMethod} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 
@@ -18,8 +19,8 @@ const schema = Validation.object({
 });
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
-    console.log(req.body.operation);
-    await RocketChatRequest.request("POST", "/chat.react", auth, res, {
+    console.debug(req.body.operation);
+    await RocketChatRequest.request(RequestMethod.POST, "/chat.react", auth, res, {
         emoji: req.body.emojiName.trim(),
         messageId: req.body.messageId,
         shouldReact: req.body.operation.toLowerCase() === "set",

@@ -1,35 +1,38 @@
 /**
- * Liste les groupes
+ * Liste les modules
  */
 
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
-import {HTTPStatus} from "helper/requestMethod";
+import {
+    HTTPStatus,
+    RequestMethod,
+} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {
-    Group,
-    RawFullGroup,
-} from "model/group";
+    Module,
+    RawFullModule,
+} from "model/module";
 
 module.exports = APIRequest.get(null, true, async (req, res, auth) => {
-    await RocketChatRequest.request("GET", "/teams.list", auth, res, {
+    await RocketChatRequest.request(RequestMethod.GET, "/teams.list", auth, res, {
         count: 0,
     }, async (r, data) => {
-        const groups: (Group | null)[] = [];
+        const modules: (Module | null)[] = [];
         const promises: Promise<void>[] = [];
 
-        const teams = data.teams as RawFullGroup[];
+        const teams = data.teams as RawFullModule[];
 
         for (let i = 0; i < teams.length; ++i) {
-            const team: RawFullGroup = teams[i];
-            const group = Group.fromFullObject(team);
-            groups.push(null);
+            const team: RawFullModule = teams[i];
+            const currentModule = Module.fromFullObject(team);
+            modules.push(null);
 
-            const p = RocketChatRequest.request("GET", "/rooms.getDiscussions", auth, null, {
+            const p = RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", auth, null, {
                 count: 1,
-                roomId: group.roomId,
+                roomId: currentModule.roomId,
             }, () => {
-                groups[i] = group;
+                modules[i] = currentModule;
                 return null;
             }, (r, data) => {
                 if (r.status !== HTTPStatus.BAD_REQUEST || data.errorType !== "error-room-not-found") {
@@ -47,9 +50,9 @@ module.exports = APIRequest.get(null, true, async (req, res, auth) => {
             await p;
         }
 
-        const groupsFiltered = groups.filter((group) => group !== null);
+        const modulesFiltered = modules.filter((mod) => mod !== null);
         return APIResponse.fromSuccess({
-            groups: groupsFiltered,
+            modules: modulesFiltered,
         });
     });
 });

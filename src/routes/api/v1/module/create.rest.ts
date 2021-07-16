@@ -9,10 +9,10 @@ import {RocketChatRequest} from "helper/rocketChatRequest";
 import {randomString} from "helper/utils";
 import {Validation} from "helper/validation";
 import {
-    Group,
+    Module,
     GroupType,
-    RawPartialGroup,
-} from "model/group";
+    RawPartialModule,
+} from "model/module";
 
 const schema = Validation.object({
     name: Validation.string().trim().required().messages({
@@ -31,7 +31,7 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
         type: GroupType.PUBLIC,
         members: req.body.memberIds,
     }, (r, data) => {
-        return APIResponse.fromSuccess(Group.fromPartialObject(data.team as RawPartialGroup));
+        return APIResponse.fromSuccess(Module.fromPartialObject(data.team as RawPartialModule));
     }, (r, data) => {
         if (data.error === "team-name-already-exists") {
             return APIResponse.fromFailure(data.error, HTTPStatus.CONFLICT);

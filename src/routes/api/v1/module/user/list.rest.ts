@@ -1,5 +1,5 @@
 /**
- * Liste les salons
+ * Liste les utilisateurs d'un groupe
  */
 
 import {APIRequest} from "helper/APIRequest";
@@ -12,33 +12,33 @@ import {
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {
-    RawFullRoom,
-    Room,
-} from "model/room";
+    RawFullUser,
+    User,
+} from "model/user";
 
 const schema = Validation.object({
-    groupRoomId: Validation.string().required().messages({
+    moduleId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });
 
 module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
-    await RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", auth, res, {
+    await RocketChatRequest.request(RequestMethod.GET, "/teams.members", auth, res, {
         count: 0,
-        roomId: req.body.groupRoomId,
+        teamId: req.body.moduleId,
     }, (r, data) => {
-        const rooms: Room[] = [];
+        const users: User[] = [];
 
-        for (const discussion of data.discussions as RawFullRoom[]) {
-            rooms.push(Room.fromFullObject(discussion, r.currentUserId as string));
+        for (const elt of data.members as { user: RawFullUser, roles: string[] }[]) {
+            users.push(User.fromFullUser(elt.user, auth?.userId as string, elt.roles));
         }
 
         return APIResponse.fromSuccess({
-            rooms,
+            users,
         });
     }, (r, data) => {
-        if (r.status === HTTPStatus.BAD_REQUEST && data.errorType === "error-room-not-found") {
-            return APIResponse.fromFailure("Room not found", HTTPStatus.NOT_FOUND);
+        if (r.status === HTTPStatus.BAD_REQUEST && data.error === "team-does-not-exist") {
+            return APIResponse.fromFailure("Module does not exist", HTTPStatus.NOT_FOUND);
         } else {
             return APIResponse.fromFailure(r.statusText, r.status);
         }

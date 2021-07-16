@@ -1,5 +1,5 @@
 /**
- * Message envoyé
+ * Module créé
  */
 
 import {APIRequest} from "helper/APIRequest";
@@ -11,15 +11,9 @@ import {
 } from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
 import {
-    Group,
+    Module,
     GroupType,
-} from "model/group";
-
-const schema = Validation.object({
-    userId: Validation.string().required().messages({
-        "any.required": Language.get("validation.id.required"),
-    }),
-});
+} from "model/module";
 
 interface WebSocketData {
     _id: string,
@@ -36,27 +30,27 @@ interface WebSocketData {
     teamId: string,
 }
 
-module.exports = APIRequest.ws(schema, true, async (ws, req, auth) => {
+module.exports = APIRequest.ws(null, true, async (ws, req, auth) => {
     const rcws = RocketChatWebSocket
         .getSocket(req)
         .subscribedTo("stream-notify-user", [
-            `${req.query.userId}/rooms-changed`,
+            `${auth?.userId}/rooms-changed`,
             {"useCollection": false, "args": []},
         ])
         .onServerResponse((transmit: (data: TransmitData) => void, content: unknown, currentUserId: string | null, message) => {
             if (message.fields.args[0] === RocketChatWebSocketMessage.INSERTED) {
-                const group = content as WebSocketData;
-                transmit(Group.fromFullObject({
-                    _id: group.teamId,
-                    createdAt: new Date(group.ts.$date),
+                const createdModule = content as WebSocketData;
+                transmit(Module.fromFullObject({
+                    _id: createdModule.teamId,
+                    createdAt: new Date(createdModule.ts.$date),
                     createdBy: {
-                        _id: group.u._id,
-                        username: group.u.username,
+                        _id: createdModule.u._id,
+                        username: createdModule.u.username,
                     },
-                    name: group.name,
-                    roomId: group._id,
+                    name: createdModule.name,
+                    roomId: createdModule._id,
                     type: GroupType.UNKNOWN,
-                    numberOfUsers: group.usersCount,
+                    numberOfUsers: createdModule.usersCount,
                     rooms: 0,
                 }));
             }

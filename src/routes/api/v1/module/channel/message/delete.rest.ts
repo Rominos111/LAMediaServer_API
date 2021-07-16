@@ -5,23 +5,24 @@
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {Language} from "helper/language";
+import {RequestMethod} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    messageId: Validation.string().required().messages({
+    channelId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
-    roomId: Validation.string().required().messages({
+    messageId: Validation.string().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });
 
 module.exports = APIRequest.delete(schema, true, async (req, res, auth) => {
-    await RocketChatRequest.request("POST", "/chat.delete", auth, res, {
+    await RocketChatRequest.request(RequestMethod.POST, "/chat.delete", auth, res, {
         asUser: true,
         msgId: req.body.messageId,
-        roomId: req.body.roomId,
+        roomId: req.body.channelId,
     }, (r, data) => {
         if (data.success === true) {
             return APIResponse.fromSuccess();

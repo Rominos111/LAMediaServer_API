@@ -6,7 +6,7 @@ enum GroupType {
     PRIVATE = 1,
 }
 
-interface RawPartialGroup {
+interface RawPartialModule {
     _id: string,
     createdAt: Date,
     createdBy: {
@@ -18,12 +18,12 @@ interface RawPartialGroup {
     type: GroupType | number,
 }
 
-interface RawFullGroup extends RawPartialGroup {
+interface RawFullModule extends RawPartialModule {
     numberOfUsers: number,
     rooms: number,
 }
 
-class Group implements Serializable {
+class Module implements Serializable {
     private readonly _createdAt: Date;
     private readonly _createdBy: string;
     private readonly _id: string;
@@ -77,7 +77,7 @@ class Group implements Serializable {
         return this._usersCount;
     }
 
-    public static fromPartialObject(obj: RawPartialGroup): Group {
+    public static fromPartialObject(obj: RawPartialModule): Module {
         return new this(
             obj._id,
             obj.name,
@@ -89,7 +89,7 @@ class Group implements Serializable {
         );
     }
 
-    public static fromFullObject(obj: RawFullGroup): Group {
+    public static fromFullObject(obj: RawFullModule): Module {
         return new this(
             obj._id,
             obj.name,
@@ -115,10 +115,10 @@ class Group implements Serializable {
 }
 
 export {
-    Group,
+    Module,
     GroupType,
 };
 export type {
-    RawFullGroup,
-    RawPartialGroup,
+    RawFullModule,
+    RawPartialModule,
 };

@@ -12,7 +12,7 @@
         "message": {
             "long": "Le message à envoyer est trop long",
             "not-found": "Le message n'a pas été trouvé",
-            "no-match-room": "Le salon précisé diffère de celui dans lequel le message a été envoyé",
+            "no-match-channel": "Le canal précisé diffère de celui dans lequel le message a été envoyé",
             "required": "Le contenu du message est requis",
             "short": "Le message à envoyer ne peut être vide"
         },

@@ -7,7 +7,7 @@ import {
     RawFullMessage,
 } from "model/message";
 
-type RawFullRoom = {
+type RawChannel = {
     _id: string,
     fname: string,
     topic: string,
@@ -24,7 +24,7 @@ type RawFullRoom = {
 /**
  * Canal
  */
-class Room implements Serializable {
+class Channel implements Serializable {
     /**
      * ID
      * @private
@@ -51,7 +51,7 @@ class Room implements Serializable {
      */
     private readonly _name: string;
 
-    private readonly _parentRoomId: string;
+    private readonly _parentModuleId: string;
 
     private readonly _usersCount: number;
 
@@ -59,25 +59,25 @@ class Room implements Serializable {
      * Constructeur
      * @param id ID
      * @param name Nom
-     * @param defaultRoom Canal par défaut ou non
-     * @param parentRoomId ID de la room parente
+     * @param isDefault Canal par défaut ou non
+     * @param parentModuleId ID du module parent
      * @param usersCount Nombre d'utilisateurs
      * @param messagesCount Nombre de messages
      * @param lastMessage Dernier message
      */
     public constructor(id: string,
                        name: string,
-                       defaultRoom: boolean,
-                       parentRoomId: string,
+                       isDefault: boolean,
+                       parentModuleId: string,
                        usersCount: number,
                        messagesCount: number,
                        lastMessage: Message | null,
     ) {
         this._id = id;
         this._name = name.replace(/^(.*)-.*$/, "$1");
-        this._isDefault = defaultRoom;
+        this._isDefault = isDefault;
         this._lastMessage = lastMessage;
-        this._parentRoomId = parentRoomId;
+        this._parentModuleId = parentModuleId;
         this._usersCount = usersCount;
         this._messagesCount = messagesCount;
     }
@@ -102,15 +102,15 @@ class Room implements Serializable {
         return this._name;
     }
 
-    public get parentRoomId(): string {
-        return this._parentRoomId;
+    public get parentModuleId(): string {
+        return this._parentModuleId;
     }
 
     public get usersCount(): number {
         return this._usersCount;
     }
 
-    public static fromFullObject(obj: RawFullRoom, currentUserId: string): Room {
+    public static fromFullObject(obj: RawChannel, currentUserId: string): Channel {
         return new this(
             obj._id,
             obj.fname,
@@ -132,11 +132,11 @@ class Room implements Serializable {
             lastMessage: this.lastMessage,
             messagesCount: this.messagesCount,
             name: this.name,
-            parentRoomId: this.parentRoomId,
+            parentModuleId: this.parentModuleId,
             usersCount: this.usersCount,
         };
     }
 }
 
-export {Room};
-export type {RawFullRoom};
+export {Channel};
+export type {RawChannel};
