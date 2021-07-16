@@ -33,6 +33,7 @@ module.exports = APIRequest.post(schema, false, async (req, res) => {
         const loginData = data.data as LoginData;
         const token = JWT.createToken(loginData.userId, loginData.authToken, loginData.me.username);
         return APIResponse.fromSuccess({
+            userId: loginData.userId,
             token,
         });
     }, (r, data) => {
