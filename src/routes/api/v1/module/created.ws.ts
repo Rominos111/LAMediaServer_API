@@ -24,10 +24,10 @@ interface WebSocketData {
         _id: string,
         username: string,
     },
+    teamId?: string,
     ts: {
         "$date": number,
     },
-    teamId: string,
 }
 
 module.exports = APIRequest.ws(null, true, async (ws, req, auth) => {
@@ -40,6 +40,11 @@ module.exports = APIRequest.ws(null, true, async (ws, req, auth) => {
         .onServerResponse((transmit: (data: TransmitData) => void, content: unknown, currentUserId: string | null, message) => {
             if (message.fields.args[0] === RocketChatWebSocketMessage.INSERTED) {
                 const createdModule = content as WebSocketData;
+                if (!createdModule.teamId) {
+                    // Cette WebSocket est aussi appelée lors de la création de canaux
+                    return;
+                }
+
                 transmit(Module.fromFullObject({
                     _id: createdModule.teamId,
                     createdAt: new Date(createdModule.ts.$date),

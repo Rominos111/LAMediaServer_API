@@ -18,7 +18,7 @@ type RawChannel = {
     ts: Date,
     default: boolean,
     lastMessage?: RawFullMessage,
-    lm: Date,
+    lm?: Date,
 }
 
 /**
