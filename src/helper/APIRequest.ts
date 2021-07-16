@@ -116,14 +116,16 @@ class APIRequest {
      */
     public static ws(validationSchema: ObjectSchema | null = null,
                      authenticationRequired: boolean,
-                     callback: (ws: WebSocket, req: express.Request) => void,
+                     callback: (ws: WebSocket, req: express.Request, auth: Authentication | null) => void,
                      route = "/",
     ): expressWs.Router {
-        // La validation n'est appelée que lors de la demande d'ouverture de la WebSocket
-        const validation = (ws: WebSocket, req: express.Request, next: express.NextFunction) => {
+        const router: expressWs.Router = express.Router();
+        router.ws(route, (ws: WebSocket, req: express.Request) => {
+            const auth = this._getAuthenticationData(req);
             let canContinue = true;
 
             let schema = this._getValidationSchema(validationSchema, authenticationRequired);
+            // La validation n'est appelée que lors de la demande d'ouverture de la WebSocket
             const valid = schema.validate(req.query);
 
             if (valid.error) {
@@ -133,7 +135,6 @@ class APIRequest {
             }
 
             if (canContinue && authenticationRequired) {
-                const auth = this._getAuthenticationData(req);
                 if (auth === null) {
                     console.debug("Invalid WebSocket token");
                     canContinue = false;
@@ -141,16 +142,11 @@ class APIRequest {
             }
 
             if (canContinue) {
-                next();
+                callback(ws, req, auth);
             } else {
                 // On ferme la WebSocket
                 close();
             }
-        };
-
-        const router: expressWs.Router = express.Router();
-        router.ws(route, validation, (ws: WebSocket, req: express.Request) => {
-            callback(ws, req);
         });
         router.all(route, this._methodNotAllowed);
         return router;
