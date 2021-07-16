@@ -1,6 +1,7 @@
 import {Serializable} from "helper/serializable";
 
 enum GroupType {
+    UNKNOWN = -1,
     PUBLIC = 0,
     PRIVATE = 1,
 }

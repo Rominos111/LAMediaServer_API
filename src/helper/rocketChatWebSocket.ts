@@ -62,6 +62,7 @@ enum RocketChatWebSocketMessage {
     INSERTED = "inserted",
     PING = "ping",
     READY = "ready",
+    REMOVED = "removed",
     RESULT = "result",
     UPDATED = "updated",
 }
