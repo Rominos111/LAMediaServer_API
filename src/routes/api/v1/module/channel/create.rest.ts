@@ -18,13 +18,14 @@ const schema = Validation.object({
     name: Validation.string().required().messages({
         "any.required": Language.get("validation.name.required"),
     }),
+    memberIds: Validation.array().items(Validation.string().trim()).required(),
 });
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
     await RocketChatRequest.request(RequestMethod.POST, "/rooms.createDiscussion", auth, res, {
         prid: req.body.moduleRoomId,
         t_name: req.body.name + "-" + randomString(),
-        users: [],
+        users: req.body.memberIds,
         reply: "",
     }, (r, data) => {
         const channel = Channel.fromFullObject(data.discussion as RawChannel, r.currentUserId as string);
