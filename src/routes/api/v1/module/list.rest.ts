@@ -28,6 +28,8 @@ module.exports = APIRequest.get(null, true, async (req, res, auth) => {
             const currentModule = Module.fromFullObject(team);
             modules.push(null);
 
+            // Certaines teams apparaissent alors qu'elles ont déjà été supprimées.
+            //  On essaie donc de récupérer leur salon principal, en cas d'échec c'est une team "fantôme"
             const p = RocketChatRequest.request(RequestMethod.GET, "/rooms.getDiscussions", auth, null, {
                 count: 1,
                 roomId: currentModule.roomId,

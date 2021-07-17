@@ -27,12 +27,13 @@ const schema = Validation.object({
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
     await RocketChatRequest.request(RequestMethod.POST, "/teams.create", auth, res, {
-        name: req.body.name + "-" + randomString(),
+        name: req.body.name + "-" + randomString(), // On suffixe tous les noms pour éviter des conflits
         type: GroupType.PUBLIC,
         members: req.body.memberIds,
     }, (r, data) => {
         return APIResponse.fromSuccess(Module.fromPartialObject(data.team as RawPartialModule));
     }, (r, data) => {
+        // N'est pas censé arriver grâce au suffixe
         if (data.error === "team-name-already-exists") {
             return APIResponse.fromFailure(data.error, HTTPStatus.CONFLICT);
         } else {

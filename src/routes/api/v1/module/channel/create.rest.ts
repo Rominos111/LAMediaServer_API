@@ -24,7 +24,7 @@ const schema = Validation.object({
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
     await RocketChatRequest.request(RequestMethod.POST, "/rooms.createDiscussion", auth, res, {
         prid: req.body.moduleRoomId,
-        t_name: req.body.name + "-" + randomString(),
+        t_name: req.body.name + "-" + randomString(), // On suffixe tous les noms pour éviter des conflits
         users: req.body.memberIds,
         reply: "",
     }, (r, data) => {
