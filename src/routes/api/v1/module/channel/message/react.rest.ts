@@ -9,7 +9,7 @@ const schema = Validation.object({
         "any.required": Language.get("validation.emoji.required"),
         "string.empty": Language.get("validation.emoji.required"),
     }),
-    messageId: Validation.string().required().messages({
+    messageId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
     operation: Validation.string().valid("set", "clear").required().messages({

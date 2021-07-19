@@ -9,7 +9,7 @@ import {
 } from "model/channel";
 
 const schema = Validation.object({
-    channelId: Validation.string().required(),
+    channelId: Validation.id().required(),
 });
 
 module.exports = APIRequest.get(schema, true, async (req, res, auth) => {

@@ -9,7 +9,7 @@ import {
 } from "model/module";
 
 const schema = Validation.object({
-    moduleId: Validation.string().required(),
+    moduleId: Validation.id().required(),
 });
 
 module.exports = APIRequest.get(schema, true, async (req, res, auth) => {

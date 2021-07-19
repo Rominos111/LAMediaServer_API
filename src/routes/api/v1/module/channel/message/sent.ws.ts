@@ -15,7 +15,7 @@ import {
 } from "model/message";
 
 const schema = Validation.object({
-    channelId: Validation.string().required().messages({
+    channelId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });

@@ -17,7 +17,7 @@ import {
 } from "model/message";
 
 const schema = Validation.object({
-    channelId: Validation.string().required().messages({
+    channelId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
     message: Validation.string().trim().min(1).max(2_000).required().messages({
@@ -27,7 +27,7 @@ const schema = Validation.object({
         "string.min": Language.get("validation.message.short"),
         "string.trim": Language.get("validation.message.short"),
     }),
-    messageId: Validation.string().required().messages({
+    messageId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });

@@ -17,7 +17,7 @@ import {
 } from "model/channel";
 
 export const schema_listModules = Validation.object({
-    moduleRoomId: Validation.string().required().messages({
+    moduleRoomId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });

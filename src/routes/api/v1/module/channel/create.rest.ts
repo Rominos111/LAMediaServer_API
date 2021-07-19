@@ -14,11 +14,11 @@ import {
 } from "model/channel";
 
 const schema = Validation.object({
-    moduleRoomId: Validation.string().required(),
+    moduleRoomId: Validation.id().required(),
     name: Validation.string().required().messages({
         "any.required": Language.get("validation.name.required"),
     }),
-    memberIds: Validation.array().items(Validation.string().trim()).required(),
+    memberIds: Validation.array().items(Validation.id().trim()).required(),
 });
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {

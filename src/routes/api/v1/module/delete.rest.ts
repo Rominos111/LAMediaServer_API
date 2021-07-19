@@ -5,7 +5,7 @@ import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    moduleId: Validation.string().required().messages({
+    moduleId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });

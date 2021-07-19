@@ -13,7 +13,7 @@ import {
 } from "model/user";
 
 const schema = Validation.object({
-    userId: Validation.string(),
+    userId: Validation.id(),
     username: Validation.string(),
 }).xor("userId", "username");
 

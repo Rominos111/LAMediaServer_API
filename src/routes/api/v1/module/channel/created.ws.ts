@@ -19,7 +19,7 @@ interface WebSocketData extends RawChannel {
 }
 
 const schema = Validation.object({
-    moduleRoomId: Validation.string().required(),
+    moduleRoomId: Validation.id().required(),
 });
 
 module.exports = APIRequest.ws(schema, true, async (ws, req, auth) => {

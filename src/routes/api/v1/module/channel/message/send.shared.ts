@@ -2,7 +2,7 @@ import {Language} from "helper/language";
 import {Validation} from "helper/validation";
 
 export const schema_sendMessage = Validation.object({
-    channelId: Validation.string().required().messages({
+    channelId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
     // FIXME: Set la limite en variable d'environnement ?

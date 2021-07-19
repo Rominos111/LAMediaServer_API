@@ -15,7 +15,7 @@ import {
 } from "model/message";
 
 const schema = Validation.object({
-    channelId: Validation.string().required().messages({
+    channelId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });
@@ -29,17 +29,6 @@ interface WebSocketData extends RawFullMessage {
         _id: string,
         username: string,
     }
-}
-
-interface EditedMessage {
-    editor: {
-        timestamp: Date,
-        user: {
-            id: string,
-            username: string,
-        },
-    }
-    message: Message,
 }
 
 module.exports = APIRequest.ws(schema, true, async (ws, req) => {

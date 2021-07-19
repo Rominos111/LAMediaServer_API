@@ -22,7 +22,7 @@ const schema = Validation.object({
         "string.min": Language.get("validation.name.short"),
         "string.trim": Language.get("validation.name.short"),
     }),
-    memberIds: Validation.array().items(Validation.string().trim()).required(),
+    memberIds: Validation.array().items(Validation.id().trim()).required(),
 });
 
 module.exports = APIRequest.post(schema, true, async (req, res, auth) => {

@@ -5,7 +5,7 @@ import {randomString} from "helper/utils";
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    channelId: Validation.string().required(),
+    channelId: Validation.id().required(),
     name: Validation.string().required(),
 })
 
