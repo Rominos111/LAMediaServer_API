@@ -7,7 +7,7 @@ import {Validation} from "helper/validation";
 const schema = Validation.object({
     channelId: Validation.id().required(),
     name: Validation.string().required(),
-})
+});
 
 module.exports = APIRequest.patch(schema, true, async (req, res, auth) => {
     await RocketChatRequest.request(RequestMethod.POST, "/rooms.saveRoomSettings", auth, res, {
