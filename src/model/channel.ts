@@ -15,6 +15,7 @@ type RawChannel = {
     msgs: number;
     usersCount: number,
     u: unknown,
+    teamId?: string,
     ts: Date,
     default: boolean,
     lastMessage?: RawFullMessage,
