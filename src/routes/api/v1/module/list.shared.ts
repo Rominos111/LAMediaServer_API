@@ -13,7 +13,9 @@ import {
     RawFullModule,
 } from "model/module";
 
-export async function getModules(auth: Authentication, onSuccess: (modules: Module[]) => void, onFailure: (r: AxiosResponse, data: FailureData) => void) {
+export async function listModules(auth: Authentication,
+                                  onSuccess: (modules: Module[]) => void,
+                                  onFailure: (r: AxiosResponse, data: FailureData) => void): Promise<void> {
     await RocketChatRequest.request(RequestMethod.GET, "/teams.list", auth, null, {
         count: 0,
     }, async (r, data) => {
