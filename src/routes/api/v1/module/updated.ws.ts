@@ -9,10 +9,7 @@ import {
     TransmitData,
 } from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
-import {
-    Channel,
-    RawChannel,
-} from "model/channel";
+import {RawChannel} from "model/channel";
 
 const schema = Validation.object({
     moduleRoomId: Validation.id().required(),

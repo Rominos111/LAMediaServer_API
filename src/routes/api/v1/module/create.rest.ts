@@ -9,8 +9,8 @@ import {RocketChatRequest} from "helper/rocketChatRequest";
 import {randomString} from "helper/utils";
 import {Validation} from "helper/validation";
 import {
-    Module,
     GroupType,
+    Module,
     RawPartialModule,
 } from "model/module";
 
@@ -31,7 +31,7 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
         type: GroupType.PRIVATE,
         members: req.body.memberIds,
     }, (r, data) => {
-        return APIResponse.fromSuccess(Module.fromPartialObject(data.team as RawPartialModule));
+        return APIResponse.fromSuccess(Module.fromPartialObject(data.team as RawPartialModule), HTTPStatus.CREATED);
     }, (r, data) => {
         // N'est pas censé arriver grâce au suffixe
         if (data.error === "team-name-already-exists") {

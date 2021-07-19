@@ -3,16 +3,14 @@
  */
 
 import {APIRequest} from "helper/APIRequest";
-import {Language} from "helper/language";
 import {
     RocketChatWebSocket,
     RocketChatWebSocketMessage,
     TransmitData,
 } from "helper/rocketChatWebSocket";
-import {Validation} from "helper/validation";
 import {
-    Module,
     GroupType,
+    Module,
 } from "model/module";
 
 interface WebSocketData {

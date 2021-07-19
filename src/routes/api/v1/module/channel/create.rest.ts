@@ -9,8 +9,8 @@ import {RocketChatRequest} from "helper/rocketChatRequest";
 import {randomString} from "helper/utils";
 import {Validation} from "helper/validation";
 import {
-    RawChannel,
     Channel,
+    RawChannel,
 } from "model/channel";
 
 const schema = Validation.object({
@@ -29,6 +29,6 @@ module.exports = APIRequest.post(schema, true, async (req, res, auth) => {
         reply: "",
     }, (r, data) => {
         const channel = Channel.fromFullObject(data.discussion as RawChannel, r.currentUserId as string);
-        return APIResponse.fromSuccess(channel, HTTPStatus.OK);
+        return APIResponse.fromSuccess(channel, HTTPStatus.CREATED);
     });
 });
