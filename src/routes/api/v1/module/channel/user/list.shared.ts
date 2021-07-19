@@ -8,6 +8,7 @@ import {
 } from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {
+    RawFullUser,
     RawPartialUser,
     User,
 } from "model/user";
@@ -25,14 +26,31 @@ export async function listUsers(channelId: string,
     await RocketChatRequest.request(RequestMethod.GET, "/groups.members", auth, null, {
         count: 0,
         roomId: channelId,
-    }, (r, data) => {
-        const users: User[] = [];
+    }, async (r, data) => {
+        const userId = auth?.userId as string;
+        const members = data.members as RawPartialUser[];
 
-        for (const elt of data.members as RawPartialUser[]) {
-            users.push(User.fromPartialUser(elt, auth?.userId as string));
+        const users: (User | null)[] = [];
+        const promises: Promise<void>[] = [];
+
+        for (let i = 0; i < members.length; ++i) {
+            users.push(null);
+            promises.push(
+                RocketChatRequest.request(RequestMethod.GET, "/users.info", auth, null, {
+                    userId: members[i]._id,
+                }, (_r, data) => {
+                    void _r;
+                    users[i] = User.fromFullUser(data.user as RawFullUser, userId);
+                    return null;
+                }),
+            );
         }
 
-        onSuccess(users);
+        for (const p of promises) {
+            await p;
+        }
+
+        onSuccess(users.filter((user) => user !== null) as User[]);
         return null;
     }, (r, data) => {
         onFailure(r, data);
