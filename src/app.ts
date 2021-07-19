@@ -119,12 +119,17 @@ walk.filesSync(routesPath, (basedir: string, rawFilename: string) => {
         filename = "";
     }
 
-    if (/^.+\.shared\.ts$/i.test(filename)) {
+    filename = filename.replace(/\.[jt]s$/i, "");
+
+    if (!/^(.+)\.(rest|shared|ws)/i.test(filename)) {
+        console.warn("Extension de fichier interdite lors du chargement des routes:", rawFilename);
+    }
+
+    if (/^.+\.shared$/i.test(filename)) {
         return;
     }
 
-    filename = filename.replace(/\.[jt]s$/i, "");
-    let endpoint = filename.replace(/(\.rest|\.ws)?$/i, "");
+    let endpoint = filename.replace(/^(.+)\.(rest|ws)?$/i, "$1");
     const route = "/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
     importedRoutes.push({
         path: path.join(basedir, filename),
