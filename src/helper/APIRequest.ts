@@ -24,6 +24,24 @@ type RequestCallback = (req: express.Request, res: express.Response, auth: Authe
  */
 class APIRequest {
     /**
+     * POST
+     * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
+     * @param callback Callback
+     * @param route Route locale, '/' par défaut
+     * @see APIRequest.get
+     */
+    public static delete(validationSchema: ObjectSchema | null = null,
+                         authenticationRequired: boolean,
+                         callback: RequestCallback,
+                         route = "/",
+    ): express.Router {
+        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
+        router.delete(route, Validation.delete(schema), expressCallback);
+        return this._after(route, router);
+    }
+
+    /**
      * GET
      * @param validationSchema Schéma de validation
      * @param authenticationRequired Authentification requise ou non
@@ -38,6 +56,24 @@ class APIRequest {
         // On récupère le "vrai" callback Express et on le set
         const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
         router.get(route, Validation.get(schema), expressCallback);
+        return this._after(route, router);
+    }
+
+    /**
+     * PATCH, remplace en partie une ressource
+     * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
+     * @param callback Callback
+     * @param route Route locale, '/' par défaut
+     * @see APIRequest.get
+     */
+    public static patch(validationSchema: ObjectSchema | null = null,
+                        authenticationRequired: boolean,
+                        callback: RequestCallback,
+                        route = "/",
+    ): express.Router {
+        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
+        router.patch(route, Validation.patch(schema), expressCallback);
         return this._after(route, router);
     }
 
@@ -60,25 +96,7 @@ class APIRequest {
     }
 
     /**
-     * POST
-     * @param validationSchema Schéma de validation
-     * @param authenticationRequired Authentification requise ou non
-     * @param callback Callback
-     * @param route Route locale, '/' par défaut
-     * @see APIRequest.get
-     */
-    public static delete(validationSchema: ObjectSchema | null = null,
-                         authenticationRequired: boolean,
-                         callback: RequestCallback,
-                         route = "/",
-    ): express.Router {
-        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
-        router.delete(route, Validation.delete(schema), expressCallback);
-        return this._after(route, router);
-    }
-
-    /**
-     * PUT
+     * PUT, remplace intégralement une ressource
      * @param validationSchema Schéma de validation
      * @param authenticationRequired Authentification requise ou non
      * @param callback Callback
@@ -91,7 +109,7 @@ class APIRequest {
                       route = "/",
     ): express.Router {
         const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
-        router.put(route, Validation.delete(schema), expressCallback);
+        router.put(route, Validation.put(schema), expressCallback);
         return this._after(route, router);
     }
 

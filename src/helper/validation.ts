@@ -59,7 +59,15 @@ abstract class Validation {
         return validator.query(schema);
     }
 
+    public static patch(schema: Joi.AnySchema): express.RequestHandler {
+        return validator.body(schema);
+    }
+
     public static post(schema: Joi.AnySchema): express.RequestHandler {
+        return validator.body(schema);
+    }
+
+    public static put(schema: Joi.AnySchema): express.RequestHandler {
         return validator.body(schema);
     }
 }
