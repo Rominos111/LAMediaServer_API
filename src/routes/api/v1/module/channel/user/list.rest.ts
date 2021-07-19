@@ -1,46 +1,26 @@
 /**
- * Liste les utilisateurs d'un groupe
+ * Liste les utilisateurs d'un groupe via REST
  */
 
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
-import {Language} from "helper/language";
+import {Authentication} from "helper/authentication";
+import {HTTPStatus} from "helper/requestMethod";
 import {
-    HTTPStatus,
-    RequestMethod,
-} from "helper/requestMethod";
-import {RocketChatRequest} from "helper/rocketChatRequest";
-import {Validation} from "helper/validation";
-import {
-    RawPartialUser,
-    User,
-} from "model/user";
+    listUsers,
+    schema_listUsers,
+} from "./list.shared";
 
-const schema = Validation.object({
-    channelId: Validation.string().required().messages({
-        "any.required": Language.get("validation.id.required"),
-    }),
-});
-
-module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
-    await RocketChatRequest.request(RequestMethod.GET, "/groups.members", auth, res, {
-        count: 0,
-        roomId: req.body.channelId,
-    }, (r, data) => {
-        const users: User[] = [];
-
-        for (const elt of data.members as RawPartialUser[]) {
-            users.push(User.fromPartialUser(elt, auth?.userId as string));
-        }
-
-        return APIResponse.fromSuccess({
+module.exports = APIRequest.get(schema_listUsers, true, async (req, res, auth) => {
+    await listUsers(req.query.channelId as string, auth as Authentication, (users) => {
+        APIResponse.fromSuccess({
             users,
-        });
+        }).send(res);
     }, (r, data) => {
         if (r.status === HTTPStatus.BAD_REQUEST && data.errorType === "error-room-not-found") {
-            return APIResponse.fromFailure("Not Found", HTTPStatus.NOT_FOUND);
+            APIResponse.fromFailure("Not Found", HTTPStatus.NOT_FOUND).send(res);
         } else {
-            return APIResponse.fromFailure(r.statusText, r.status);
+            APIResponse.fromFailure(r.statusText, r.status).send(res);
         }
     });
 });
