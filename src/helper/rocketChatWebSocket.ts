@@ -86,6 +86,7 @@ type ServerResponseCallback = (
 
 type ClientCallCallback = (
     data: Record<string, unknown>,
+    transmit: (data: TransmitData) => void,
 ) => void;
 
 type SubscriptionParams = string | boolean | Record<string, string | boolean | unknown[]>;
@@ -183,7 +184,7 @@ class RocketChatWebSocket {
             if (valid.error) {
                 console.debug("WebSocket client call validation error:", valid.error.message);
             } else {
-                return clientCallCallback(data);
+                return clientCallCallback(data, (obj) => this._transmitData(obj));
             }
         };
         return this;
@@ -243,7 +244,7 @@ class RocketChatWebSocket {
                 }
 
                 if (obj !== null) {
-                    this._clientCallCallback(obj);
+                    this._clientCallCallback(obj, (data) => this._transmitData(data));
                 }
             });
         });
