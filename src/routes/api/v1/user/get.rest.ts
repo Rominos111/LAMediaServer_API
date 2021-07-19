@@ -31,6 +31,10 @@ module.exports = APIRequest.get(schema, true, async (req, res, auth) => {
 
     await RocketChatRequest.request(RequestMethod.GET, "/users.info", auth, res, payload, (_r, data) => {
         void _r;
-        return APIResponse.fromSuccess(User.fromFullUser(data.user as RawFullUser, auth?.userId as string));
+        return APIResponse.fromSuccess(User.fromFullUser(
+            data.user as RawFullUser,
+            auth?.userId as string,
+            (data.user as { roles: string[] }).roles,
+        ));
     });
 });
