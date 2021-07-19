@@ -3,10 +3,7 @@
  */
 import {Serializable} from "helper/serializable";
 import {Presence} from "model/presence";
-import {
-    arrayToRole,
-    Role,
-} from "model/role";
+import {Role} from "model/role";
 
 interface RawPartialUser {
     _id: string,
@@ -106,7 +103,7 @@ class User implements Serializable {
             rawUser.username,
             rawUser.name ? rawUser.name : rawUser.username,
             rawUser._id === currentUserId,
-            roles ? arrayToRole(roles) : null,
+            roles ? Role.fromStringArray(roles) : null,
             rawUser.status as Presence,
             rawUser.statusText ? rawUser.statusText : null,
         );

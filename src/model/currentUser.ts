@@ -1,8 +1,5 @@
 import {Presence} from "model/presence";
-import {
-    arrayToRole,
-    Role,
-} from "model/role";
+import {Role} from "model/role";
 import {
     RawFullUser,
     User,
@@ -69,7 +66,7 @@ class CurrentUser extends User {
             rawUser.username,
             rawUser.name ? rawUser.name : rawUser.username,
             true,
-            arrayToRole(rawUser.roles),
+            Role.fromStringArray(rawUser.roles),
             rawUser.status as Presence,
             rawUser.statusText ? rawUser.statusText : null,
             rawUser.email,
