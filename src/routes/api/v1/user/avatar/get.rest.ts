@@ -8,7 +8,10 @@ import {
     ResponseType,
 } from "helper/APIResponse";
 import {Language} from "helper/language";
-import {HTTPStatus} from "helper/requestMethod";
+import {
+    HTTPStatus,
+    RequestMethod,
+} from "helper/requestMethod";
 import {RocketChat} from "helper/rocketChat";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
@@ -23,7 +26,7 @@ const schema = Validation.object({
 module.exports = APIRequest.get(schema, false, async (req, res) => {
     const route = RocketChat.getWebEndpoint("/avatar/" + req.body.username);
 
-    await RocketChatRequest.request("GET", route, null, res, null, (r, data) => {
+    await RocketChatRequest.request(RequestMethod.GET, route, null, res, null, (r, data) => {
         return APIResponse.fromRaw(data, HTTPStatus.OK, ResponseType.SVG);
     }, null, false);
 });

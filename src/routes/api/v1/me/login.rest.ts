@@ -6,7 +6,10 @@ import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
 import {JWT} from "helper/JWT";
 import {Language} from "helper/language";
-import {HTTPStatus} from "helper/requestMethod";
+import {
+    HTTPStatus,
+    RequestMethod,
+} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {Validation} from "helper/validation";
 import {RawFullUser} from "model/user";
@@ -24,7 +27,7 @@ interface LoginData {
 }
 
 module.exports = APIRequest.post(schema, false, async (req, res) => {
-    await RocketChatRequest.request("POST", "/login", null, res, {
+    await RocketChatRequest.request(RequestMethod.POST, "/login", null, res, {
         accessToken: req.body.accessToken,
         expiresIn: req.body.expiresIn.getTime(),
         serviceName: process.env.OAUTH_SERVICE_NAME,
@@ -33,6 +36,7 @@ module.exports = APIRequest.post(schema, false, async (req, res) => {
         const loginData = data.data as LoginData;
         const token = JWT.createToken(loginData.userId, loginData.authToken, loginData.me.username);
         return APIResponse.fromSuccess({
+            userId: loginData.userId,
             token,
         });
     }, (r, data) => {

@@ -31,6 +31,10 @@ abstract class Validation {
         return Joi.date();
     }
 
+    public static id(): Joi.StringSchema {
+        return Joi.string();
+    }
+
     public static jwt(): Joi.StringSchema {
         return Joi.string().regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/);
     }
@@ -59,7 +63,15 @@ abstract class Validation {
         return validator.query(schema);
     }
 
+    public static patch(schema: Joi.AnySchema): express.RequestHandler {
+        return validator.body(schema);
+    }
+
     public static post(schema: Joi.AnySchema): express.RequestHandler {
+        return validator.body(schema);
+    }
+
+    public static put(schema: Joi.AnySchema): express.RequestHandler {
         return validator.body(schema);
     }
 }

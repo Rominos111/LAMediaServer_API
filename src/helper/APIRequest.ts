@@ -24,6 +24,24 @@ type RequestCallback = (req: express.Request, res: express.Response, auth: Authe
  */
 class APIRequest {
     /**
+     * POST
+     * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
+     * @param callback Callback
+     * @param route Route locale, '/' par défaut
+     * @see APIRequest.get
+     */
+    public static delete(validationSchema: ObjectSchema | null = null,
+                         authenticationRequired: boolean,
+                         callback: RequestCallback,
+                         route = "/",
+    ): express.Router {
+        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
+        router.delete(route, Validation.delete(schema), expressCallback);
+        return this._after(route, router);
+    }
+
+    /**
      * GET
      * @param validationSchema Schéma de validation
      * @param authenticationRequired Authentification requise ou non
@@ -38,6 +56,24 @@ class APIRequest {
         // On récupère le "vrai" callback Express et on le set
         const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
         router.get(route, Validation.get(schema), expressCallback);
+        return this._after(route, router);
+    }
+
+    /**
+     * PATCH, remplace en partie une ressource
+     * @param validationSchema Schéma de validation
+     * @param authenticationRequired Authentification requise ou non
+     * @param callback Callback
+     * @param route Route locale, '/' par défaut
+     * @see APIRequest.get
+     */
+    public static patch(validationSchema: ObjectSchema | null = null,
+                        authenticationRequired: boolean,
+                        callback: RequestCallback,
+                        route = "/",
+    ): express.Router {
+        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
+        router.patch(route, Validation.patch(schema), expressCallback);
         return this._after(route, router);
     }
 
@@ -60,25 +96,7 @@ class APIRequest {
     }
 
     /**
-     * POST
-     * @param validationSchema Schéma de validation
-     * @param authenticationRequired Authentification requise ou non
-     * @param callback Callback
-     * @param route Route locale, '/' par défaut
-     * @see APIRequest.get
-     */
-    public static delete(validationSchema: ObjectSchema | null = null,
-                         authenticationRequired: boolean,
-                         callback: RequestCallback,
-                         route = "/",
-    ): express.Router {
-        const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
-        router.delete(route, Validation.delete(schema), expressCallback);
-        return this._after(route, router);
-    }
-
-    /**
-     * PUT
+     * PUT, remplace intégralement une ressource
      * @param validationSchema Schéma de validation
      * @param authenticationRequired Authentification requise ou non
      * @param callback Callback
@@ -91,7 +109,7 @@ class APIRequest {
                       route = "/",
     ): express.Router {
         const {expressCallback, router, schema} = this._before(validationSchema, authenticationRequired, callback);
-        router.put(route, Validation.delete(schema), expressCallback);
+        router.put(route, Validation.put(schema), expressCallback);
         return this._after(route, router);
     }
 
@@ -116,24 +134,25 @@ class APIRequest {
      */
     public static ws(validationSchema: ObjectSchema | null = null,
                      authenticationRequired: boolean,
-                     callback: (ws: WebSocket, req: express.Request) => void,
+                     callback: (ws: WebSocket, req: express.Request, auth: Authentication | null) => void,
                      route = "/",
     ): expressWs.Router {
-        // La validation n'est appelée que lors de la demande d'ouverture de la WebSocket
-        const validation = (ws: WebSocket, req: express.Request, next: express.NextFunction) => {
+        const router: expressWs.Router = express.Router();
+        router.ws(route, (ws: WebSocket, req: express.Request) => {
+            const auth = this._getAuthenticationData(req);
             let canContinue = true;
 
             let schema = this._getValidationSchema(validationSchema, authenticationRequired);
+            // La validation n'est appelée que lors de la demande d'ouverture de la WebSocket
             const valid = schema.validate(req.query);
 
             if (valid.error) {
                 // Validation échouée
-                console.debug("WebSocket validation error:", valid.error.message);
+                console.debug("WebSocket validation error:", req.baseUrl, valid.error.message);
                 canContinue = false;
             }
 
             if (canContinue && authenticationRequired) {
-                const auth = this._getAuthenticationData(req);
                 if (auth === null) {
                     console.debug("Invalid WebSocket token");
                     canContinue = false;
@@ -141,16 +160,11 @@ class APIRequest {
             }
 
             if (canContinue) {
-                next();
+                callback(ws, req, auth);
             } else {
                 // On ferme la WebSocket
                 close();
             }
-        };
-
-        const router: expressWs.Router = express.Router();
-        router.ws(route, validation, (ws: WebSocket, req: express.Request) => {
-            callback(ws, req);
         });
         router.all(route, this._methodNotAllowed);
         return router;

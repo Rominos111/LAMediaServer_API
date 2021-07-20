@@ -12,7 +12,7 @@ import * as https from "https";
 import {VideoConference} from "model/videoConference";
 
 const schema = Validation.object({
-    sessionId: Validation.string().required().messages({
+    sessionId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),
 });

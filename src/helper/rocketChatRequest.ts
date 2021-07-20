@@ -27,13 +27,19 @@ interface CustomAxiosResponse extends AxiosResponse {
  * Callback de succès
  */
 type SuccessCallback = (r: CustomAxiosResponse, data: Record<string, unknown>)
-    => APIResponse | Promise<APIResponse> | null;
+    => APIResponse | Promise<APIResponse> | null | Promise<null>;
+
+interface FailureData extends Record<string, unknown> {
+    error: string,
+    errorType: string
+    success: boolean,
+}
 
 /**
  * Callback d'échec
  */
-type FailureCallback = (r: AxiosResponse, data: { success: boolean, error: string, errorType: string })
-    => APIResponse | Promise<APIResponse> | null;
+type FailureCallback = (r: AxiosResponse, data: FailureData)
+    => APIResponse | Promise<APIResponse> | null | Promise<null>;
 
 /**
  * Requête à l'API REST de Rocket.chat
@@ -254,3 +260,4 @@ class RocketChatRequest {
 }
 
 export {RocketChatRequest};
+export type {FailureData};

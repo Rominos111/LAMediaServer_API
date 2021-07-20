@@ -4,6 +4,7 @@
 
 import {APIRequest} from "helper/APIRequest";
 import {APIResponse} from "helper/APIResponse";
+import {RequestMethod} from "helper/requestMethod";
 import {RocketChatRequest} from "helper/rocketChatRequest";
 import {
     CurrentUser,
@@ -11,7 +12,7 @@ import {
 } from "model/currentUser";
 
 module.exports = APIRequest.get(null, true, async (req, res, auth) => {
-    await RocketChatRequest.request("GET", "/me", auth, res, null, (_r, data) => {
+    await RocketChatRequest.request(RequestMethod.GET, "/me", auth, res, null, (_r, data) => {
         void _r;
         return APIResponse.fromSuccess(CurrentUser.fromFullUser(data as unknown as RawCurrentUser));
     });
