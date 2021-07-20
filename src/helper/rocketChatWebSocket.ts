@@ -71,6 +71,7 @@ type RocketChatWebSocketCallbackData = Record<string, unknown> & {
     currentUserId: string | null,
     fields: {
         args: unknown[],
+        eventName: string,
     },
     msg: RocketChatWebSocketMessage,
 };

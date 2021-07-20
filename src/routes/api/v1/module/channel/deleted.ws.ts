@@ -19,7 +19,7 @@ module.exports = APIRequest.ws(null, true, async (ws, req, auth) => {
         .onServerResponse((transmit: (data: TransmitData) => void, content: unknown, currentUserId: string | null, message) => {
             if (message.fields.args[0] === RocketChatWebSocketMessage.REMOVED) {
                 transmit({
-                    channelRoomId: (content as { _id: string })._id,
+                    channelId: (content as { _id: string })._id,
                 });
             }
         });
