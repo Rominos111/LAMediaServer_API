@@ -12,7 +12,7 @@ function sleep(ms: number): Promise<void> {
  * @param blockLength Taille d'un bloc
  * @param sep Séparateur
  */
-function randomUID(blocks = 8, blockLength = 4, sep = "-") {
+function randomUID(blocks: number = 8, blockLength: number = 4, sep: string = "-"): string {
     let uid = "";
     for (let i = 0; i < blocks; ++i) {
         for (let j = 0; j < blockLength; ++j) {
@@ -33,7 +33,7 @@ function randomUID(blocks = 8, blockLength = 4, sep = "-") {
  * Chaine aléatoire
  * @param length Taille de la chaine
  */
-function randomString(length = 16) {
+function randomString(length: number = 16): string {
     return randomUID(1, length);
 }
 

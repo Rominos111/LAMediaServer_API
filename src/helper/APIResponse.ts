@@ -16,6 +16,11 @@ enum APIRErrorType {
     ACCESS = "access",
 
     /**
+     * Erreur de token
+     */
+    AUTHENTICATION = "authentication",
+
+    /**
      * Erreur lors de la requête
      */
     REQUEST = "request",
@@ -39,6 +44,9 @@ enum ResponseType {
     SVG = "image/svg+xml",
 }
 
+/**
+ * Data complète renvoyée
+ */
 interface FullData {
     error?: {
         type: APIRErrorType,
@@ -108,6 +116,7 @@ class APIResponse {
     ): APIResponse {
         const headers = {};
         if (statusCode === HTTPStatus.UNAUTHORIZED || statusCode === HTTPStatus.FORBIDDEN) {
+            // Envoi d'un header informant de l'existence du header "WWW-Authenticate"
             headers["WWW-Authenticate"] = "Basic realm=\"Token pour LAMediaServer\", charset=\"UTF-8\"";
         }
 
@@ -127,8 +136,8 @@ class APIResponse {
      * @param message Message
      */
     public static fromSuccess(payload: Record<string, unknown> | Serializable = {},
-                              statusCode = HTTPStatus.OK,
-                              message = "OK",
+                              statusCode: HTTPStatus | number = HTTPStatus.OK,
+                              message: string = "OK",
     ): APIResponse {
         return new APIResponse({
             message,
@@ -143,7 +152,7 @@ class APIResponse {
      * @param responseType Type de réponse
      */
     public static fromRaw(rawObject: Record<string, unknown>,
-                          statusCode = HTTPStatus.OK,
+                          statusCode: HTTPStatus | number = HTTPStatus.OK,
                           responseType: ResponseType = ResponseType.JSON,
     ): APIResponse {
         return new APIResponse(rawObject, statusCode, {}, responseType);
@@ -173,6 +182,7 @@ class APIResponse {
 }
 
 export {
+    APIRErrorType,
     APIResponse,
     ResponseType,
 };

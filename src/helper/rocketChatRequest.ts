@@ -6,7 +6,7 @@ import axios, {
     AxiosRequestConfig,
     AxiosResponse,
 } from "axios";
-import {Response} from "express";
+import express, {Response} from "express";
 import {APIResponse} from "helper/APIResponse";
 import {Authentication} from "helper/authentication";
 import {
@@ -63,7 +63,7 @@ class RocketChatRequest {
                                 rawPayload: Record<string, unknown> | null = null,
                                 onSuccess: SuccessCallback | null = null,
                                 onFailure: FailureCallback | null = null,
-                                useAPIPrefix = true,
+                                useAPIPrefix: boolean = true,
     ): Promise<void> {
         let payload = rawPayload;
         if (payload === null) {
@@ -186,12 +186,29 @@ class RocketChatRequest {
             promise = requestFunction(APIRoute, headers);
         }
 
+        return this._processPromise(promise, onSuccess, onFailure, res);
+    }
+
+    /**
+     * Termine la promise bien configurée
+     * @param promise Promise
+     * @param onSuccess Callback de succès
+     * @param onFailure Callback d'échec
+     * @param res Éventuelle réponse Express
+     * @private
+     */
+    private static async _processPromise(promise: Promise<AxiosResponse>,
+                                         onSuccess: SuccessCallback,
+                                         onFailure: FailureCallback,
+                                         res: express.Response | null,
+    ): Promise<void> {
         let promiseOrRes: APIResponse | Promise<APIResponse> | null = null;
         await promise.then(async (r) => {
             if (isValidStatusCode(r.status)) {
                 // Réponse valide
 
                 if (r.data.hasOwnProperty("success") && r.data.success !== true) {
+                    // Attribut tout le temps true ou undefined ?
                     console.debug("`r.data.success` is not true. Value:", r.data.success);
                 }
 

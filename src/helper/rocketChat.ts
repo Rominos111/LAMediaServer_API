@@ -10,7 +10,7 @@ class RocketChat {
      * Récupère l'URL de l'API REST Rocket.chat à partir d'un endpoint
      * @param endpointRaw Destination de l'API REST, comme "/login"
      */
-    public static getREST_Endpoint(endpointRaw = ""): string {
+    public static getREST_Endpoint(endpointRaw: string = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
@@ -23,7 +23,7 @@ class RocketChat {
      * Récupère l'URL Web Rocket.chat à partir d'un endpoint
      * @param endpointRaw Destination Web
      */
-    public static getWebEndpoint(endpointRaw = ""): string {
+    public static getWebEndpoint(endpointRaw: string = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
@@ -48,7 +48,7 @@ class RocketChat {
      * Récupère l'URL de l'API WebSocket Rocket.chat à partir d'un endpoint
      * @param endpointRaw Destination de l'API WebSocket
      */
-    public static getWebSocketEndpoint(endpointRaw = ""): string {
+    public static getWebSocketEndpoint(endpointRaw: string = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);

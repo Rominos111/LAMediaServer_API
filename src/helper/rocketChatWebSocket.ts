@@ -3,6 +3,7 @@
  */
 
 import {Request} from "express";
+import {APIRErrorType} from "helper/APIResponse";
 import {
     JWT,
     Token,
@@ -54,6 +55,9 @@ enum RocketChatWebSocketState {
     SUBSCRIBED = 6,
 }
 
+/**
+ * Messages Rocket.chat possibles
+ */
 enum RocketChatWebSocketMessage {
     ADDED = "added",
     CHANGED = "changed",
@@ -67,6 +71,9 @@ enum RocketChatWebSocketMessage {
     UPDATED = "updated",
 }
 
+/**
+ * Data dans les callback
+ */
 type RocketChatWebSocketCallbackData = Record<string, unknown> & {
     currentUserId: string | null,
     fields: {
@@ -76,8 +83,14 @@ type RocketChatWebSocketCallbackData = Record<string, unknown> & {
     msg: RocketChatWebSocketMessage,
 };
 
+/**
+ * Data transmise
+ */
 type TransmitData = Record<string, unknown> | Serializable;
 
+/**
+ * Réponse serveur
+ */
 type ServerResponseCallback = (
     transmit: (data: TransmitData) => void,
     content: unknown,
@@ -85,6 +98,9 @@ type ServerResponseCallback = (
     data: RocketChatWebSocketCallbackData,
 ) => void;
 
+/**
+ * Requête client
+ */
 type ClientCallCallback = (
     data: Record<string, unknown>,
     transmit: (data: TransmitData) => void,
@@ -96,10 +112,22 @@ type SubscriptionParams = string | boolean | Record<string, string | boolean | u
  * Requête à l'API WebSocket de Rocket.chat
  */
 class RocketChatWebSocket {
+    /**
+     * Appel client
+     * @private
+     */
     private _clientCallCallback: ClientCallCallback;
 
+    /**
+     * Socket client
+     * @private
+     */
     private _clientSocket: WebSocket | null;
 
+    /**
+     * Buffer des requêtes, pour la période où la socket Rocket.chat n'est pas encore ouverte mais celle client si
+     * @private
+     */
     private _requestBuffer: string[];
 
     /**
@@ -144,6 +172,10 @@ class RocketChatWebSocket {
      */
     private readonly _uid: string;
 
+    /**
+     * URL de l'API
+     * @private
+     */
     private _url: string;
 
     private constructor(token: string | null) {
@@ -178,12 +210,22 @@ class RocketChatWebSocket {
         return this;
     }
 
+    /**
+     * Message provenant de la socket client
+     * @param schema Schéma de validation possible
+     * @param clientCallCallback Callback
+     */
     public onClientCall(schema: ObjectSchema | null, clientCallCallback: ClientCallCallback): RocketChatWebSocket {
         this._clientCallCallback = (data) => {
             const validationSchema: ObjectSchema = (schema === null ? Validation.object({}) : schema);
             const valid = validationSchema.validate(data);
             if (valid.error) {
-                console.debug("WebSocket client call validation error:", valid.error.message);
+                this._transmitData({
+                    error: {
+                        type: APIRErrorType.VALIDATION,
+                    },
+                    message: "Client call validation error",
+                });
             } else {
                 return clientCallCallback(data, (obj) => this._transmitData(obj));
             }
@@ -215,7 +257,13 @@ class RocketChatWebSocket {
             const jwt = this._token ? JWT.decodeToken(this._token) : null;
 
             if (jwt === null) {
-                console.debug("Wrong JWT");
+                // FIXME: Déjà pris en compte non ?
+                this._clientSocket.send({
+                    error: {
+                        type: APIRErrorType.AUTHENTICATION,
+                    },
+                    message: "Invalid token",
+                });
                 this._rocketChatSocket.close();
                 this._clientSocket.close();
                 return;
@@ -242,6 +290,14 @@ class RocketChatWebSocket {
                     obj = JSON.parse(msg as string);
                 } catch (err) {
                     console.debug("Wrong WebSocket client call type", err.message);
+                    if (this._clientSocket !== null) {
+                        this._clientSocket.send({
+                            error: {
+                                type: APIRErrorType.REQUEST,
+                            },
+                            message: "Type de message invalide",
+                        });
+                    }
                 }
 
                 if (obj !== null) {
@@ -250,6 +306,7 @@ class RocketChatWebSocket {
             });
         });
 
+        // Purge le cache des requêtes à envoyer à Rocket.chat
         this._sendRaw(null);
     }
 
@@ -312,10 +369,16 @@ class RocketChatWebSocket {
         }
     }
 
-    private _processMessageSubscription(message: RocketChatWebSocketCallbackData) {
+    /**
+     * Retour d'un message issu d'un abonnement
+     * @param message Message reçu
+     * @private
+     */
+    private _processMessageSubscription(message: RocketChatWebSocketCallbackData): void {
         if (!message.hasOwnProperty("msg") || message.msg === RocketChatWebSocketMessage.ERROR) {
             console.warn("WebSocket client error:", message.reason);
-        } else if (message.msg === RocketChatWebSocketMessage.CHANGED && message.collection === this._subscribeRequestName) {
+        } else if (message.msg === RocketChatWebSocketMessage.CHANGED
+            && message.collection === this._subscribeRequestName) {
             for (const content of message.fields.args) {
                 if (typeof content === "object") {
                     this._serverResponseCallback(
@@ -329,7 +392,12 @@ class RocketChatWebSocket {
         }
     }
 
-    private _processMessageMethodCall(message: RocketChatWebSocketCallbackData) {
+    /**
+     * Retour d'un message issu d'un appel realtime (équivalent WebSocket d'un appel REST)
+     * @param message Message reçu
+     * @private
+     */
+    private _processMessageMethodCall(message: RocketChatWebSocketCallbackData): void {
         if (!message.hasOwnProperty("msg") || message.msg === RocketChatWebSocketMessage.ERROR) {
             console.warn("WebSocket client error:", message.reason);
         } else if (message.hasOwnProperty("result")
@@ -380,7 +448,8 @@ class RocketChatWebSocket {
             if (this._state === RocketChatWebSocketState.OPEN && message.hasOwnProperty("server_id")) {
                 // Socket ouverte et reliée à Rocket.chat
                 this._state = RocketChatWebSocketState.LINKED;
-            } else if (this._state === RocketChatWebSocketState.LINKED && message.msg === RocketChatWebSocketMessage.CONNECTED) {
+            } else if (this._state === RocketChatWebSocketState.LINKED
+                && message.msg === RocketChatWebSocketMessage.CONNECTED) {
                 // Socket reliée à Rocket.chat et connectée
                 this._state = RocketChatWebSocketState.CONNECTED;
                 resolveOpenSocket();
@@ -390,7 +459,8 @@ class RocketChatWebSocket {
                         this._processMessageMethodCall(message);
                     }
                 } else {
-                    if (this._state !== RocketChatWebSocketState.SUBSCRIBED && message.msg === RocketChatWebSocketMessage.READY) {
+                    if (this._state !== RocketChatWebSocketState.SUBSCRIBED
+                        && message.msg === RocketChatWebSocketMessage.READY) {
                         // Socket venant de s'abonner
                         this._state = RocketChatWebSocketState.SUBSCRIBED;
                     } else if (this._state === RocketChatWebSocketState.SUBSCRIBED) {

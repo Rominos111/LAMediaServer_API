@@ -9,7 +9,7 @@ import {RequestOptions} from "https";
  * Informations relatives à OpenVidu
  */
 abstract class OpenVidu {
-    public static getWebEndpoint(endpointRaw = ""): string {
+    public static getWebEndpoint(endpointRaw: string = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
@@ -30,7 +30,7 @@ abstract class OpenVidu {
         return resEndpoint;
     }
 
-    public static getWebSocketEndpoint(endpointRaw = ""): string {
+    public static getWebSocketEndpoint(endpointRaw: string = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
