@@ -20,15 +20,24 @@ interface ClientData {
 
 module.exports = APIRequest.ws((clientWebSocket, auth, rcws) => {
     clientWebSocket.addEventListener("message", (evt) => {
-        console.log(evt.data);
-        const data = evt.data as ClientData;
+        let data: ClientData;
 
-        if (!evt.data.hasOwnProperty("event")) {
+        if (typeof evt.data === "string") {
+            data = JSON.parse(evt.data);
+        } else {
+            data = evt.data as ClientData;
+        }
+
+        if (!data.hasOwnProperty("event")) {
             return;
         }
 
-        if (Object.values(WebSocketServerEvent).includes(evt.data.event)) {
-            const file: ImportData = require(`./${evt.data.event}.ws.ts`);
+        if (!data.hasOwnProperty("args") || data.args === null) {
+            data.args = {};
+        }
+
+        if (Object.values(WebSocketServerEvent).includes(data.event as WebSocketServerEvent)) {
+            const file: ImportData = require(`./${data.event}.ws.ts`);
             let ok: boolean;
 
             if (file.schema === null) {
