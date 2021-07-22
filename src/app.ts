@@ -114,12 +114,7 @@ const routesPath = path.join(__dirname, routesPathRelative);
 const importedRoutes: { path: string, route: string }[] = [];
 
 walk.filesSync(routesPath, (basedir: string, rawFilename: string) => {
-    let filename = rawFilename;
-    if (/^index\.[tj]s$/i.test(filename)) {
-        filename = "";
-    }
-
-    filename = filename.replace(/\.[jt]s$/i, "");
+    let filename = rawFilename.replace(/\.[jt]s$/i, "");
 
     if (!/^(.+)\.(rest|shared|ws)/i.test(filename)) {
         console.warn("Extension de fichier interdite lors du chargement des routes:", rawFilename);
@@ -130,7 +125,13 @@ walk.filesSync(routesPath, (basedir: string, rawFilename: string) => {
     }
 
     let endpoint = filename.replace(/^(.+)\.(rest|ws)?$/i, "$1");
+
+    if (/^index$/i.test(endpoint)) {
+        endpoint = "";
+    }
+
     const route = "/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
+
     importedRoutes.push({
         path: path.join(basedir, filename),
         route,
