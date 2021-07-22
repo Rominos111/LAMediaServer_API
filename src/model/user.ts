@@ -1,59 +1,72 @@
 /**
- * Statut de connexion
- */
-enum UserStatus {
-    AWAY = "away",
-    BUSY = "busy",
-    OFFLINE = "offline",
-    ONLINE = "online",
-    UNKNOWN = "unknown",
-}
-
-/**
  * Utilisateur
  */
-class User {
+import {Serializable} from "helper/serializable";
+import {Presence} from "model/presence";
+import {Role} from "model/role";
+
+interface RawPartialUser {
+    _id: string,
+    username: string,
+    name?: string,
+}
+
+interface RawFullUser extends RawPartialUser {
+    status: string | Presence,
+    statusText?: string,
+    type: string, // `user` ou `bot` ?
+}
+
+class User implements Serializable {
     /**
      * ID
-     * @private
+     * @protected
      */
-    private readonly _id: string;
+    protected readonly _id: string;
 
     /**
      * Utilisateur courant ou non
-     * @private
+     * @protected
      */
-    private readonly _isMe: boolean;
+    protected readonly _isMe: boolean;
 
     /**
      * Nom complet
-     * @private
+     * @protected
      */
-    private readonly _name: string;
+    protected readonly _name: string;
+
+    protected readonly _roles: Role[] | null;
 
     /**
      * Statut
-     * @private
+     * @protected
      */
-    private readonly _status: UserStatus | undefined;
+    protected readonly _status: Presence;
+
+    protected readonly _statusMessage: string | null;
 
     /**
      * Nom d'utilisateur
-     * @private
+     * @protected
      */
-    private readonly _username: string;
+    protected readonly _username: string;
 
-    private constructor(id: string,
-                        username: string,
-                        name: string,
-                        isMe: boolean,
-                        status: UserStatus | undefined = undefined,
+    protected constructor(id: string,
+                          username: string,
+                          name: string,
+                          isMe: boolean,
+                          roles: Role[] | null,
+                          status: Presence,
+                          statusMessage: string | null,
     ) {
         this._id = id;
         this._username = username;
         this._name = name;
         this._isMe = isMe;
+        this._roles = roles;
         this._status = status;
+        this._statusMessage = statusMessage;
     }
 
     public get id(): string {
@@ -68,29 +81,44 @@ class User {
         return this._name;
     }
 
-    public get status(): UserStatus | undefined {
+    public get roles(): Role[] | null {
+        return this._roles;
+    }
+
+    public get status(): Presence {
         return this._status;
+    }
+
+    public get statusMessage(): string | null {
+        return this._statusMessage;
     }
 
     public get username(): string {
         return this._username;
     }
 
-    public static fromFullUser(id: string,
-                               username: string,
-                               name: string,
-                               isMe: boolean,
-                               status: string | UserStatus,
-    ): User {
-        return new this(id, username, name, isMe, status as UserStatus);
+    public static fromFullUser(rawUser: RawFullUser, currentUserId: string, roles?: string[]): User {
+        return new this(
+            rawUser._id,
+            rawUser.username,
+            rawUser.name ? rawUser.name : rawUser.username,
+            rawUser._id === currentUserId,
+            roles ? Role.fromStringArray(roles) : null,
+            rawUser.status as Presence,
+            rawUser.statusText ? rawUser.statusText : null,
+        );
     }
 
-    public static fromPartialUser(id: string, username: string, name: string | undefined, isMe: boolean): User {
-        if (name === undefined) {
-            return new this(id, username, username, isMe);
-        } else {
-            return new this(id, username, name, isMe);
-        }
+    public static fromPartialUser(rawUser: RawPartialUser, currentUserId: string): User {
+        return new this(
+            rawUser._id,
+            rawUser.username,
+            rawUser.name ? rawUser.name : rawUser.username,
+            rawUser._id === currentUserId,
+            null,
+            Presence.UNKNOWN,
+            null,
+        );
     }
 
     /**
@@ -101,13 +129,16 @@ class User {
             id: this.id,
             isMe: this.isMe,
             name: this.name,
+            roles: this.roles,
             status: this.status,
+            statusMessage: this.statusMessage,
             username: this.username,
         };
     }
 }
 
-export {
-    User,
-    UserStatus,
+export {User};
+export type {
+    RawFullUser,
+    RawPartialUser,
 };

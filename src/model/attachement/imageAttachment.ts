@@ -3,7 +3,7 @@ import {
     AttachmentType,
 } from ".";
 
-interface ImageAttachmentSpecs {
+interface RawImageAttachment {
     author_icon: string,
     image_url: string,
 }
@@ -48,4 +48,4 @@ class ImageAttachment extends Attachment {
 }
 
 export {ImageAttachment};
-export type {ImageAttachmentSpecs};
+export type {RawImageAttachment};

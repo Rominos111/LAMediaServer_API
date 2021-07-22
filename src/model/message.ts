@@ -1,39 +1,42 @@
+import {Serializable} from "helper/serializable";
 import {Attachment} from "model/attachement";
-import {FileAttachmentSpecs} from "model/attachement/fileAttachment";
-import {ImageAttachmentSpecs} from "model/attachement/imageAttachment";
-import {Reaction} from "model/reaction";
-import {User} from "model/user";
+import {RawFileAttachment} from "model/attachement/fileAttachment";
+import {RawImageAttachment} from "model/attachement/imageAttachment";
+import {
+    RawReaction,
+    Reaction,
+} from "model/reaction";
+import {
+    RawPartialUser,
+    User,
+} from "model/user";
 
-interface PartialMessageSpecs {
+interface RawPartialMessage {
     _id: string,
     msg: string,
-    u: {
-        _id: string,
-        username: string,
-        name: string | undefined,
-    },
+    u: RawPartialUser,
 }
 
 /**
  * Message raw
  */
-interface RawMessage extends PartialMessageSpecs {
+interface RawFullMessage extends RawPartialMessage {
     md: unknown, // TODO: gérer ce `md` ?
     rid: string,
     ts: Date | string | number,
-    attachments: (ImageAttachmentSpecs | FileAttachmentSpecs)[] | undefined,
-    reactions: Record<string, unknown>[] | undefined,
+    attachments?: (RawImageAttachment | RawFileAttachment)[],
+    reactions?: RawReaction[],
 }
 
 /**
  * Message
  */
-class Message {
+class Message implements Serializable {
     /**
      * Liste des pièces jointes
      * @private
      */
-    private readonly _attachments: Attachment[] | undefined;
+    private readonly _attachments: Attachment[] | null;
 
     /**
      * Contenu
@@ -57,27 +60,27 @@ class Message {
      * Liste des réactions
      * @private
      */
-    private readonly _reactions: Reaction[] | undefined;
+    private readonly _reactions: Reaction[] | null;
 
     /**
      * ID de la salle
      * @private
      */
-    private readonly _roomId: string | undefined;
+    private readonly _roomId: string | null;
 
     /**
      * Timestamp
      * @private
      */
-    private readonly _timestamp: Date | undefined;
+    private readonly _timestamp: Date | null;
 
     private constructor(id: string,
                         content: string,
                         parentUser: User,
-                        roomId: string | undefined,
-                        timestamp: Date | undefined,
-                        attachments: Attachment[] | undefined,
-                        reactions: Reaction[] | undefined,
+                        roomId: string | null,
+                        timestamp: Date | null,
+                        attachments: Attachment[] | null,
+                        reactions: Reaction[] | null,
     ) {
         this._id = id;
         this._content = content;
@@ -88,7 +91,7 @@ class Message {
         this._reactions = reactions;
     }
 
-    public get attachments(): Attachment[] | undefined {
+    public get attachments(): Attachment[] | null {
         return this._attachments;
     }
 
@@ -104,15 +107,15 @@ class Message {
         return this._parentUser;
     }
 
-    public get reactions(): Reaction[] | undefined {
+    public get reactions(): Reaction[] | null {
         return this._reactions;
     }
 
-    public get roomId(): string | undefined {
+    public get roomId(): string | null {
         return this._roomId;
     }
 
-    public get timestamp(): Date | undefined {
+    public get timestamp(): Date | null {
         return this._timestamp;
     }
 
@@ -121,49 +124,16 @@ class Message {
      * @param rawMessage Message
      * @param currentUserID ID de l'utilisateur courant, pour savoir si ce message vient de l'utilisateur connecté
      */
-    public static fromFullMessage(rawMessage: RawMessage, currentUserID: string): Message {
+    public static fromFullMessage(rawMessage: RawFullMessage, currentUserID: string): Message {
         return new this(
             rawMessage._id,
             rawMessage.msg,
-            User.fromPartialUser(
-                rawMessage.u._id,
-                rawMessage.u.username,
-                rawMessage.u.name,
-                rawMessage.u._id === currentUserID,
-            ),
+            User.fromPartialUser(rawMessage.u, currentUserID),
             rawMessage.rid,
             new Date(rawMessage.ts),
-            Attachment.fromArray(rawMessage.attachments),
-            Reaction.fromObject(rawMessage.reactions),
+            rawMessage.attachments ? Attachment.fromArray(rawMessage.attachments) : null,
+            rawMessage.reactions ? Reaction.fromArray(rawMessage.reactions) : null,
         );
-    }
-
-    /**
-     * Depuis un message partiel
-     * @param rawMessage Message
-     * @param userID ID de l'utilisateur courant
-     */
-    public static fromPartialMessage(rawMessage: PartialMessageSpecs | undefined, userID: string): Message | undefined {
-        if (rawMessage === undefined || rawMessage.hasOwnProperty("msg")) {
-            // FIXME: Gérer les cas où le dernier message est une réaction
-            return undefined;
-        } else {
-            const partialMessage = rawMessage as PartialMessageSpecs;
-            return new this(
-                partialMessage._id,
-                partialMessage.msg,
-                User.fromPartialUser(
-                    partialMessage.u._id,
-                    partialMessage.u.username,
-                    partialMessage.u.name,
-                    partialMessage.u._id === userID,
-                ),
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-            );
-        }
     }
 
     public toJSON(): Record<string, unknown> {
@@ -180,4 +150,4 @@ class Message {
 }
 
 export {Message};
-export type {RawMessage};
+export type {RawFullMessage};

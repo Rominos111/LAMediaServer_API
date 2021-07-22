@@ -7,8 +7,9 @@ import expressWs from "express-ws";
 import walk from "fs-walk";
 import {APIResponse} from "helper/APIResponse";
 import {envConfig} from "helper/envConfig";
+import {HTTPStatus} from "helper/requestMethod";
 import createError from "http-errors";
-import logger from "morgan";
+import morgan from "morgan";
 import path from "path";
 
 const expressWsInstance = expressWs(express());
@@ -21,7 +22,8 @@ envConfig.config();
 //======================================================================================================================
 
 // Proxy renversé
-if (process.env.REVERSE_PROXY !== undefined && ["1", "true"].includes(process.env.REVERSE_PROXY.toLowerCase())) {
+if (process.env.hasOwnProperty("REVERSE_PROXY")
+    && ["1", "true"].includes((process.env.REVERSE_PROXY as string).toLowerCase())) {
     app.enable("trust proxy");
 }
 
@@ -43,10 +45,10 @@ app.use(cors(corsOptions));
 
 // Logs
 if (process.env.RELEASE_ENVIRONMENT === "dev") {
-    app.use(logger("dev"));
+    app.use(morgan("dev"));
 } else {
     console.debug = () => void null;
-    app.use(logger("short"));
+    app.use(morgan("short"));
 }
 
 // Requêtes en JSON
@@ -69,7 +71,7 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
         max: RATE_LIMIT_MAX_REQUESTS + (RATE_LIMIT_MAX_DELAY / RATE_LIMIT_DELAY_INCREMENT),
         message: JSON.stringify(
             APIResponse
-                .fromFailure("Too many requests, please try again later.", 429, null, "access")
+                .fromFailure("Too many requests, try again later.", HTTPStatus.TOO_MANY_REQUESTS, {}, "access")
                 .getRaw(),
         ),
         windowMs: RATE_LIMIT_WINDOW,
@@ -91,29 +93,6 @@ if (process.env.RELEASE_ENVIRONMENT !== "dev") {
 // Configuration des routes
 //======================================================================================================================
 
-const routesPathRelative = "routes";
-const routesPath = path.join(__dirname, routesPathRelative);
-
-const importedRoutes: { path: string, route: string }[] = [];
-
-walk.filesSync(routesPath, (basedir, rawFilename) => {
-    let filename = rawFilename;
-    if (/^index\.[tj]s$/.test(filename)) {
-        filename = "";
-    }
-
-    filename = filename.replace(/\.[jt]s$/, "");
-    const route = "/" + path.relative(routesPath, path.join(basedir, filename)).replace(/\\/g, "/");
-    importedRoutes.push({
-        path: path.join(basedir, filename),
-        route,
-    });
-}, (err) => {
-    if (err) {
-        console.error(err);
-    }
-});
-
 app.use((req, _res, next) => {
     // HACK: Très peu orthodoxe de remplacer `req.query` et `req.body`
     void _res;
@@ -129,6 +108,40 @@ app.use((req, _res, next) => {
     next();
 });
 
+const routesPathRelative = "routes";
+const routesPath = path.join(__dirname, routesPathRelative);
+
+const importedRoutes: { path: string, route: string }[] = [];
+
+walk.filesSync(routesPath, (basedir: string, rawFilename: string) => {
+    let filename = rawFilename.replace(/\.[jt]s$/i, "");
+
+    if (!/^(.+)\.(rest|shared|ws)/i.test(filename)) {
+        console.warn("Extension de fichier interdite lors du chargement des routes:", rawFilename);
+    }
+
+    if (/^.+\.shared$/i.test(filename)) {
+        return;
+    }
+
+    let endpoint = filename.replace(/^(.+)\.(rest|ws)?$/i, "$1");
+
+    if (/^index$/i.test(endpoint)) {
+        endpoint = "";
+    }
+
+    const route = "/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
+
+    importedRoutes.push({
+        path: path.join(basedir, filename),
+        route,
+    });
+}, (err) => {
+    if (err) {
+        console.error("File import error:", err);
+    }
+});
+
 for (const importedRoute of importedRoutes) {
     app.use(importedRoute.route, require(importedRoute.path));
 }
@@ -137,7 +150,7 @@ for (const importedRoute of importedRoutes) {
 app.use((_req, _res, next) => {
     void _req;
     void _res;
-    next(createError(404));
+    next(createError(HTTPStatus.NOT_FOUND));
 });
 
 // Gestion des erreurs
@@ -152,7 +165,7 @@ app.use((err, _req, res, _next) => {
 
     if (err.message) {
         // Erreur express, comme un 404, ou erreur plus générale
-        response = APIResponse.fromFailure(err.message, err.statusCode || 500, null, "access");
+        response = APIResponse.fromFailure(err.message, err.statusCode || HTTPStatus.INTERNAL_SERVER_ERROR, {}, "access");
     } else if (err.error) {
         // Erreur de validation JOI
         let error: { message: string, key: string } = {
@@ -163,15 +176,15 @@ app.use((err, _req, res, _next) => {
         for (const validationError of err.error.details) {
             console.debug("Validation error. type:", validationError.type, "key:", validationError.context.key);
             error = {
-                key: validationError.context.key,  // TODO: Gérer le champ erroné ?
+                key: validationError.context.key,
                 message: validationError.message,
             };
         }
 
-        response = APIResponse.fromFailure(error.message, 400, null, "validation");
+        response = APIResponse.fromFailure(error.message, HTTPStatus.BAD_REQUEST, {}, "validation");
     } else {
-        console.debug(err);
-        response = APIResponse.fromFailure("?", 500, null, "unknown");
+        console.error("Unknown Express error", err);
+        response = APIResponse.fromFailure("?", HTTPStatus.INTERNAL_SERVER_ERROR, {}, "unknown");
     }
 
     response.send(res);

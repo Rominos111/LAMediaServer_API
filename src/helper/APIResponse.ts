@@ -1,4 +1,10 @@
+/**
+ * Réponse API générique
+ */
+
 import {Response} from "express";
+import {HTTPStatus} from "helper/requestMethod";
+import {Serializable} from "helper/serializable";
 
 /**
  * Type d'erreur
@@ -8,6 +14,11 @@ enum APIRErrorType {
      * Erreur lors de l'accès à la route, comme un 404 ou un 405
      */
     ACCESS = "access",
+
+    /**
+     * Erreur de token
+     */
+    AUTHENTICATION = "authentication",
 
     /**
      * Erreur lors de la requête
@@ -34,6 +45,17 @@ enum ResponseType {
 }
 
 /**
+ * Data complète renvoyée
+ */
+interface FullData {
+    error?: {
+        type: APIRErrorType,
+    },
+    message: string,
+    payload: Record<string, unknown> | Serializable,
+}
+
+/**
  * Réponse API générique
  */
 class APIResponse {
@@ -41,7 +63,7 @@ class APIResponse {
      * Data
      * @private
      */
-    private readonly _data: Record<string, unknown>;
+    private readonly _data: FullData | Record<string, unknown>;
 
     /**
      * headers supplémentaires
@@ -69,8 +91,8 @@ class APIResponse {
      * @param responseType Type de réponse (JSON, SVG...)
      * @private
      */
-    private constructor(data: Record<string, unknown> = {},
-                        statusCode = 200,
+    private constructor(data: FullData | Record<string, unknown>,
+                        statusCode: HTTPStatus = HTTPStatus.OK,
                         headers: Record<string, string> = {},
                         responseType: ResponseType = ResponseType.JSON,
     ) {
@@ -87,13 +109,14 @@ class APIResponse {
      * @param payload Payload
      * @param errorType Type d'erreur
      */
-    public static fromFailure(errorMessage,
-                              statusCode,
-                              payload: object | object[] | null = null,
+    public static fromFailure(errorMessage: string,
+                              statusCode: HTTPStatus | number,
+                              payload: Record<string, unknown> = {},
                               errorType: APIRErrorType | string = "request",
     ): APIResponse {
         const headers = {};
-        if (statusCode === 401 || statusCode === 403) {
+        if (statusCode === HTTPStatus.UNAUTHORIZED || statusCode === HTTPStatus.FORBIDDEN) {
+            // Envoi d'un header informant de l'existence du header "WWW-Authenticate"
             headers["WWW-Authenticate"] = "Basic realm=\"Token pour LAMediaServer\", charset=\"UTF-8\"";
         }
 
@@ -112,9 +135,9 @@ class APIResponse {
      * @param statusCode Code d'erreur
      * @param message Message
      */
-    public static fromSuccess(payload: object | object[] | null = null,
-                              statusCode = 200,
-                              message = "OK",
+    public static fromSuccess(payload: Record<string, unknown> | Serializable = {},
+                              statusCode: HTTPStatus | number = HTTPStatus.OK,
+                              message: string = "OK",
     ): APIResponse {
         return new APIResponse({
             message,
@@ -129,7 +152,7 @@ class APIResponse {
      * @param responseType Type de réponse
      */
     public static fromRaw(rawObject: Record<string, unknown>,
-                          statusCode = 200,
+                          statusCode: HTTPStatus | number = HTTPStatus.OK,
                           responseType: ResponseType = ResponseType.JSON,
     ): APIResponse {
         return new APIResponse(rawObject, statusCode, {}, responseType);
@@ -153,12 +176,13 @@ class APIResponse {
     /**
      * Data raw
      */
-    public getRaw(): Record<string, unknown> {
+    public getRaw(): FullData | Record<string, unknown> {
         return this._data;
     }
 }
 
 export {
+    APIRErrorType,
     APIResponse,
     ResponseType,
 };

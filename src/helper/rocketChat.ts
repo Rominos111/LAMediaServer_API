@@ -1,12 +1,16 @@
 /**
  * Informations relatives à Rocket.chat
  */
+
+/**
+ * Informations relatives à Rocket.chat
+ */
 class RocketChat {
     /**
-     * Récupère l'URL Rocket.chat à partir d'un endpoint
-     * @param endpointRaw Destination de l'API, comme "/login"
+     * Récupère l'URL de l'API REST Rocket.chat à partir d'un endpoint
+     * @param endpointRaw Destination de l'API REST, comme "/login"
      */
-    public static getREST_Endpoint(endpointRaw = ""): string {
+    public static getREST_Endpoint(endpointRaw: string = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
@@ -15,7 +19,11 @@ class RocketChat {
         return this.getWebEndpoint(`/api/v1/${endpoint}`);
     }
 
-    public static getWebEndpoint(endpointRaw = ""): string {
+    /**
+     * Récupère l'URL Web Rocket.chat à partir d'un endpoint
+     * @param endpointRaw Destination Web
+     */
+    public static getWebEndpoint(endpointRaw: string = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
@@ -36,7 +44,11 @@ class RocketChat {
         return resEndpoint;
     }
 
-    public static getWebSocketEndpoint(endpointRaw = ""): string {
+    /**
+     * Récupère l'URL de l'API WebSocket Rocket.chat à partir d'un endpoint
+     * @param endpointRaw Destination de l'API WebSocket
+     */
+    public static getWebSocketEndpoint(endpointRaw: string = ""): string {
         let endpoint = endpointRaw;
         if (endpoint.startsWith("/")) {
             endpoint = endpoint.substr(1);
@@ -54,6 +66,4 @@ class RocketChat {
     }
 }
 
-export {
-    RocketChat,
-};
+export {RocketChat};

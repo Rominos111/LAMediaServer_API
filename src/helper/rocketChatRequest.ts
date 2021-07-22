@@ -1,11 +1,16 @@
+/**
+ * Requête à l'API REST de Rocket.chat
+ */
+
 import axios, {
     AxiosRequestConfig,
     AxiosResponse,
 } from "axios";
-import {Response} from "express";
+import express, {Response} from "express";
 import {APIResponse} from "helper/APIResponse";
 import {Authentication} from "helper/authentication";
 import {
+    HTTPStatus,
     isValidStatusCode,
     RequestMethod,
 } from "helper/requestMethod";
@@ -21,15 +26,23 @@ interface CustomAxiosResponse extends AxiosResponse {
 /**
  * Callback de succès
  */
-type SuccessCallback = (r: CustomAxiosResponse, data: any) => APIResponse | Promise<APIResponse> | null;
+type SuccessCallback = (r: CustomAxiosResponse, data: Record<string, unknown>)
+    => APIResponse | Promise<APIResponse> | null | Promise<null>;
+
+interface FailureData extends Record<string, unknown> {
+    error: string,
+    errorType: string
+    success: boolean,
+}
 
 /**
  * Callback d'échec
  */
-type FailureCallback = (r: AxiosResponse, data: any) => APIResponse | Promise<APIResponse> | null;
+type FailureCallback = (r: AxiosResponse, data: FailureData)
+    => APIResponse | Promise<APIResponse> | null | Promise<null>;
 
 /**
- * Requête à l'API de Rocket.chat
+ * Requête à l'API REST de Rocket.chat
  */
 class RocketChatRequest {
     /**
@@ -50,7 +63,7 @@ class RocketChatRequest {
                                 rawPayload: Record<string, unknown> | null = null,
                                 onSuccess: SuccessCallback | null = null,
                                 onFailure: FailureCallback | null = null,
-                                useAPIPrefix = true,
+                                useAPIPrefix: boolean = true,
     ): Promise<void> {
         let payload = rawPayload;
         if (payload === null) {
@@ -139,22 +152,28 @@ class RocketChatRequest {
         // Récupère la fonction Express à utiliser
         const {requestFunction, usePayload} = this._getMethodFunction(HTTPMethod);
 
-        let onSuccess = onSuccessCallback;
-        if (onSuccess === null) {
+        let onSuccess: SuccessCallback;
+        if (onSuccessCallback === null) {
             // Fonction de succès par défaut
-            onSuccess = (r, data) => {
-                console.debug(data);
-                return APIResponse.fromSuccess(null, r.status);
+            onSuccess = (r) => {
+                return APIResponse.fromSuccess({}, r.status);
             };
+        } else {
+            onSuccess = onSuccessCallback;
         }
 
-        let onFailure = onFailureCallback;
-        if (onFailure === null) {
+        let onFailure: FailureCallback;
+        if (onFailureCallback === null) {
             // Fonction d'échec par défaut
             onFailure = (r, data) => {
-                console.debug(data);
-                return APIResponse.fromFailure(r.statusText, r.status);
+                let text = r.statusText;
+                if (data.hasOwnProperty("error")) {
+                    text = data.error as string;
+                }
+                return APIResponse.fromFailure(text, r.status);
             };
+        } else {
+            onFailure = onFailureCallback;
         }
 
         const APIRoute = useAPIPrefix ? RocketChat.getREST_Endpoint(route) : route;
@@ -167,18 +186,35 @@ class RocketChatRequest {
             promise = requestFunction(APIRoute, headers);
         }
 
+        return this._processPromise(promise, onSuccess, onFailure, res);
+    }
+
+    /**
+     * Termine la promise bien configurée
+     * @param promise Promise
+     * @param onSuccess Callback de succès
+     * @param onFailure Callback d'échec
+     * @param res Éventuelle réponse Express
+     * @private
+     */
+    private static async _processPromise(promise: Promise<AxiosResponse>,
+                                         onSuccess: SuccessCallback,
+                                         onFailure: FailureCallback,
+                                         res: express.Response | null,
+    ): Promise<void> {
         let promiseOrRes: APIResponse | Promise<APIResponse> | null = null;
         await promise.then(async (r) => {
             if (isValidStatusCode(r.status)) {
                 // Réponse valide
 
-                if (r.data.success !== true && r.data.success !== undefined) {
+                if (r.data.hasOwnProperty("success") && r.data.success !== true) {
+                    // Attribut tout le temps true ou undefined ?
                     console.debug("`r.data.success` is not true. Value:", r.data.success);
                 }
 
                 // ID de l'utilisateur, si présent
                 let uid: string | null = null;
-                if (r.config.headers["X-User-Id"] !== undefined) {
+                if (r.config.headers.hasOwnProperty("X-User-Id")) {
                     uid = r.config.headers["X-User-Id"];
                 }
 
@@ -197,17 +233,16 @@ class RocketChatRequest {
             if (err.code === "ECONNREFUSED") {
                 // Rocket.chat n'est pas lancé
                 console.error("Connection refusée avec Rocket.chat");
-                promiseOrRes = APIResponse.fromFailure("Connection refused", 500);
+                promiseOrRes = APIResponse.fromFailure("Connection refused", HTTPStatus.INTERNAL_SERVER_ERROR);
             } else if (err.code === "ECONNRESET") {
-                // FIXME: Utile ou non ?
                 console.info("Socket hang up");
                 promiseOrRes = null;
             } else if (err.response) {
                 promiseOrRes = (onFailure as Function)(err.response, err.response.data);
             } else {
                 // Erreur inconnue
-                console.debug(err);
-                promiseOrRes = APIResponse.fromFailure("Unknown error", 500);
+                console.warn("Error with Rocket.chat REST API", err);
+                promiseOrRes = APIResponse.fromFailure("Unknown error", HTTPStatus.INTERNAL_SERVER_ERROR);
             }
         });
 
@@ -241,6 +276,5 @@ class RocketChatRequest {
     }
 }
 
-export {
-    RocketChatRequest,
-};
+export {RocketChatRequest};
+export type {FailureData};

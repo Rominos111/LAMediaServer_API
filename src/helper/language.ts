@@ -1,3 +1,7 @@
+/**
+ * Gestion des langues pour les réponses de l'API
+ */
+
 import fs from "fs";
 
 /**
@@ -24,7 +28,7 @@ abstract class Language {
      * @param key Clé, comme "validation.login.password.required"
      * @param replacementArray Remplacements, remplace tous les "%%" par les valeurs de ce tableau
      */
-    public static get(key: string, ...replacementArray: any[]): string {
+    public static get(key: string, ...replacementArray: unknown[]): string {
         const keyParts = key.split(".");
         let value: Record<string, string> | string | undefined = this._lang;
         for (const keyPart of keyParts) {

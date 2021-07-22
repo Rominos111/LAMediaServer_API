@@ -1,3 +1,7 @@
+/**
+ * Validation des entrées
+ */
+
 import express from "express";
 
 import JoiValidator, {ExpressJoiInstance} from "express-joi-validation";
@@ -25,6 +29,10 @@ abstract class Validation {
 
     public static date(): Joi.DateSchema {
         return Joi.date();
+    }
+
+    public static id(): Joi.StringSchema {
+        return Joi.string();
     }
 
     public static jwt(): Joi.StringSchema {
@@ -55,7 +63,15 @@ abstract class Validation {
         return validator.query(schema);
     }
 
+    public static patch(schema: Joi.AnySchema): express.RequestHandler {
+        return validator.body(schema);
+    }
+
     public static post(schema: Joi.AnySchema): express.RequestHandler {
+        return validator.body(schema);
+    }
+
+    public static put(schema: Joi.AnySchema): express.RequestHandler {
         return validator.body(schema);
     }
 }

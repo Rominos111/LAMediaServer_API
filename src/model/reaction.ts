@@ -1,7 +1,15 @@
+import {Serializable} from "helper/serializable";
+
+interface RawReaction {
+    [reaction: string]: {
+        usernames: string[],
+    },
+}
+
 /**
  * Réaction
  */
-class Reaction {
+class Reaction implements Serializable {
     /**
      * Réaction
      * @private
@@ -27,18 +35,14 @@ class Reaction {
         return this._usernames;
     }
 
-    public static fromObject(obj: Record<string, unknown>[] | undefined): Reaction[] | undefined {
-        if (obj === undefined) {
-            return undefined;
-        } else {
-            const reactions: Reaction[] = [];
+    public static fromArray(obj: RawReaction[]): Reaction[] {
+        const reactions: Reaction[] = [];
 
-            for (const reaction of Object.keys(obj)) {
-                reactions.push(new Reaction(reaction, obj[reaction].usernames));
-            }
-
-            return reactions;
+        for (const reaction of Object.keys(obj)) {
+            reactions.push(new Reaction(reaction, obj[reaction].usernames));
         }
+
+        return reactions;
     }
 
     public toJSON(): Record<string, unknown> {
@@ -50,3 +54,4 @@ class Reaction {
 }
 
 export {Reaction};
+export type {RawReaction};

@@ -1,3 +1,4 @@
+import {Serializable} from "helper/serializable";
 import {
     RawVideoConferenceConnection,
     VideoConferenceConnection,
@@ -23,7 +24,7 @@ interface RawVideoConference {
     recording: boolean,
 }
 
-class VideoConference {
+class VideoConference implements Serializable {
     private readonly _connections: VideoConferenceConnection[];
     private readonly _createdAt: Date;
     private readonly _frameRate: number;

@@ -1,3 +1,7 @@
+/**
+ * Gestion du token de l'API
+ */
+
 import {
     createCipheriv,
     createDecipheriv,
@@ -46,7 +50,6 @@ abstract class JWT {
             issuer: `${process.env.SERVER_PROTOCOL}://${process.env.SERVER_ADDRESS}:${process.env.SERVER_PORT}`,
             subject: username,
         });
-        // TODO: Champ `aud` ?
     }
 
     /**
@@ -104,3 +107,4 @@ abstract class JWT {
 }
 
 export {JWT};
+export type {Token};
