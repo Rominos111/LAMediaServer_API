@@ -32,6 +32,8 @@ interface WebSocketData extends RawFullMessage {
     }
 }
 
+const addedMessages: string[] = [];
+
 module.exports = {
     schema,
     callback: async (args: Record<string, string>, auth: Authentication, rcws: RocketChatWebSocket) => {
@@ -47,7 +49,11 @@ module.exports = {
                 } else {
                     // Évite de compter les messages modifiés comme de nouveaux messages
                     rawMessage.ts = rawMessage.ts["$date"];
-                    transmit(Message.fromFullMessage(rawMessage, currentUserId as string), WebSocketServerEvent.MESSAGE_CREATED);
+                    const message = Message.fromFullMessage(rawMessage, currentUserId as string);
+                    if (!addedMessages.includes(message.id)) {
+                        addedMessages.push(message.id);
+                        transmit(message, WebSocketServerEvent.MESSAGE_CREATED);
+                    }
                 }
             },
         );
