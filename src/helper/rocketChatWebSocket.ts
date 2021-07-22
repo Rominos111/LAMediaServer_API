@@ -92,7 +92,7 @@ type TransmitData = Record<string, unknown> | Serializable;
  * Réponse serveur
  */
 type ServerResponseCallback = (
-    transmit: (data: TransmitData) => void,
+    transmit: (data: TransmitData, evt?: string) => void,
     content: unknown,
     currentUserId: string | null,
     data: RocketChatWebSocketCallbackData,
@@ -103,7 +103,7 @@ type ServerResponseCallback = (
  */
 type ClientCallCallback = (
     data: Record<string, unknown>,
-    transmit: (data: TransmitData) => void,
+    transmit: (data: TransmitData, evt?: string) => void,
 ) => void;
 
 type SubscriptionParams = string | boolean | Record<string, string | boolean | unknown[]>;
@@ -225,9 +225,9 @@ class RocketChatWebSocket {
                         type: APIRErrorType.VALIDATION,
                     },
                     message: "Client call validation error",
-                });
+                }, "error");
             } else {
-                return clientCallCallback(data, (obj) => this._transmitData(obj));
+                return clientCallCallback(data, (obj, evt) => this._transmitData(obj, evt));
             }
         };
         return this;
@@ -301,7 +301,7 @@ class RocketChatWebSocket {
                 }
 
                 if (obj !== null) {
-                    this._clientCallCallback(obj, (data) => this._transmitData(data));
+                    this._clientCallCallback(obj, (data, evt) => this._transmitData(data, evt));
                 }
             });
         });
@@ -382,7 +382,7 @@ class RocketChatWebSocket {
             for (const content of message.fields.args) {
                 if (typeof content === "object") {
                     this._serverResponseCallback(
-                        (obj) => this._transmitData(obj),
+                        (obj, evt) => this._transmitData(obj, evt),
                         content,
                         message.currentUserId,
                         message,
@@ -409,7 +409,7 @@ class RocketChatWebSocket {
             // Message de confirmation de connexion, inutile dans notre cas
         } else if (message.msg === RocketChatWebSocketMessage.RESULT) {
             this._serverResponseCallback(
-                (obj) => this._transmitData(obj),
+                (obj, evt) => this._transmitData(obj, evt),
                 message.result,
                 message.currentUserId,
                 message,
@@ -474,7 +474,7 @@ class RocketChatWebSocket {
         }
     }
 
-    private _transmitData(data: TransmitData) {
+    private _transmitData(data: TransmitData, evt?: string) {
         if (this._clientSocket === null) {
             console.warn("Invalid state: null client socket");
         } else {
@@ -483,6 +483,7 @@ class RocketChatWebSocket {
                     type: "?",
                 },
                 message: "?",
+                event: evt,
                 payload: data,
             }));
         }
