@@ -82,6 +82,7 @@ enum WebSocketServerEvent {
     MODULE_UPDATED = "moduleUpdated",
     PRESENCE_UPDATED = "presenceUpdated",
     ROLE_LIST = "roleList",
+    USER_UPDATED = "userUpdated",
 }
 
 enum WebSocketClientEvent {
