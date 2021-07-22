@@ -1,20 +1,17 @@
 import {APIRequest} from "helper/APIRequest";
 import {
-    RocketChatWebSocket,
     TransmitData,
+    WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 
-module.exports = APIRequest.ws(null, true, async (ws, req) => {
-    const rcws = RocketChatWebSocket
-        .getSocket(req)
-        .subscribedTo("stream-notify-logged", [
+module.exports = APIRequest.ws(null, async (ws, req, auth, rcws) => {
+    rcws.addSubscription("stream-notify-logged",
+        [
             "Users:NameChanged",
             false,
-        ])
-        .onServerResponse((transmit: (data: TransmitData) => void, content: unknown) => {
+        ], (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown) => {
             // TODO: Ne fonctionne pas ?
             console.log("user updated", content);
-        });
-
-    await rcws.open(ws, req);
+        },
+    );
 });

@@ -4,9 +4,9 @@
 
 import {APIRequest} from "helper/APIRequest";
 import {
-    RocketChatWebSocket,
     RocketChatWebSocketMessage,
     TransmitData,
+    WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
 import {
@@ -23,21 +23,20 @@ interface WebSocketData extends RawChannel {
     teamId: string,
 }
 
-module.exports = APIRequest.ws(schema, true, async (ws, req, auth) => {
-    const rcws = RocketChatWebSocket
-        .getSocket(req)
-        .subscribedTo("stream-notify-user", [
+module.exports = APIRequest.ws(schema, async (ws, req, auth, rcws) => {
+    rcws.addSubscription(
+        "stream-notify-user",
+        [
             `${auth?.userId}/rooms-changed`,
             {"useCollection": false, "args": []},
-        ])
-        .onServerResponse((transmit: (data: TransmitData) => void, content: unknown, currentUserId: string | null, message) => {
+        ],
+        (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown, currentUserId: string | null, message) => {
             if (message.fields.args[0] === RocketChatWebSocketMessage.UPDATED) {
                 const updatedChannel = Channel.fromFullObject(content as WebSocketData, auth?.userId as string);
                 if (updatedChannel.id === req.query.channelId) {
-                    transmit(updatedChannel);
+                    transmit(updatedChannel, WebSocketServerEvent.CHANNEL_UPDATED);
                 }
             }
-        });
-
-    await rcws.open(ws, req);
+        },
+    );
 });

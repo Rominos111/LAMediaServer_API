@@ -4,25 +4,25 @@
 
 import {APIRequest} from "helper/APIRequest";
 import {
-    RocketChatWebSocket,
     RocketChatWebSocketMessage,
     TransmitData,
+    WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 
-module.exports = APIRequest.ws(null, true, async (ws, req, auth) => {
-    const rcws = RocketChatWebSocket
-        .getSocket(req)
-        .subscribedTo("stream-notify-user", [
+module.exports = APIRequest.ws(null, async (ws, req, auth, rcws) => {
+    rcws.addSubscription(
+        "stream-notify-user",
+        [
             `${auth?.userId}/rooms-changed`,
             {"useCollection": false, "args": []},
-        ])
-        .onServerResponse((transmit: (data: TransmitData) => void, content: unknown, currentUserId: string | null, message) => {
+        ], (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown, currentUserId: string | null, message) => {
             if (message.fields.args[0] === RocketChatWebSocketMessage.REMOVED) {
                 transmit({
                     channelId: (content as { _id: string })._id,
-                });
+                }, WebSocketServerEvent.CHANNEL_DELETED);
             }
-        });
-
-    await rcws.open(ws, req);
+        },
+    );
 });
+
+module.exports = APIRequest.wip();

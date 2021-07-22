@@ -5,8 +5,9 @@
 import {APIRequest} from "helper/APIRequest";
 import {Language} from "helper/language";
 import {
-    RocketChatWebSocket,
     TransmitData,
+    WebSocketClientEvent,
+    WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
 import {
@@ -42,48 +43,13 @@ interface WebSocketData extends RawFullMessage {
     }
 }
 
-module.exports = APIRequest.ws(schema_connect, true, async (ws, req) => {
-    const rcwsCreated = RocketChatWebSocket
-        .getSocket(req)
-        .subscribedTo("stream-room-messages", [
+module.exports = APIRequest.ws(schema_connect, async (ws, req, auth, rcws) => {
+    rcws.addSubscription(
+        "stream-room-messages",
+        [
             req.query.channelId as string,
             false,
-        ])
-        .onClientCall(schema_sendMessage, (data) => {
-            rcwsCreated.callMethod("sendMessage", {
-                msg: (data.message as string).trim(),
-                rid: data.channelId ? data.channelId : req.query.channelId,
-            });
-        })
-        .onServerResponse((transmit: (data: TransmitData, evt: string) => void, content: unknown, currentUserId: string | null) => {
-            const rawMessage = content as WebSocketData;
-            if (!rawMessage.hasOwnProperty("editedAt") && !rawMessage.hasOwnProperty("editedBy")) {
-                // Évite de compter les messages modifiés comme de nouveaux messages
-                rawMessage.ts = rawMessage.ts["$date"];
-                transmit(Message.fromFullMessage(rawMessage, currentUserId as string), "created");
-            }
-        });
-
-    const rcwsDeleted = RocketChatWebSocket
-        .getSocket(req)
-        .subscribedTo("stream-notify-room", [
-            `${req.query.channelId}/deleteMessage`,
-            false,
-        ])
-        .onServerResponse((transmit: (data: TransmitData, evt: string) => void, content: unknown) => {
-            const message = content as { _id: string };
-            transmit({
-                id: message._id,
-            }, "deleted");
-        });
-
-    const rcwsEdited = RocketChatWebSocket
-        .getSocket(req)
-        .subscribedTo("stream-room-messages", [
-            req.query.channelId as string,
-            false,
-        ])
-        .onServerResponse((transmit: (data: TransmitData, evt: string) => void, content: unknown, currentUserId: string | null) => {
+        ], (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown, currentUserId: string | null) => {
             const rawMessage = content as WebSocketData;
             if (rawMessage.hasOwnProperty("editedAt") && rawMessage.hasOwnProperty("editedBy")) {
                 // Évite de compter les nouveaux messages comme des messages modifiés
@@ -97,11 +63,36 @@ module.exports = APIRequest.ws(schema_connect, true, async (ws, req) => {
                         },
                     },
                     message: Message.fromFullMessage(rawMessage, currentUserId as string),
-                }, "edited");
+                }, WebSocketServerEvent.MESSAGE_EDITED);
+            } else {
+                // Évite de compter les messages modifiés comme de nouveaux messages
+                rawMessage.ts = rawMessage.ts["$date"];
+                transmit(Message.fromFullMessage(rawMessage, currentUserId as string), WebSocketServerEvent.MESSAGE_CREATED);
             }
-        });
+        },
+    );
 
-    await rcwsCreated.open(ws, req);
-    await rcwsDeleted.open(ws, req);
-    await rcwsEdited.open(ws, req);
+    rcws.addSubscription(
+        "stream-notify-room",
+        [
+            `${req.query.channelId}/deleteMessage`,
+            false,
+        ], (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown) => {
+            const message = content as { _id: string };
+            transmit({
+                id: message._id,
+            }, WebSocketServerEvent.MESSAGE_DELETED);
+        },
+    );
+
+    rcws.addClientCall(
+        WebSocketClientEvent.SEND_MESSAGE,
+        schema_sendMessage,
+        (socket, data) => {
+            socket.callMethod("sendMessage", {
+                msg: (data.message as string).trim(),
+                rid: data.channelId ? data.channelId : req.query.channelId,
+            });
+        },
+    );
 });

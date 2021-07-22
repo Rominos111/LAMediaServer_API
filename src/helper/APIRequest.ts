@@ -10,6 +10,7 @@ import {
 } from "helper/APIResponse";
 import {Authentication} from "helper/authentication";
 import {HTTPStatus} from "helper/requestMethod";
+import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
 import {
     ObjectSchema,
     Validation,
@@ -131,25 +132,23 @@ class APIRequest {
     /**
      * WebSocket
      * @param validationSchema Schéma de validation
-     * @param authenticationRequired Authentification requise ou non
      * @param callback Callback appelé une fois la WebSocket ouverte
      * @param route Route locale, '/' par défaut
      */
     public static ws(validationSchema: ObjectSchema | null = null,
-                     authenticationRequired: boolean,
-                     callback: (ws: WebSocket, req: express.Request, auth: Authentication | null) => void,
+                     callback: (ws: WebSocket, req: express.Request, auth: Authentication | null, rcws: RocketChatWebSocket) => void,
                      route: string = "/",
     ): expressWs.Router {
         const router: expressWs.Router = express.Router();
         // On ouvre la route WebSocket
-        router.ws(route, (ws: WebSocket, req: express.Request) => {
+        router.ws(route, async (ws: WebSocket, req: express.Request) => {
             // Données d'authentification
             const auth = this._getAuthenticationData(req);
             // La requête peut se poursuivre ou non
             let canContinue = true;
 
             // "Bon" schéma de validation
-            let schema = this._getValidationSchema(validationSchema, authenticationRequired);
+            let schema = this._getValidationSchema(validationSchema, true);
             // La validation n'est appelée que lors de la demande d'ouverture de la WebSocket
             const valid = schema.validate(req.query);
 
@@ -165,7 +164,7 @@ class APIRequest {
                 canContinue = false;
             }
 
-            if (canContinue && authenticationRequired) {
+            if (canContinue) {
                 if (auth === null) {
                     // Authentification échouée, on ferme la socket avec un message
                     console.debug("Invalid WebSocket token");
@@ -181,7 +180,9 @@ class APIRequest {
 
             if (canContinue) {
                 // On continue la procédure d'amorçage de la socket
-                callback(ws, req, auth);
+                const rcws = RocketChatWebSocket.getSocket(req, ws);
+                await rcws.open();
+                callback(ws, req, auth, rcws);
             } else {
                 // On ferme la WebSocket
                 close();

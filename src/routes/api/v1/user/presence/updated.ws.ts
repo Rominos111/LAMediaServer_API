@@ -4,8 +4,8 @@
 
 import {APIRequest} from "helper/APIRequest";
 import {
-    RocketChatWebSocket,
     TransmitData,
+    WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 import {
     Presence,
@@ -21,14 +21,14 @@ interface WebSocketData {
     },
 }
 
-module.exports = APIRequest.ws(null, true, async (ws, req) => {
-    const rcws = RocketChatWebSocket
-        .getSocket(req)
-        .subscribedTo("stream-notify-logged", [
+module.exports = APIRequest.ws(null, async (ws, req, _auth, rcws) => {
+    rcws.addSubscription(
+        "stream-notify-logged",
+        [
             "user-status",
             false,
-        ])
-        .onServerResponse((transmit: (data: TransmitData) => void, content: unknown) => {
+        ],
+        (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown) => {
             const presenceArray = content as (string | number | null)[];
             let message: string | null = null;
 
@@ -43,8 +43,7 @@ module.exports = APIRequest.ws(null, true, async (ws, req) => {
                     id: presenceArray[0] as string,
                     username: presenceArray[1] as string,
                 },
-            });
-        });
-
-    await rcws.open(ws, req);
+            }, WebSocketServerEvent.PRESENCE_UPDATED);
+        },
+    );
 });

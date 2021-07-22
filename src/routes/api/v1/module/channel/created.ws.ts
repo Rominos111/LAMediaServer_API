@@ -4,9 +4,8 @@
 
 import {APIRequest} from "helper/APIRequest";
 import {
-    RocketChatWebSocket,
     RocketChatWebSocketMessage,
-    TransmitData,
+    WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 import {Validation} from "helper/validation";
 import {
@@ -18,15 +17,15 @@ const schema = Validation.object({
     moduleRoomId: Validation.id().required(),
 });
 
-module.exports = APIRequest.ws(schema, true, async (ws, req, auth) => {
-    const rcws = RocketChatWebSocket
-        .getSocket(req)
-        .subscribedTo("stream-notify-user", [
-            `${auth?.userId}/rooms-changed`,
-            {"useCollection": false, "args": []},
-        ])
-        .onServerResponse((transmit: (data: TransmitData) => void, content: unknown, currentUserId: string | null, message) => {
-            if (message.fields.args[0] === RocketChatWebSocketMessage.INSERTED) {
+module.exports = APIRequest.ws(schema, async (ws, req, auth, rocketChatSocket) => {
+    rocketChatSocket.addSubscription(
+        "stream-notify-user",
+        [
+            `${auth?.userId}/subscriptions-changed`,
+            false,
+        ],
+        (transmit, content, currentUserId, data) => {
+            if (data.fields.args[0] === RocketChatWebSocketMessage.INSERTED) {
                 const createdChannel = content as RawChannel;
                 if (createdChannel.teamId) {
                     // Cette WebSocket est aussi appelée lors de la création de modules
@@ -35,10 +34,9 @@ module.exports = APIRequest.ws(schema, true, async (ws, req, auth) => {
 
                 const channel = Channel.fromFullObject(createdChannel, auth?.userId as string);
                 if (channel.parentModuleId === req.query.moduleRoomId) {
-                    transmit(channel);
+                    transmit(channel, WebSocketServerEvent.CHANNEL_CREATED);
                 }
             }
-        });
-
-    await rcws.open(ws, req);
+        },
+    );
 });
