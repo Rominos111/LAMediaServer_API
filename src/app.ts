@@ -145,7 +145,7 @@ for (const importedRoute of importedRoutes) {
     app.use(importedRoute.route, require(importedRoute.path));
 }
 
-app.use("/", require("./routes/ws"));
+app.use("/api", require("./routes/ws"));
 
 // Redirige les 404 vers la gestion des erreurs
 app.use((_req, _res, next) => {
