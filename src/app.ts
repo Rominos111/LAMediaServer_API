@@ -107,7 +107,7 @@ app.use((req, _res, next) => {
     next();
 });
 
-const routesPathRelative = "routes";
+const routesPathRelative = "routes/api";
 const routesPath = path.join(__dirname, routesPathRelative);
 
 const importedRoutes: { path: string, route: string }[] = [];
@@ -129,7 +129,7 @@ walk.filesSync(routesPath, (basedir: string, rawFilename: string) => {
         endpoint = "";
     }
 
-    const route = "/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
+    const route = "/api/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
 
     importedRoutes.push({
         path: path.join(basedir, filename),

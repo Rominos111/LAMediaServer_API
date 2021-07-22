@@ -8,7 +8,7 @@ import {
     WebSocketClientEvent,
     WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
-import {listModules} from "./list.shared";
+import {listModules} from "routes/shared/moduleList";
 
 module.exports = APIRequest.ws(null, async (ws, req, auth, rcws) => {
     rcws.addClientCall(

@@ -11,7 +11,7 @@ import {
 import {
     listUsers,
     schema_listUsers,
-} from "./list.shared";
+} from "routes/shared/userList";
 
 module.exports = APIRequest.ws(null, async (ws, req, auth, rocketChatSocket) => {
     rocketChatSocket.addSubscription(

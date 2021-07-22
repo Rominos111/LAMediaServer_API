@@ -8,11 +8,11 @@ import {RocketChatWebSocket} from "helper/rocketChatWebSocket";
 import {
     listUsers,
     schema_listUsers,
-} from "routes/api/v1/module/channel/user/list.shared";
+} from "routes/shared/userList";
 import {
     listChannels,
     schema_listModules,
-} from "./list.shared";
+} from "routes/api/v1/module/channel/list.shared";
 
 /*
 module.exports = APIRequest.ws(null, true, async (ws, req, auth, rocketChatSocket) => {
