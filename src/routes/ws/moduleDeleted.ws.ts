@@ -2,25 +2,29 @@
  * Module supprimé
  */
 
-import {APIRequest} from "helper/APIRequest";
+import {Authentication} from "helper/authentication";
 import {
+    RocketChatWebSocket,
     RocketChatWebSocketMessage,
     TransmitData,
     WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 
-module.exports = APIRequest.ws(null, async (ws, req, auth, rcws) => {
-    rcws.addSubscription(
-        "stream-notify-user",
-        [
-            `${auth?.userId}/rooms-changed`,
-            {"useCollection": false, "args": []},
-        ], (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown, currentUserId: string | null, message) => {
-            if (message.fields.args[0] === RocketChatWebSocketMessage.REMOVED) {
-                transmit({
-                    moduleRoomId: (content as { _id: string })._id,
-                }, WebSocketServerEvent.MODULE_DELETED);
-            }
-        },
-    );
-});
+module.exports = {
+    schema: null,
+    callback: async (_args: Record<string, string>, auth: Authentication, rcws: RocketChatWebSocket) => {
+        rcws.addSubscription(
+            "stream-notify-user",
+            [
+                `${auth?.userId}/rooms-changed`,
+                {"useCollection": false, "args": []},
+            ], (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown, currentUserId: string | null, message) => {
+                if (message.fields.args[0] === RocketChatWebSocketMessage.REMOVED) {
+                    transmit({
+                        moduleRoomId: (content as { _id: string })._id,
+                    }, WebSocketServerEvent.MODULE_DELETED);
+                }
+            },
+        );
+    },
+};

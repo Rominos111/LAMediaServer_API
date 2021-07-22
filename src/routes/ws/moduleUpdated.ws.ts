@@ -2,8 +2,9 @@
  * Module modifié
  */
 
-import {APIRequest} from "helper/APIRequest";
+import {Authentication} from "helper/authentication";
 import {
+    RocketChatWebSocket,
     RocketChatWebSocketMessage,
     TransmitData,
     WebSocketServerEvent,
@@ -15,23 +16,26 @@ const schema = Validation.object({
     moduleRoomId: Validation.id().required(),
 });
 
-module.exports = APIRequest.ws(schema, async (ws, req, auth, rcws) => {
-    rcws.addSubscription(
-        "stream-notify-user",
-        [
-            `${auth?.userId}/rooms-changed`,
-            {"useCollection": false, "args": []},
-        ],
-        (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown, currentUserId: string | null, message) => {
-            if (message.fields.args[0] === RocketChatWebSocketMessage.UPDATED) {
-                const room = content as RawChannel;
-                if (room._id === req.query.moduleRoomId) {
-                    transmit({
-                        id: room.teamId,
-                        roomId: room._id,
-                    }, WebSocketServerEvent.MODULE_UPDATED);
+module.exports = {
+    schema,
+    callback: async (args: Record<string, string>, auth: Authentication, rcws: RocketChatWebSocket) => {
+        rcws.addSubscription(
+            "stream-notify-user",
+            [
+                `${auth?.userId}/rooms-changed`,
+                {"useCollection": false, "args": []},
+            ],
+            (transmit: (data: TransmitData, evt: WebSocketServerEvent) => void, content: unknown, currentUserId: string | null, message) => {
+                if (message.fields.args[0] === RocketChatWebSocketMessage.UPDATED) {
+                    const room = content as RawChannel;
+                    if (room._id === args.moduleRoomId) {
+                        transmit({
+                            id: room.teamId,
+                            roomId: room._id,
+                        }, WebSocketServerEvent.MODULE_UPDATED);
+                    }
                 }
-            }
-        },
-    );
-});
+            },
+        );
+    },
+};

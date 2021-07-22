@@ -131,24 +131,19 @@ class APIRequest {
 
     /**
      * WebSocket
-     * @param validationSchema Schéma de validation
      * @param callback Callback appelé une fois la WebSocket ouverte
-     * @param route Route locale, '/' par défaut
      */
-    public static ws(validationSchema: ObjectSchema | null = null,
-                     callback: (ws: WebSocket, req: express.Request, auth: Authentication | null, rcws: RocketChatWebSocket) => void,
-                     route: string = "/",
-    ): expressWs.Router {
+    public static ws(callback: (cws: WebSocket, auth: Authentication, rcws: RocketChatWebSocket) => void): expressWs.Router {
         const router: expressWs.Router = express.Router();
         // On ouvre la route WebSocket
-        router.ws(route, async (ws: WebSocket, req: express.Request) => {
+        router.ws("/", async (ws: WebSocket, req: express.Request) => {
             // Données d'authentification
             const auth = this._getAuthenticationData(req);
             // La requête peut se poursuivre ou non
             let canContinue = true;
 
             // "Bon" schéma de validation
-            let schema = this._getValidationSchema(validationSchema, true);
+            let schema = this._getValidationSchema(Validation.object({}), true);
             // La validation n'est appelée que lors de la demande d'ouverture de la WebSocket
             const valid = schema.validate(req.query);
 
@@ -182,7 +177,7 @@ class APIRequest {
                 // On continue la procédure d'amorçage de la socket
                 const rcws = RocketChatWebSocket.getSocket(req, ws);
                 await rcws.open();
-                callback(ws, req, auth, rcws);
+                callback(ws, auth!, rcws);
             } else {
                 // On ferme la WebSocket
                 close();
@@ -191,7 +186,7 @@ class APIRequest {
 
         // Attention, ce morceau de code ne fonctionne que parce que les fichiers "*.rest.ts"
         //  sont chargés avant ceux "*.ws.ts"
-        router.all(route, this._methodNotAllowed);
+        router.all("/", this._methodNotAllowed);
         return router;
     }
 
