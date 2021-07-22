@@ -55,8 +55,7 @@ if (process.env.RELEASE_ENVIRONMENT === "dev") {
 app.use(bodyParser.json());
 
 // JSON
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({extended: true}));
 
 if (process.env.RELEASE_ENVIRONMENT !== "dev") {
     // Limite de requêtes, va renvoyer des erreurs 429 après une limit de requêtes.
