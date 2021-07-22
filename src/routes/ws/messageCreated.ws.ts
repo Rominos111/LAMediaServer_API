@@ -32,7 +32,7 @@ interface WebSocketData extends RawFullMessage {
     }
 }
 
-const addedMessages: string[] = [];
+const createdMessages: string[] = [];
 
 module.exports = {
     schema,
@@ -50,8 +50,9 @@ module.exports = {
                     // Évite de compter les messages modifiés comme de nouveaux messages
                     rawMessage.ts = rawMessage.ts["$date"];
                     const message = Message.fromFullMessage(rawMessage, currentUserId as string);
-                    if (!addedMessages.includes(message.id)) {
-                        addedMessages.push(message.id);
+                    const key = `${auth.userId}-${message.id}`;
+                    if (!createdMessages.includes(key)) {
+                        createdMessages.push(key);
                         transmit(message, WebSocketServerEvent.MESSAGE_CREATED);
                     }
                 }
