@@ -18,6 +18,8 @@ const schema = Validation.object({
     moduleRoomId: Validation.id().required(),
 });
 
+const createdChannels: string[] = [];
+
 module.exports = {
     schema,
     callback: async (args: Record<string, string>, auth: Authentication, rcws: RocketChatWebSocket) => {
@@ -29,14 +31,16 @@ module.exports = {
             ],
             (transmit, content, currentUserId, data) => {
                 if (data.fields.args[0] === RocketChatWebSocketMessage.INSERTED) {
-                    const createdChannel = content as RawChannel;
-                    if (createdChannel.teamId) {
+                    const rawChannel = content as RawChannel;
+                    if (rawChannel.teamId || rawChannel.msgs === void null || rawChannel.usersCount === void null) {
                         // Cette WebSocket est aussi appelée lors de la création de modules
                         return;
                     }
 
-                    const channel = Channel.fromFullObject(createdChannel, auth?.userId as string);
-                    if (channel.parentModuleId === args.moduleRoomId) {
+                    const channel = Channel.fromFullObject(rawChannel, auth?.userId as string);
+                    const key = `${auth.userId}-${channel.id}`;
+                    if (channel.parentModuleId === args.moduleRoomId && !createdChannels.includes(key)) {
+                        createdChannels.push(key);
                         transmit(channel, WebSocketServerEvent.CHANNEL_CREATED);
                     }
                 }
