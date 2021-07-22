@@ -34,18 +34,3 @@ module.exports = {
         );
     },
 };
-
-
-/*
-    rcws.addClientCall(
-        WebSocketClientEvent.SEND_MESSAGE,
-        schema_sendMessage,
-        (socket, data) => {
-            socket.callMethod("sendMessage", {
-                msg: (data.message as string).trim(),
-                rid: data.channelId ? data.channelId : req.query.channelId,
-            });
-        },
-    );
-});
-*/
