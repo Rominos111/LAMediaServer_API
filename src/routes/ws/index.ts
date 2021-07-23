@@ -20,14 +20,8 @@ interface ClientData {
 }
 
 module.exports = APIRequest.ws((clientWebSocket, auth, rcws) => {
-    clientWebSocket.addEventListener("message", (evt) => {
-        let data: ClientData;
-
-        if (typeof evt.data === "string") {
-            data = JSON.parse(evt.data);
-        } else {
-            data = evt.data as ClientData;
-        }
+    clientWebSocket.on("message", (rawData) => {
+        let data = JSON.parse(rawData as string) as ClientData;
 
         if (!data.hasOwnProperty("event")) {
             return;
