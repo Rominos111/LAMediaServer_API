@@ -89,6 +89,7 @@ enum WebSocketClientEvent {
     LIST_CHANNELS = "listChannels",
     LIST_MODULES = "listModules",
     LIST_ROLES = "listRoles",
+    LIST_USERS = "listUsers",
     SEND_MESSAGE = "sendMessage",
 }
 
@@ -323,10 +324,6 @@ class RocketChatWebSocket {
         }));
     }
 
-    public transmitConnectionAcknowledgment(): void {
-        this._transmitData({}, WebSocketServerEvent.READY);
-    }
-
     /**
      * Envoie un message à la WebSocket Rocket.chat
      * @param msg Message
@@ -367,7 +364,7 @@ class RocketChatWebSocket {
         } else {
             for (const methodName of Object.keys(this._serverResponseCallbacks)) {
                 if (message.fields === undefined) {
-                    console.log(message, message.fields);
+                    console.debug(message, message.fields);
                 }
                 if (methodName === message.fields.eventName || methodName === message.collection) {
                     for (const content of message.fields.args) {
@@ -433,6 +430,10 @@ class RocketChatWebSocket {
                 }
             }
         }
+    }
+
+    public transmitConnectionAcknowledgment(): void {
+        this._transmitData({}, WebSocketServerEvent.READY);
     }
 
     private _transmitData(data: TransmitData, evt: WebSocketServerEvent | WebSocketClientEvent): void {

@@ -23,6 +23,8 @@ module.exports = APIRequest.ws((clientWebSocket, auth, rcws) => {
     clientWebSocket.on("message", (rawData) => {
         let data = JSON.parse(rawData as string) as ClientData;
 
+        console.debug("Event reçu:", data.event, data.args);
+
         if (!data.hasOwnProperty("event")) {
             return;
         }
@@ -44,7 +46,7 @@ module.exports = APIRequest.ws((clientWebSocket, auth, rcws) => {
                 const valid = file.schema.validate(data.args);
                 if (valid.error) {
                     ok = false;
-                    console.debug("Socket validation error:", valid.error);
+                    console.debug("Socket validation error:", valid.error.message);
                     rcws.transmitError("validation", valid.error.message);
                 } else {
                     ok = true;
