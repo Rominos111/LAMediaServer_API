@@ -55,8 +55,7 @@ if (process.env.RELEASE_ENVIRONMENT === "dev") {
 app.use(bodyParser.json());
 
 // JSON
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({extended: true}));
 
 if (process.env.RELEASE_ENVIRONMENT !== "dev") {
     // Limite de requêtes, va renvoyer des erreurs 429 après une limit de requêtes.
@@ -108,7 +107,7 @@ app.use((req, _res, next) => {
     next();
 });
 
-const routesPathRelative = "routes";
+const routesPathRelative = "routes/api";
 const routesPath = path.join(__dirname, routesPathRelative);
 
 const importedRoutes: { path: string, route: string }[] = [];
@@ -130,7 +129,7 @@ walk.filesSync(routesPath, (basedir: string, rawFilename: string) => {
         endpoint = "";
     }
 
-    const route = "/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
+    const route = "/api/" + path.relative(routesPath, path.join(basedir, endpoint)).replace(/\\/g, "/");
 
     importedRoutes.push({
         path: path.join(basedir, filename),
@@ -145,6 +144,8 @@ walk.filesSync(routesPath, (basedir: string, rawFilename: string) => {
 for (const importedRoute of importedRoutes) {
     app.use(importedRoute.route, require(importedRoute.path));
 }
+
+app.use("/api", require("./routes/ws"));
 
 // Redirige les 404 vers la gestion des erreurs
 app.use((_req, _res, next) => {

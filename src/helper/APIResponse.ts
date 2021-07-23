@@ -40,7 +40,7 @@ enum APIRErrorType {
  * Type de réponse, type MIME
  */
 enum ResponseType {
-    JSON = "json",
+    JSON = "application/json",
     SVG = "image/svg+xml",
 }
 

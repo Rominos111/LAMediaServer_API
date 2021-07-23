@@ -9,7 +9,7 @@ import {HTTPStatus} from "helper/requestMethod";
 import {
     listUsers,
     schema_listUsers,
-} from "./list.shared";
+} from "routes/shared/userList";
 
 module.exports = APIRequest.get(schema_listUsers, true, async (req, res, auth) => {
     await listUsers(req.query.channelId as string, auth as Authentication, (users) => {

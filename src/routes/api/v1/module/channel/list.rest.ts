@@ -8,10 +8,10 @@ import {Authentication} from "helper/authentication";
 import {HTTPStatus} from "helper/requestMethod";
 import {
     listChannels,
-    schema_listModules,
-} from "./list.shared";
+    schema_listChannels,
+} from "routes/shared/channelList";
 
-module.exports = APIRequest.get(schema_listModules, true, async (req, res, auth) => {
+module.exports = APIRequest.get(schema_listChannels, true, async (req, res, auth) => {
     await listChannels(req.query.moduleRoomId as string, auth as Authentication, (channels) => {
         APIResponse.fromSuccess({
             channels: channels,
