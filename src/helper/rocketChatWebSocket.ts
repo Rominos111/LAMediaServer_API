@@ -79,6 +79,7 @@ enum WebSocketServerEvent {
     MODULE_LIST = "moduleList",
     MODULE_UPDATED = "moduleUpdated",
     PRESENCE_UPDATED = "presenceUpdated",
+    READY = "ready",
     ROLE_LIST = "roleList",
     USER_UPDATED = "userUpdated",
 }
@@ -320,6 +321,10 @@ class RocketChatWebSocket {
             event: WebSocketServerEvent.ERROR,
             payload: {},
         }));
+    }
+
+    public transmitConnectionAcknowledgment(): void {
+        this._transmitData({}, WebSocketServerEvent.READY);
     }
 
     /**

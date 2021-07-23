@@ -131,9 +131,9 @@ class APIRequest {
 
     /**
      * WebSocket
-     * @param callback Callback appelé une fois la WebSocket ouverte
+     * @param setListeners Callback appelé une fois la WebSocket ouverte
      */
-    public static ws(callback: (cws: WebSocket, auth: Authentication, rcws: RocketChatWebSocket) => void): expressWs.Router {
+    public static ws(setListeners: (cws: WebSocket, auth: Authentication, rcws: RocketChatWebSocket) => void): expressWs.Router {
         const router: expressWs.Router = express.Router();
         // On ouvre la route WebSocket
         router.ws("/", async (ws: WebSocket, req: express.Request) => {
@@ -176,8 +176,9 @@ class APIRequest {
             if (canContinue) {
                 // On continue la procédure d'amorçage de la socket
                 const rcws = RocketChatWebSocket.getSocket(req, ws);
-                callback(ws, auth!, rcws);
                 await rcws.open();
+                setListeners(ws, auth!, rcws);
+                rcws.transmitConnectionAcknowledgment();
             } else {
                 // On ferme la WebSocket
                 ws.close();
