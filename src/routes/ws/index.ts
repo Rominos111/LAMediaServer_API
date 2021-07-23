@@ -2,19 +2,20 @@ import {APIRequest} from "helper/APIRequest";
 import {Authentication} from "helper/authentication";
 import {
     RocketChatWebSocket,
+    WebSocketClientEvent,
     WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 import {ObjectSchema} from "joi";
 
 interface ImportData {
     schema: ObjectSchema | null,
-    callback: (args: Record<string, string>, auth: Authentication, rcws: RocketChatWebSocket) => void,
+    callback: (args: Record<string, unknown>, auth: Authentication, rcws: RocketChatWebSocket) => void,
 }
 
 interface ClientData {
-    event: string,
+    event: WebSocketClientEvent | WebSocketServerEvent,
     args: {
-        [key: string]: string,
+        [key: string]: unknown,
     }
 }
 
@@ -36,7 +37,10 @@ module.exports = APIRequest.ws((clientWebSocket, auth, rcws) => {
             data.args = {};
         }
 
-        if (Object.values(WebSocketServerEvent).includes(data.event as WebSocketServerEvent)) {
+        const isClient = Object.values(WebSocketClientEvent).includes(data.event as WebSocketClientEvent);
+        const isServer = Object.values(WebSocketServerEvent).includes(data.event as WebSocketServerEvent);
+
+        if (isClient || isServer) {
             const file: ImportData = require(`./${data.event}.ws.ts`);
             let ok: boolean;
 
@@ -46,7 +50,8 @@ module.exports = APIRequest.ws((clientWebSocket, auth, rcws) => {
                 const valid = file.schema.validate(data.args);
                 if (valid.error) {
                     ok = false;
-                    console.debug("Socket validation error");
+                    console.debug("Socket validation error:", valid.error);
+                    rcws.transmitError("validation", valid.error.message);
                 } else {
                     ok = true;
                 }

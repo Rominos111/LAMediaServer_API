@@ -11,8 +11,6 @@ import {
 import {RocketChat} from "helper/rocketChat";
 import {Serializable} from "helper/serializable";
 import {randomUID} from "helper/utils";
-import {Validation} from "helper/validation";
-import {ObjectSchema} from "joi";
 import WebSocket from "ws";
 
 /**
@@ -86,6 +84,7 @@ enum WebSocketServerEvent {
 }
 
 enum WebSocketClientEvent {
+    ERROR = "error",
     LIST_CHANNELS = "listChannels",
     LIST_MODULES = "listModules",
     LIST_ROLES = "listRoles",
@@ -102,8 +101,10 @@ interface RocketChatWebSocketCallbackData extends Record<string, unknown> {
         args: unknown[],
         eventName: string,
     },
+    id: string,
     msg: RocketChatWebSocketMessage,
-};
+    result: Record<string, unknown>,
+}
 
 /**
  * Data transmise
@@ -125,7 +126,7 @@ type ServerResponseCallback = (
  */
 type ClientCallCallback = (
     data: Record<string, unknown>,
-    transmit: (data: TransmitData, evt: WebSocketServerEvent) => void,
+    transmit: (data: TransmitData, evt: WebSocketClientEvent) => void,
 ) => void;
 
 type SubscriptionParams = string | boolean | Record<string, string | boolean | unknown[]>;
@@ -168,7 +169,12 @@ class RocketChatWebSocket {
      */
     private readonly _token: string | null;
 
-    private _clientCallCallbacks: { [method: string]: ClientCallCallback } = {};
+    private _clientResultCallbacks: {
+        [id: string]: {
+            event: WebSocketClientEvent,
+            callback: ClientCallCallback,
+        }
+    } = {};
 
     private _serverResponseCallbacks: { [sub: string]: ServerResponseCallback[] } = {};
 
@@ -188,27 +194,23 @@ class RocketChatWebSocket {
     }
 
     public addClientCall(event: WebSocketClientEvent,
-                         schema: ObjectSchema | null,
                          clientCallCallback: (
-                             socket: RocketChatWebSocket,
+                             transmit: (data: TransmitData, evt: WebSocketClientEvent) => void,
+                         ) => string | null,
+                         clientResultCallback: (
                              data: Record<string, unknown>,
-                             transmit: (data: TransmitData, evt: WebSocketServerEvent) => void,
-                         ) => void,
+                             transmit: (data: TransmitData, evt: WebSocketClientEvent) => void,
+                         ) => void = () => void null,
     ): RocketChatWebSocket {
-        this._clientCallCallbacks[event] = ((data) => {
-            const validationSchema: ObjectSchema = (schema === null ? Validation.object({}) : schema);
-            const valid = validationSchema.validate(data);
-            if (valid.error) {
-                this._transmitData({
-                    error: {
-                        type: APIRErrorType.VALIDATION,
-                    },
-                    message: "Client call validation error",
-                }, WebSocketServerEvent.ERROR);
-            } else {
-                return clientCallCallback(this, data, (obj, evt) => this._transmitData(obj, evt));
-            }
-        });
+        const id = clientCallCallback((obj, evt) => this._transmitData(obj, evt));
+        if (id !== null) {
+            this._clientResultCallbacks[id] = {
+                event,
+                callback: ((data, transmit) => {
+                    clientResultCallback(data, transmit);
+                }),
+            };
+        }
         return this;
     }
 
@@ -248,31 +250,6 @@ class RocketChatWebSocket {
             this._clientSocket.on("close", () => this.close());
 
             this._clientSocket.on("error", (err) => this._onWebSocketError(err));
-
-            this._clientSocket.on("message", (msg: WebSocket.Data) => {
-                let obj: ClientCallObject | null = null;
-                try {
-                    obj = JSON.parse(msg as string) as ClientCallObject;
-                } catch (err) {
-                    console.debug("Wrong WebSocket client call type", err.message);
-                    if (this._clientSocket !== null) {
-                        this._clientSocket.send({
-                            error: {
-                                type: APIRErrorType.REQUEST,
-                            },
-                            message: "Type de message invalide",
-                        });
-                    }
-                }
-
-                if (obj !== null) {
-                    for (const method of Object.keys(this._clientCallCallbacks)) {
-                        if (method === obj.method) {
-                            this._clientCallCallbacks[method](obj, (data, evt) => this._transmitData(data, evt));
-                        }
-                    }
-                }
-            });
         });
 
         console.info("WebSocket open");
@@ -286,15 +263,17 @@ class RocketChatWebSocket {
      * @param method Méthode
      * @param data Message à envoyer
      */
-    public callMethod(method: string, data: Record<string, unknown>): void {
+    public callMethod(method: string, data: Record<string, unknown>): string {
+        const id = randomUID();
         this._sendRaw(JSON.stringify({
             msg: "method",
             method,
-            id: randomUID(), // FIXME: Gérer cet ID
+            id,
             params: [
                 data,
             ],
         }));
+        return id;
     }
 
     /**
@@ -332,6 +311,17 @@ class RocketChatWebSocket {
         return this;
     }
 
+    public transmitError(errorType: string, message: string): void {
+        this._clientSocket.send(JSON.stringify({
+            error: {
+                type: errorType,
+            },
+            message,
+            event: WebSocketServerEvent.ERROR,
+            payload: {},
+        }));
+    }
+
     /**
      * Envoie un message à la WebSocket Rocket.chat
      * @param msg Message
@@ -365,6 +355,10 @@ class RocketChatWebSocket {
             && (message.result as Record<string, unknown>).type === "resume"
         ) {
             // Message de confirmation de connexion, inutile dans notre cas
+        } else if (message.msg === RocketChatWebSocketMessage.RESULT) {
+            if (this._clientResultCallbacks.hasOwnProperty(message.id)) {
+                this._clientResultCallbacks[message.id].callback(message.result, (data, evt) => this._transmitData(data, evt));
+            }
         } else {
             for (const methodName of Object.keys(this._serverResponseCallbacks)) {
                 if (message.fields === undefined) {
@@ -436,19 +430,15 @@ class RocketChatWebSocket {
         }
     }
 
-    private _transmitData(data: TransmitData, evt: WebSocketServerEvent): void {
-        if (this._clientSocket === null) {
-            console.warn("Invalid state: null client socket");
-        } else {
-            this._clientSocket.send(JSON.stringify({
-                error: {
-                    type: "?",
-                },
-                message: "?",
-                event: evt,
-                payload: data,
-            }));
-        }
+    private _transmitData(data: TransmitData, evt: WebSocketServerEvent | WebSocketClientEvent): void {
+        this._clientSocket.send(JSON.stringify({
+            error: {
+                type: "?",
+            },
+            message: "?",
+            event: evt,
+            payload: data,
+        }));
     }
 
     /**

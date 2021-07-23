@@ -11,12 +11,6 @@ import {
 import {Validation} from "helper/validation";
 
 const schema = Validation.object({
-    channelId: Validation.id().required().messages({
-        "any.required": Language.get("validation.id.required"),
-    }),
-});
-
-const schema_sendMessage = Validation.object({
     channelId: Validation.id(),
     message: Validation.string().trim().min(1).max(2_000).required().messages({
         "any.required": Language.get("validation.message.required"),
@@ -32,12 +26,14 @@ module.exports = {
     callback: async (args: Record<string, string>, auth: Authentication, rcws: RocketChatWebSocket) => {
         rcws.addClientCall(
             WebSocketClientEvent.SEND_MESSAGE,
-            schema_sendMessage,
-            (socket, data) => {
-                socket.callMethod("sendMessage", {
-                    msg: (data.message as string).trim(),
-                    rid: data.channelId ? data.channelId : args.channelId,
+            () => {
+                return rcws.callMethod("sendMessage", {
+                    msg: (args.message as string).trim(),
+                    rid: args.channelId,
                 });
+            },
+            (data, transmit) => {
+                transmit(data, WebSocketClientEvent.SEND_MESSAGE);
             },
         );
     },

@@ -6,7 +6,6 @@ import {Authentication} from "helper/authentication";
 import {
     RocketChatWebSocket,
     WebSocketClientEvent,
-    WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 import {listModules} from "routes/shared/moduleList";
 
@@ -15,18 +14,19 @@ module.exports = {
     callback: async (args: Record<string, string>, auth: Authentication, rcws: RocketChatWebSocket) => {
         rcws.addClientCall(
             WebSocketClientEvent.LIST_MODULES,
-            null,
-            async (socket, _data, transmit) => {
-                await listModules(auth as Authentication, (modules) => {
+            (transmit) => {
+                listModules(auth as Authentication, (modules) => {
                     transmit({
                         modules,
-                    }, WebSocketServerEvent.MODULE_LIST);
+                    }, WebSocketClientEvent.LIST_MODULES);
                 }, (r) => {
                     transmit({
                         error: true,
                         status: r.status,
-                    }, WebSocketServerEvent.ERROR);
-                });
+                    }, WebSocketClientEvent.ERROR);
+                }).then();
+
+                return null;
             },
         );
     },
