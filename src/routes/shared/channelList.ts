@@ -16,7 +16,7 @@ import {
     RawChannel,
 } from "model/channel";
 
-export const schema_listModules = Validation.object({
+export const schema_listChannels = Validation.object({
     moduleRoomId: Validation.id().required().messages({
         "any.required": Language.get("validation.id.required"),
     }),

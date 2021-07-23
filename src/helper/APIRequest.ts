@@ -176,8 +176,8 @@ class APIRequest {
             if (canContinue) {
                 // On continue la procédure d'amorçage de la socket
                 const rcws = RocketChatWebSocket.getSocket(req, ws);
-                await rcws.open();
                 callback(ws, auth!, rcws);
+                await rcws.open();
             } else {
                 // On ferme la WebSocket
                 ws.close();
