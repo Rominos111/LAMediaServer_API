@@ -6,7 +6,6 @@ import {Authentication} from "helper/authentication";
 import {
     RocketChatWebSocket,
     WebSocketClientEvent,
-    WebSocketServerEvent,
 } from "helper/rocketChatWebSocket";
 import {
     listUsers,
@@ -14,8 +13,9 @@ import {
 } from "routes/shared/userList";
 
 module.exports = {
-    schema: null,
+    schema: schema_listUsers,
     callback: async (args: Record<string, string>, auth: Authentication, rcws: RocketChatWebSocket) => {
+        /*
         rcws.addSubscription(
             "stream-notify-user",
             [
@@ -25,23 +25,24 @@ module.exports = {
                 // console.log(data);
             },
         );
+        */
 
         rcws.addClientCall(
-            WebSocketClientEvent.LIST_CHANNELS,
-            schema_listUsers,
-            async (socket, data, transmit) => {
-                await listUsers(data.channelId as string, auth as Authentication, (users) => {
+            WebSocketClientEvent.LIST_USERS,
+            (transmit) => {
+                listUsers(args.channelId as string, auth as Authentication, (users) => {
                     transmit({
                         users,
-                    }, WebSocketServerEvent.CHANNEL_USER_LIST);
+                    }, WebSocketClientEvent.LIST_USERS);
                 }, (r) => {
                     transmit({
                         error: true,
                         status: r.status,
-                    }, WebSocketServerEvent.ERROR);
-                });
+                    }, WebSocketClientEvent.ERROR);
+                }).then();
+
+                return null;
             },
         );
-
     },
 };
