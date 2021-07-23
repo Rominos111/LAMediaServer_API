@@ -180,7 +180,7 @@ class APIRequest {
                 callback(ws, auth!, rcws);
             } else {
                 // On ferme la WebSocket
-                close();
+                ws.close();
             }
         });
 
