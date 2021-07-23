@@ -150,12 +150,12 @@ class APIRequest {
             if (valid.error) {
                 // Validation échouée, on ferme la socket avec un message
                 console.debug("WebSocket validation error:", req.baseUrl, valid.error.message);
-                ws.send({
+                ws.send(JSON.stringify({
                     error: {
                         type: APIRErrorType.VALIDATION,
                     },
                     message: valid.error.message,
-                });
+                }));
                 canContinue = false;
             }
 
@@ -163,12 +163,12 @@ class APIRequest {
                 if (auth === null) {
                     // Authentification échouée, on ferme la socket avec un message
                     console.debug("Invalid WebSocket token");
-                    ws.send({
+                    ws.send(JSON.stringify({
                         error: {
                             type: APIRErrorType.AUTHENTICATION,
                         },
                         message: "Invalid token",
-                    });
+                    }));
                     canContinue = false;
                 }
             }

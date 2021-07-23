@@ -432,10 +432,7 @@ class RocketChatWebSocket {
 
     private _transmitData(data: TransmitData, evt: WebSocketServerEvent | WebSocketClientEvent): void {
         this._clientSocket.send(JSON.stringify({
-            error: {
-                type: "?",
-            },
-            message: "?",
+            message: "OK",
             event: evt,
             payload: data,
         }));
